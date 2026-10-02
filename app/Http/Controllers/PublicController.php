@@ -121,16 +121,33 @@ class PublicController extends Controller
 
     public function search(Request $request)
     {
-        $query = $request->input('q', '');
+        $query = trim($request->input('q', ''));
 
-        $products = Product::where('is_active', true)
-            ->where(function ($q) use ($query) {
-                $q->where('name', 'like', "%{$query}%")
-                    ->orWhere('short_description', 'like', "%{$query}%");
-            })
-            ->with('category.brand')
-            ->limit(50)
-            ->get();
+        $products = collect();
+
+        if (strlen($query) >= 1) {
+            $products = Product::where('is_active', true)
+                ->where(function ($q) use ($query) {
+                    $q->where('products.name', 'like', "%{$query}%")
+                        ->orWhere('products.short_description', 'like', "%{$query}%")
+                        ->orWhereHas('category', function ($catQ) use ($query) {
+                            $catQ->where('categories.name', 'like', "%{$query}%");
+                        })
+                        ->orWhereHas('category.brand', function ($brandQ) use ($query) {
+                            $brandQ->where('brands.name', 'like', "%{$query}%");
+                        });
+                })
+                ->with('category.brand')
+                ->orderByRaw("
+                    CASE
+                        WHEN products.name LIKE ? THEN 1
+                        WHEN products.name LIKE ? THEN 2
+                        ELSE 3
+                    END
+                ", ["{$query}%", "%{$query}%"])
+                ->limit(60)
+                ->get();
+        }
 
         return view('public.search', compact('products', 'query'));
     }

@@ -1,5 +1,5 @@
 <x-layouts.app :title="$insight->title">
-    <article class="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-10 sm:py-14 lg:py-16">
+    <article class="w-[98%] mx-auto max-w-4xl px-4 md:px-10 lg:px-20 py-10 sm:py-14 lg:py-16">
 
         {{-- Breadcrumb --}}
         <div class="text-sm text-slate mb-6">
