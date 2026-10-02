@@ -1,1091 +1,437 @@
 <x-layouts.app title="Agarwal Brothers">
 
     {{-- =========================================================
-        HERO CAROUSEL
+        HERO CAROUSEL  — full-width, with text overlay
     ========================================================== --}}
-
     <section x-data="{
-            active: 0,
-            total: {{ $slides->count() }},
-            timer: null,
-
-            next() {
-                if (this.total > 1) {
-                    this.active = (this.active + 1) % this.total
-                }
-            },
-
-            prev() {
-                if (this.total > 1) {
-                    this.active = (this.active - 1 + this.total) % this.total
-                }
-            },
-
-            start() {
-                if (this.total > 1) {
-                    this.timer = setInterval(() => this.next(), 15000)
-                }
-            }
-        }" x-init="start()"
-        class="relative mx-[5px] mt-[5px] h-[calc(100vh-10px)] min-h-[520px] overflow-hidden rounded-xl bg-ice">
+        active: 0,
+        total: {{ $slides->count() }},
+        timer: null,
+        next()  { if (this.total > 1) this.active = (this.active + 1) % this.total },
+        prev()  { if (this.total > 1) this.active = (this.active - 1 + this.total) % this.total },
+        reset() { clearInterval(this.timer); this.start() },
+        start() { if (this.total > 1) this.timer = setInterval(() => this.next(), 6000) }
+    }" x-init="start()"
+        class="relative w-full h-[50vh] sm:h-[60vh] lg:h-[85vh] min-h-[360px] overflow-hidden bg-navy">
 
         {{-- Slides --}}
         @forelse ($slides as $i => $slide)
+            <div x-show="active === {{ $i }}"
+                x-transition:enter="transition-opacity ease-in-out duration-700"
+                x-transition:enter-start="opacity-0"
+                x-transition:enter-end="opacity-100"
+                x-transition:leave="transition-opacity ease-in-out duration-700"
+                x-transition:leave-start="opacity-100"
+                x-transition:leave-end="opacity-0"
+                class="absolute inset-0">
 
-        <div x-show="active === {{ $i }}" x-transition:enter="transition-opacity ease-in-out duration-1000"
-            x-transition:enter-start="opacity-0" x-transition:enter-end="opacity-100"
-            x-transition:leave="transition-opacity ease-in-out duration-1000" x-transition:leave-start="opacity-100"
-            x-transition:leave-end="opacity-0" class="absolute inset-0">
+                @if ($slide->video)
+                    <video autoplay muted loop playsinline preload="auto"
+                        class="absolute inset-0 h-full w-full object-cover">
+                        <source src="{{ asset('storage/' . $slide->video) }}" type="video/mp4">
+                    </video>
+                @elseif ($slide->image)
+                    <img src="{{ asset('storage/' . $slide->image) }}" alt="{{ $slide->title ?? 'Slide' }}"
+                        class="absolute inset-0 h-full w-full object-cover">
+                @endif
 
-            @if ($slide->video)
+                {{-- Gradient overlay --}}
+                <div class="absolute inset-0 bg-gradient-to-r from-navy/80 via-navy/40 to-transparent"></div>
 
-            <video autoplay muted loop playsinline preload="auto" class="absolute inset-0 h-full w-full object-cover">
-                <source src="{{ asset('storage/' . $slide->video) }}" type="video/mp4">
-            </video>
-
-            @elseif ($slide->image)
-
-            <img src="{{ asset('storage/' . $slide->image) }}" alt="{{ $slide->title }}"
-                class="absolute inset-0 h-full w-full object-cover">
-
-            @endif
-
-            {{-- Very light overlay --}}
-            <div class="absolute inset-0 bg-white/5"></div>
-
-        </div>
-
+                {{-- Slide text --}}
+                @if ($slide->title || $slide->subtitle)
+                    <div class="absolute inset-0 flex items-center">
+                        <div class="mx-auto w-full max-w-7xl px-6 sm:px-8 lg:px-10">
+                            <div class="max-w-xl">
+                                @if ($slide->title)
+                                    <h2 class="text-2xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight drop-shadow-lg">
+                                        {{ $slide->title }}
+                                    </h2>
+                                @endif
+                                @if ($slide->subtitle)
+                                    <p class="mt-4 text-base sm:text-lg text-white/90 leading-relaxed drop-shadow">
+                                        {{ $slide->subtitle }}
+                                    </p>
+                                @endif
+                                @if ($slide->link_url)
+                                    <a href="{{ $slide->link_url }}"
+                                        class="mt-6 inline-flex items-center gap-2 rounded-full bg-cyan px-7 py-3
+                                               text-sm font-bold text-navy shadow-lg
+                                               hover:bg-white transition-all duration-300">
+                                        Explore
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5" />
+                                        </svg>
+                                    </a>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                @endif
+            </div>
         @empty
-
-        <div class="absolute inset-0 flex items-center justify-center bg-ice">
-            <span class="text-slate">
-                No slides added yet
-            </span>
-        </div>
-
+            <div class="absolute inset-0 flex items-center justify-center bg-navy">
+                <span class="text-white/50 text-lg">No slides added yet</span>
+            </div>
         @endforelse
 
-
-        {{-- =====================================================
-            TOP FLOATING CONTROLS
-        ====================================================== --}}
-
-        <div
-            class="absolute left-1/2 top-4 z-30 flex w-[calc(100%-24px)] -translate-x-1/2 items-center justify-center gap-4">
-
-            {{-- Follow Us --}}
-            <div class="flex shrink-0 items-center gap-3 rounded-full bg-link px-5 py-2 text-white shadow-lg">
-
-                <span class="font-semibold">
-                    Follow Us
-                </span>
-
-                <span
-                    class="flex h-7 w-7 items-center justify-center rounded-full bg-white text-sm font-bold text-link">
-                    in
-                </span>
-
-            </div>
-
-
-            {{-- Search --}}
-            <form action="{{ route('search') }}" method="GET"
-                class="flex w-full max-w-[360px] items-center rounded-xl border-2 border-cyan bg-white/95 px-4 py-2 shadow-lg backdrop-blur-sm">
-
-                <svg xmlns="http://www.w3.org/2000/svg" class="mr-2 h-5 w-5 shrink-0 text-cyan" fill="none"
-                    viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <path stroke-linecap="round" stroke-linejoin="round"
-                        d="m21 21-4.35-4.35m2.1-5.4a7.5 7.5 0 1 1-15 0 7.5 7.5 0 0 1 15 0Z" />
-                </svg>
-
-                <input type="text" name="q" placeholder="Search for Products"
-                    class="min-w-0 flex-1 border-0 bg-transparent text-sm text-navy outline-none focus:border-0 focus:outline-none focus:ring-0">
-
-                <span class="ml-2 rounded-full bg-cyan px-2 py-0.5 text-[10px] font-bold text-navy">
-                    NEW
-                </span>
-
-            </form>
-
-        </div>
-
-
-        {{-- =====================================================
-            SLIDER ARROWS
-        ====================================================== --}}
-
+        {{-- Arrow Controls --}}
         @if ($slides->count() > 1)
-
-        <button @click="prev()" type="button"
-            class="absolute right-4 top-1/2 z-30 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full bg-white/80 text-navy shadow-md backdrop-blur-sm transition hover:scale-105 hover:bg-white">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="m15 19-7-7 7-7" />
-            </svg>
-        </button>
-
-
-        <button @click="next()" type="button"
-            class="absolute right-4 top-[calc(50%+50px)] z-30 flex h-10 w-10 items-center justify-center rounded-full bg-white/80 text-navy shadow-md backdrop-blur-sm transition hover:scale-105 hover:bg-white">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7" />
-            </svg>
-        </button>
-
+            <button @click="prev(); reset()" type="button"
+                class="absolute left-4 sm:left-6 top-1/2 z-30 -translate-y-1/2
+                       flex h-11 w-11 items-center justify-center rounded-full
+                       bg-white/20 text-white backdrop-blur-sm
+                       hover:bg-white hover:text-navy transition-all duration-200">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m15 19-7-7 7-7" />
+                </svg>
+            </button>
+            <button @click="next(); reset()" type="button"
+                class="absolute right-4 sm:right-6 top-1/2 z-30 -translate-y-1/2
+                       flex h-11 w-11 items-center justify-center rounded-full
+                       bg-white/20 text-white backdrop-blur-sm
+                       hover:bg-white hover:text-navy transition-all duration-200">
+                <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m9 5 7 7-7 7" />
+                </svg>
+            </button>
         @endif
 
-
-        {{-- =====================================================
-            SLIDE DOTS
-        ====================================================== --}}
-
+        {{-- Dots --}}
         @if ($slides->count() > 1)
-
-        <div
-            class="absolute bottom-4 left-1/2 z-30 flex -translate-x-1/2 gap-2 rounded-full bg-navy/20 px-3 py-2 backdrop-blur-sm">
-
-            @foreach ($slides as $i => $slide)
-
-            <button @click="active = {{ $i }}" type="button" class="h-2 w-2 rounded-full transition-all duration-500"
-                :class="
-                            active === {{ $i }}
-                                ? 'scale-125 bg-cyan'
-                                : 'bg-white/80'
-                        "></button>
-
-            @endforeach
-
-        </div>
-
+            <div class="absolute bottom-6 left-1/2 z-30 flex -translate-x-1/2 gap-2">
+                @foreach ($slides as $i => $slide)
+                    <button @click="active = {{ $i }}; reset()" type="button"
+                        class="h-2.5 rounded-full transition-all duration-500"
+                        :class="active === {{ $i }} ? 'w-8 bg-cyan' : 'w-2.5 bg-white/60 hover:bg-white'">
+                    </button>
+                @endforeach
+            </div>
         @endif
 
     </section>
 
 
     {{-- =========================================================
-    ABOUT / COMPANY EXPERIENCE
-========================================================== --}}
-
+        WHO WE ARE — stats counter section
+    ========================================================== --}}
     <section x-data="{
         started: false,
-
-        experience: 43,
-        customers: 36500,
-        brands: 50,
-        awards: 10,
-        branches: 12,
-
-        displayExperience: 0,
-        displayCustomers: 0,
-        displayBrands: 0,
-        displayAwards: 0,
-        displayBranches: 0,
-
+        stats: [
+            { target: 43,    display: 0, label: 'Years', desc: 'Of trusted excellence in scientific solutions' },
+            { target: 36500, display: 0, label: 'Customers', desc: 'Serving pharma, biotech, diagnostics & academia' },
+            { target: 50,    display: 0, label: 'Brands', desc: 'Global leaders in instruments & automation' },
+            { target: 10,    display: 0, label: 'Awards', desc: 'Recognized for performance & customer satisfaction' },
+            { target: 12,    display: 0, label: 'Branches', desc: 'Pan-India reach with fast, localized support' }
+        ],
         startCounting() {
-
-            if (this.started) {
-                return
-            }
-
-            this.started = true
-
-            const duration = 1800
-            const startTime = performance.now()
-
-            const animate = (currentTime) => {
-
-                const elapsed = currentTime - startTime
-                const progress = Math.min(elapsed / duration, 1)
-
-                const eased = 1 - Math.pow(1 - progress, 3)
-
-                this.displayExperience =
-                    Math.floor(this.experience * eased)
-
-                this.displayCustomers =
-                    Math.floor(this.customers * eased)
-
-                this.displayBrands =
-                    Math.floor(this.brands * eased)
-
-                this.displayAwards =
-                    Math.floor(this.awards * eased)
-
-                this.displayBranches =
-                    Math.floor(this.branches * eased)
-
-                if (progress < 1) {
-                    requestAnimationFrame(animate)
-                } else {
-
-                    this.displayExperience = this.experience
-                    this.displayCustomers = this.customers
-                    this.displayBrands = this.brands
-                    this.displayAwards = this.awards
-                    this.displayBranches = this.branches
-
-                }
-            }
-
-            requestAnimationFrame(animate)
+            if (this.started) return;
+            this.started = true;
+            const duration = 2000;
+            const start = performance.now();
+            const animate = (now) => {
+                const progress = Math.min((now - start) / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                this.stats.forEach(s => s.display = Math.floor(s.target * eased));
+                if (progress < 1) requestAnimationFrame(animate);
+                else this.stats.forEach(s => s.display = s.target);
+            };
+            requestAnimationFrame(animate);
         }
-    }" x-init="
-        const observer = new IntersectionObserver(
-            (entries) => {
+    }"
+    x-init="new IntersectionObserver(([e]) => { if (e.isIntersecting) { startCounting(); } }, { threshold: 0.2 }).observe($el)"
+    class="relative bg-ice py-16 sm:py-20 lg:py-24">
 
-                if (entries[0].isIntersecting) {
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
-                    startCounting()
-                    observer.disconnect()
-
-                }
-
-            },
-            {
-                threshold: 0.25
-            }
-        )
-
-        observer.observe($el)
-    " class="mx-[5px] mt-5 overflow-hidden rounded-xl bg-[#fffafd]">
-
-        {{-- =====================================================
-        SECTION HEADING
-    ====================================================== --}}
-
-        <div class="px-5 pt-14 text-center sm:pt-16">
-
-            <span class="inline-flex border border-cyan px-5 py-1.5 text-sm font-medium text-navy">
-                WHO WE ARE
-            </span>
-
-            <h2 class="mt-5 text-2xl font-normal text-link sm:text-3xl lg:text-[28px]">
-                We Will Ensure You Always Get the Best Results
-            </h2>
-
-        </div>
-
-
-        {{-- =====================================================
-        MAIN ABOUT AREA
-    ====================================================== --}}
-
-        <div
-            class="relative mx-auto grid max-w-6xl grid-cols-1 px-5 pb-14 pt-8 sm:px-10 lg:grid-cols-2 lg:px-12 lg:pb-16 lg:pt-5">
-
-
-            {{-- =================================================
-            CENTER VERTICAL LINE
-        ================================================== --}}
-
-            <div class="pointer-events-none absolute bottom-20 left-1/2 top-16 hidden -translate-x-1/2 lg:block">
-
-                <div class="relative h-full w-[3px] bg-cyan/80">
-
-                    {{-- TOP DOT --}}
-                    <span
-                        class="absolute left-1/2 top-0 h-4 w-4 -translate-x-1/2 rounded-full border-4 border-white bg-cyan shadow"></span>
-
-                    {{-- MIDDLE DOT 1 --}}
-                    <span
-                        class="absolute left-1/2 top-[25%] h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-white bg-cyan shadow"></span>
-
-                    {{-- MIDDLE DOT 2 --}}
-                    <span
-                        class="absolute left-1/2 top-[50%] h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-white bg-cyan shadow"></span>
-
-                    {{-- MIDDLE DOT 3 --}}
-                    <span
-                        class="absolute left-1/2 top-[75%] h-4 w-4 -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-white bg-cyan shadow"></span>
-
-                    {{-- BOTTOM DOT --}}
-                    <span
-                        class="absolute bottom-0 left-1/2 h-4 w-4 -translate-x-1/2 rounded-full border-4 border-white bg-cyan shadow"></span>
-
-                </div>
-
+            {{-- Section Header --}}
+            <div class="text-center mb-12 lg:mb-16">
+                <span class="inline-block rounded-full bg-cyan/10 px-5 py-1.5 text-xs font-bold uppercase tracking-widest text-link">
+                    Who We Are
+                </span>
+                <h2 class="mt-4 text-2xl sm:text-3xl lg:text-4xl font-bold text-navy">
+                    We Will Ensure You Always Get the
+                    <span class="text-cyan">Best Results</span>
+                </h2>
             </div>
 
+            {{-- Stats Grid --}}
+            <div class="grid grid-cols-2 gap-4 sm:gap-6 lg:grid-cols-5 lg:gap-8">
+                <template x-for="(stat, i) in stats" :key="i">
+                    <div class="group rounded-2xl bg-white p-5 sm:p-6 shadow-sm ring-1 ring-gray-100
+                                hover:shadow-lg hover:ring-cyan/30 transition-all duration-300 text-center">
+                        <div class="text-3xl sm:text-4xl font-extrabold text-navy">
+                            <span x-text="stat.display.toLocaleString()"></span><span class="text-cyan">+</span>
+                        </div>
+                        <div class="mt-2 text-sm font-bold uppercase tracking-wide text-link" x-text="stat.label"></div>
+                        <p class="mt-2 text-xs leading-5 text-slate hidden sm:block" x-text="stat.desc"></p>
+                    </div>
+                </template>
+            </div>
 
-            {{-- =================================================
-            LEFT SIDE
-        ================================================== --}}
-
-            <div class="flex flex-col items-center justify-center px-2 lg:pr-16">
-
-                {{-- 43 YEARS IMAGE --}}
-
-                <div class="flex w-full justify-center">
-
-                    <img src="{{ asset('images/43-years.png') }}" alt="Agarwal Brothers - 43 Years of Excellence"
-                        class="h-auto w-full max-w-[520px] object-contain">
-
-                </div>
-
-
-                {{-- KNOW MORE BUTTON --}}
-
-                <a href="/our-story"
-                    class="mt-4 inline-flex items-center gap-3 rounded-full bg-link px-7 py-3 text-sm font-semibold text-white shadow-md transition duration-300 hover:scale-105 hover:bg-navy">
-
-                    Know More
-
-                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                        stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" />
+            {{-- CTA --}}
+            <div class="mt-10 text-center">
+                <a href="/verticals"
+                    class="inline-flex items-center gap-2 rounded-full bg-link px-7 py-3
+                           text-sm font-semibold text-white shadow-md
+                           hover:bg-navy transition-all duration-300">
+                    Know More About Us
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5" />
                     </svg>
-
                 </a>
-
-            </div>
-
-
-            {{-- =================================================
-            RIGHT SIDE STATS
-        ================================================== --}}
-
-            <div class="mt-10 flex flex-col justify-center gap-5 lg:mt-0 lg:pl-16">
-
-
-                {{-- CUSTOMERS --}}
-                <div
-                    class="flex min-h-[105px] items-center gap-5 rounded-full bg-white px-5 py-4 shadow-sm ring-1 ring-slate-200">
-
-                    <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-cyan text-white">
-
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="1.8">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M15 19a6 6 0 0 0-12 0m6-8a4 4 0 1 0 0-8 4 4 0 0 0 0 8Zm9 8a5 5 0 0 0-4-4.9m0-3.1a3.5 3.5 0 1 0 0-7" />
-                        </svg>
-
-                    </div>
-
-                    <div class="min-w-0">
-
-                        <div class="flex items-baseline">
-
-                            <span x-text="displayCustomers" class="text-2xl font-bold text-navy"></span>
-
-                            <span class="ml-1 text-lg text-cyan">
-                                +
-                            </span>
-
-                        </div>
-
-                        <div class="text-base font-medium uppercase text-link">
-                            Customers
-                        </div>
-
-                        <p class="mt-1 text-xs text-slate">
-                            Serving pharma, biotech, diagnostics, academia,
-                            and more.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                {{-- BRANDS --}}
-                <div
-                    class="flex min-h-[105px] items-center gap-5 rounded-full bg-white px-5 py-4 shadow-sm ring-1 ring-slate-200">
-
-                    <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-cyan text-white">
-
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="1.8">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M3 21h18M5 21V8l7-4 7 4v13M9 21v-6h6v6M8 10h.01M12 10h.01M16 10h.01" />
-                        </svg>
-
-                    </div>
-
-                    <div class="min-w-0">
-
-                        <div class="flex items-baseline">
-
-                            <span x-text="displayBrands" class="text-2xl font-bold text-navy"></span>
-
-                            <span class="ml-1 text-lg text-cyan">
-                                +
-                            </span>
-
-                        </div>
-
-                        <div class="text-base font-medium uppercase text-link">
-                            Brands
-                        </div>
-
-                        <p class="mt-1 text-xs text-slate">
-                            Global leaders across instruments, automation,
-                            and workflows.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                {{-- AWARDS --}}
-                <div
-                    class="flex min-h-[105px] items-center gap-5 rounded-full bg-white px-5 py-4 shadow-sm ring-1 ring-slate-200">
-
-                    <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-cyan text-white">
-
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="1.8">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="m12 3 2.2 4.5 5 .7-3.6 3.5.9 5-4.5-2.4-4.5 2.4.9-5-3.6-3.5 5-.7L12 3Z" />
-
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M8 16v5l4-2 4 2v-5" />
-                        </svg>
-
-                    </div>
-
-                    <div class="min-w-0">
-
-                        <div class="flex items-baseline">
-
-                            <span x-text="displayAwards" class="text-2xl font-bold text-navy"></span>
-
-                            <span class="ml-1 text-lg text-cyan">
-                                +
-                            </span>
-
-                        </div>
-
-                        <div class="text-base font-medium uppercase text-link">
-                            Awards
-                        </div>
-
-                        <p class="mt-1 text-xs text-slate">
-                            Recognized for excellence in performance and
-                            customer satisfaction.
-                        </p>
-
-                    </div>
-
-                </div>
-
-
-                {{-- BRANCHES --}}
-                <div
-                    class="flex min-h-[105px] items-center gap-5 rounded-full bg-white px-5 py-4 shadow-sm ring-1 ring-slate-200">
-
-                    <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-full bg-cyan text-white">
-
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7" fill="none" viewBox="0 0 24 24"
-                            stroke="currentColor" stroke-width="1.8">
-                            <path stroke-linecap="round" stroke-linejoin="round"
-                                d="M12 21s7-5.1 7-11a7 7 0 1 0-14 0c0 5.9 7 11 7 11Z" />
-
-                            <circle cx="12" cy="10" r="2.5" />
-                        </svg>
-
-                    </div>
-
-                    <div class="min-w-0">
-
-                        <div class="flex items-baseline">
-
-                            <span x-text="displayBranches" class="text-2xl font-bold text-navy"></span>
-
-                            <span class="ml-1 text-lg text-cyan">
-                                +
-                            </span>
-
-                        </div>
-
-                        <div class="text-base font-medium uppercase text-link">
-                            Branches
-                        </div>
-
-                        <p class="mt-1 text-xs text-slate">
-                            Pan-India reach ensuring fast, localized support.
-                        </p>
-
-                    </div>
-
-                </div>
-
             </div>
 
         </div>
-
-    </section>
-
-    {{-- Strategic Alliances / Brands Section --}}
-    <section class="relative mt-16 mb-16 bg-white overflow-hidden pt-16 sm:pt-20 lg:pt-24">
-
-        {{-- Heading --}}
-        <div class="text-center mb-20 px-6">
-            <span class="inline-block border border-cyan text-navy text-sm font-medium px-5 py-2">
-                OUR PRINCIPLES
-            </span>
-
-            <h2 class="mt-5 text-2xl sm:text-3xl lg:text-4xl font-semibold text-navy">
-                Strategic Alliances with Global Scientific Leaders
-            </h2>
-        </div>
-
-
-        {{-- =========================================================
-         BRAND ORBIT AREA
-         No fixed section height — content gets its full space.
-         ========================================================= --}}
-        <div class="relative mx-auto w-full max-w-[1100px] h-[900px] sm:h-[1000px] lg:h-[1100px]">
-
-
-            {{-- =====================================================
-             4 PERFECT CONCENTRIC CIRCLES
-             ====================================================== --}}
-
-            {{-- Outer Circle --}}
-            <div class="absolute left-1/2 top-1/2
-           -translate-x-1/2 -translate-y-1/2
-           w-[850px] h-[850px]
-           rounded-full
-           border border-cyan/40">
-            </div>
-
-            {{-- Circle 2 --}}
-            <div class="absolute left-1/2 top-1/2
-           -translate-x-1/2 -translate-y-1/2
-           w-[650px] h-[650px]
-           rounded-full
-           border border-cyan/40">
-            </div>
-
-            {{-- Circle 3 --}}
-            <div class="absolute left-1/2 top-1/2
-           -translate-x-1/2 -translate-y-1/2
-           w-[450px] h-[450px]
-           rounded-full
-           border border-cyan/40">
-            </div>
-
-            {{-- Circle 4 --}}
-            <div class="absolute left-1/2 top-1/2
-           -translate-x-1/2 -translate-y-1/2
-           w-[250px] h-[250px]
-           rounded-full
-           border border-cyan/40">
-            </div>
-
-
-
-            {{-- =====================================================
-             CENTER AGARWAL BROTHERS LOGO
-             ====================================================== --}}
-
-            {{-- CENTER AGARWAL BROTHERS LOGO --}}
-            <div class="absolute left-1/2 top-1/2
-           -translate-x-1/2 -translate-y-1/2
-           z-30
-           w-24 h-24
-           sm:w-28 sm:h-28
-           lg:w-32 lg:h-32
-           rounded-full
-           bg-white
-           shadow-[0_0_35px_rgba(0,180,216,0.25)]
-           flex items-center justify-center">
-
-                <img src="{{ asset('images/43-years.png') }}" alt="Agarwal Brothers"
-                    class="w-[75%] h-[75%] object-contain">
-            </div>
-
-
-
-            {{-- =====================================================
-             BRAND 1 — TOP
-             ====================================================== --}}
-
-            @if(isset($brands[0]))
-
-            <a href="{{ $brands[0]->categories->first()
-                    ? route('category.show', [
-                        'brand' => $brands[0]->slug,
-                        'category' => $brands[0]->categories->first()->slug
-                    ])
-                    : '#' }}" class="absolute
-                       left-1/2 top-[30px]
-                       -translate-x-1/2
-                       z-20
-                       w-36 h-20
-                       sm:w-44 sm:h-24
-                       bg-white rounded-lg
-                       shadow-md
-                       flex items-center justify-center
-                       p-4
-                       transition duration-300
-                       hover:scale-105 hover:shadow-xl">
-
-                @if($brands[0]->logo)
-
-                <img src="{{ asset('storage/' . $brands[0]->logo) }}" alt="{{ $brands[0]->name }}"
-                    class="max-w-full max-h-full object-contain">
-
-                @else
-
-                <span class="font-semibold text-navy text-center">
-                    {{ $brands[0]->name }}
-                </span>
-
-                @endif
-
-            </a>
-
-            @endif
-
-
-
-            {{-- =====================================================
-             BRAND 2 — RIGHT
-             ====================================================== --}}
-
-            @if(isset($brands[1]))
-
-            <a href="{{ $brands[1]->categories->first()
-                    ? route('category.show', [
-                        'brand' => $brands[1]->slug,
-                        'category' => $brands[1]->categories->first()->slug
-                    ])
-                    : '#' }}" class="absolute
-                       right-[20px] top-1/2
-                       -translate-y-1/2
-                       z-20
-                       w-36 h-20
-                       sm:w-44 sm:h-24
-                       bg-white rounded-lg
-                       shadow-md
-                       flex items-center justify-center
-                       p-4
-                       transition duration-300
-                       hover:scale-105 hover:shadow-xl">
-
-                @if($brands[1]->logo)
-
-                <img src="{{ asset('storage/' . $brands[1]->logo) }}" alt="{{ $brands[1]->name }}"
-                    class="max-w-full max-h-full object-contain">
-
-                @else
-
-                <span class="font-semibold text-navy text-center">
-                    {{ $brands[1]->name }}
-                </span>
-
-                @endif
-
-            </a>
-
-            @endif
-
-
-
-            {{-- =====================================================
-             BRAND 3 — BOTTOM
-             ====================================================== --}}
-
-            @if(isset($brands[2]))
-
-            <a href="{{ $brands[2]->categories->first()
-                    ? route('category.show', [
-                        'brand' => $brands[2]->slug,
-                        'category' => $brands[2]->categories->first()->slug
-                    ])
-                    : '#' }}" class="absolute
-                       left-1/2 bottom-[30px]
-                       -translate-x-1/2
-                       z-20
-                       w-36 h-20
-                       sm:w-44 sm:h-24
-                       bg-white rounded-lg
-                       shadow-md
-                       flex items-center justify-center
-                       p-4
-                       transition duration-300
-                       hover:scale-105 hover:shadow-xl">
-
-                @if($brands[2]->logo)
-
-                <img src="{{ asset('storage/' . $brands[2]->logo) }}" alt="{{ $brands[2]->name }}"
-                    class="max-w-full max-h-full object-contain">
-
-                @else
-
-                <span class="font-semibold text-navy text-center">
-                    {{ $brands[2]->name }}
-                </span>
-
-                @endif
-
-            </a>
-
-            @endif
-
-
-
-            {{-- =====================================================
-             BRAND 4 — LEFT
-             ====================================================== --}}
-
-            @if(isset($brands[3]))
-
-            <a href="{{ $brands[3]->categories->first()
-                    ? route('category.show', [
-                        'brand' => $brands[3]->slug,
-                        'category' => $brands[3]->categories->first()->slug
-                    ])
-                    : '#' }}" class="absolute
-                       left-[20px] top-1/2
-                       -translate-y-1/2
-                       z-20
-                       w-36 h-20
-                       sm:w-44 sm:h-24
-                       bg-white rounded-lg
-                       shadow-md
-                       flex items-center justify-center
-                       p-4
-                       transition duration-300
-                       hover:scale-105 hover:shadow-xl">
-
-                @if($brands[3]->logo)
-
-                <img src="{{ asset('storage/' . $brands[3]->logo) }}" alt="{{ $brands[3]->name }}"
-                    class="max-w-full max-h-full object-contain">
-
-                @else
-
-                <span class="font-semibold text-navy text-center">
-                    {{ $brands[3]->name }}
-                </span>
-
-                @endif
-
-            </a>
-
-            @endif
-
-        </div>
-
     </section>
 
 
-    {{-- Scientific Verticals --}}
-    <section class="relative w-full bg-ice py-16 px-4 sm:px-6 lg:px-8">
+    {{-- =========================================================
+        STRATEGIC ALLIANCES — Brands logo grid
+    ========================================================== --}}
+    @if ($brands->count())
+    <section class="bg-white py-16 sm:py-20 lg:py-24">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
-        {{-- Section Heading --}}
-        <div class="text-center mb-10">
+            {{-- Section Header --}}
+            <div class="text-center mb-12 lg:mb-16">
+                <span class="inline-block rounded-full bg-cyan/10 px-5 py-1.5 text-xs font-bold uppercase tracking-widest text-link">
+                    Our Principals
+                </span>
+                <h2 class="mt-4 text-2xl sm:text-3xl lg:text-4xl font-bold text-navy">
+                    Strategic Alliances with
+                    <span class="text-cyan">Global Scientific Leaders</span>
+                </h2>
+            </div>
 
-            <h2 class="text-2xl sm:text-3xl lg:text-4xl font-semibold text-navy">
-                Explore Our
-                <span class="text-cyan">Scientific Verticals</span>
-            </h2>
-
-            <p class="mt-3 text-sm sm:text-base text-slate max-w-3xl mx-auto">
-                From research to production, discover how our solutions support every lab need.
-            </p>
+            {{-- Brand Logos Grid --}}
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4 sm:gap-6">
+                @foreach ($brands as $brand)
+                    <a href="{{ $brand->categories->first()
+                            ? route('category.show', ['brand' => $brand->slug, 'category' => $brand->categories->first()->slug])
+                            : '#' }}"
+                        class="group flex h-24 sm:h-28 items-center justify-center rounded-xl
+                               bg-ice p-4 ring-1 ring-gray-100
+                               hover:shadow-lg hover:ring-cyan/40 hover:-translate-y-1
+                               transition-all duration-300">
+                        @if ($brand->logo)
+                            <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}"
+                                class="max-h-14 max-w-full object-contain
+                                       transition-transform duration-300 group-hover:scale-110">
+                        @else
+                            <span class="text-sm font-bold text-navy text-center">{{ $brand->name }}</span>
+                        @endif
+                    </a>
+                @endforeach
+            </div>
 
         </div>
+    </section>
+    @endif
 
 
-        {{-- Dynamic Verticals --}}
-        @if ($verticals->count())
+    {{-- =========================================================
+        SCIENTIFIC VERTICALS
+    ========================================================== --}}
+    @if ($verticals->count())
+    <section class="bg-ice py-16 sm:py-20 lg:py-24">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
-        <div class="max-w-[1400px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-7">
+            {{-- Section Header --}}
+            <div class="text-center mb-12 lg:mb-16">
+                <span class="inline-block rounded-full bg-cyan/10 px-5 py-1.5 text-xs font-bold uppercase tracking-widest text-link">
+                    Verticals
+                </span>
+                <h2 class="mt-4 text-2xl sm:text-3xl lg:text-4xl font-bold text-navy">
+                    Explore Our
+                    <span class="text-cyan">Scientific Verticals</span>
+                </h2>
+                <p class="mt-3 mx-auto max-w-2xl text-sm sm:text-base text-slate">
+                    From research to production, discover how our solutions support every lab need.
+                </p>
+            </div>
 
-            @foreach ($verticals as $vertical)
+            {{-- Verticals Grid --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                @foreach ($verticals as $vertical)
+                    <a href="{{ route('vertical.show', $vertical->slug) }}"
+                        class="group flex flex-col overflow-hidden rounded-2xl bg-white
+                               ring-1 ring-gray-100 shadow-sm
+                               hover:shadow-xl hover:ring-cyan/30 hover:-translate-y-1
+                               transition-all duration-300">
 
-            <a href="{{ url('/verticals/' . $vertical->slug) }}" class="group block h-full">
-
-                <article class="h-full min-h-[285px]
-                               rounded-2xl overflow-hidden
-                               bg-white
-                               border border-[#E7EDF2]
-                               shadow-sm
-                               transition-all duration-300 ease-out
-                               hover:-translate-y-1
-                               hover:shadow-lg
-                               hover:border-cyan
-                               flex flex-col">
-
-                    {{-- Card Content --}}
-                    <div class="flex-1 bg-[#F5F7F8] p-5 sm:p-6">
-
-                        {{-- Icon + Title --}}
-                        <div class="flex items-start gap-3 mb-5">
-
-                            {{-- Icon --}}
-                            <div class="w-12 h-12 sm:w-14 sm:h-14
-                                           shrink-0 rounded-full
-                                           bg-white
-                                           flex items-center justify-center
-                                           shadow-sm
-                                           overflow-hidden">
-                                @if ($vertical->icon)
-                                <img src="{{ asset('storage/' . $vertical->icon) }}" alt="{{ $vertical->name }}" class="w-9 h-9 sm:w-10 sm:h-10 object-contain
-                                                   transition-transform duration-700
-                                                   group-hover:rotate-[360deg]">
-                                @else
-                                <div class="text-cyan text-xl font-bold">
-                                    +
+                        {{-- Image --}}
+                        <div class="relative h-40 sm:h-44 overflow-hidden bg-gray-50">
+                            @if ($vertical->image)
+                                <img src="{{ asset('storage/' . $vertical->image) }}" alt="{{ $vertical->name }}"
+                                    class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+                            @else
+                                <div class="flex h-full w-full items-center justify-center">
+                                    <div class="h-14 w-14 rounded-full bg-cyan/10 flex items-center justify-center">
+                                        <svg class="h-7 w-7 text-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0 1 12 15a9.065 9.065 0 0 0-6.23.693L5 14.5m14.8.8 1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0 1 12 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5" />
+                                        </svg>
+                                    </div>
                                 </div>
-                                @endif
-                            </div>
+                            @endif
+                        </div>
 
-
-                            {{-- Title --}}
-                            <h3 class="pt-1
-                                           text-base sm:text-[17px]
-                                           leading-6
-                                           font-medium
-                                           text-link
-                                           group-hover:text-navy
-                                           transition-colors duration-200">
+                        {{-- Content --}}
+                        <div class="flex-1 p-5">
+                            <h3 class="text-base font-bold text-navy group-hover:text-link transition-colors duration-200">
                                 {{ $vertical->name }}
                             </h3>
-
+                            @if ($vertical->description)
+                                <p class="mt-2 text-sm text-slate line-clamp-2 leading-relaxed">
+                                    {{ $vertical->description }}
+                                </p>
+                            @endif
                         </div>
 
-
-                        {{-- Divider --}}
-                        <div class="w-full h-px
-                                       bg-gradient-to-r
-                                       from-cyan/70
-                                       to-transparent
-                                       mb-4"></div>
-
-
-                        {{-- Description --}}
-                        <p class="text-sm
-                                       leading-6
-                                       text-navy
-                                       line-clamp-3">
-                            {{ $vertical->description ?: 'Explore our products, solutions and scientific applications in this vertical.' }}
-                        </p>
-
-                    </div>
-
-
-                    {{-- Bottom Button --}}
-                    <div class="w-full
-                                   bg-navy
-                                   text-white
-                                   py-3
-                                   px-5
-                                   text-center
-                                   text-sm
-                                   font-semibold
-                                   transition-colors duration-200
-                                   group-hover:bg-cyan
-                                   group-hover:text-navy">
-                        Know More
-                    </div>
-
-                </article>
-
-            </a>
-
-            @endforeach
-
+                        {{-- Bottom bar --}}
+                        <div class="px-5 py-3 bg-navy text-center text-sm font-semibold text-white
+                                    group-hover:bg-cyan group-hover:text-navy transition-colors duration-300">
+                            Know More →
+                        </div>
+                    </a>
+                @endforeach
+            </div>
         </div>
-
-        @else
-
-        {{-- Empty State --}}
-        <div class="text-center py-12 text-slate">
-            No scientific verticals available yet.
-        </div>
-
-        @endif
-
     </section>
+    @endif
+
 
     {{-- =========================================================
         TOP PICKS / FEATURED PRODUCTS
     ========================================================== --}}
-
     @if ($topPicks->count())
+    <section class="bg-white py-16 sm:py-20 lg:py-24">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
-    <section class="relative w-full bg-white py-16 px-4 sm:px-6 lg:px-8">
+            {{-- Section Header --}}
+            <div class="text-center mb-12 lg:mb-16">
+                <span class="inline-block rounded-full bg-cyan/10 px-5 py-1.5 text-xs font-bold uppercase tracking-widest text-link">
+                    Featured Products
+                </span>
+                <h2 class="mt-4 text-2xl sm:text-3xl lg:text-4xl font-bold text-navy">
+                    Our <span class="text-cyan">Top Picks</span>
+                </h2>
+                <p class="mt-3 mx-auto max-w-2xl text-sm sm:text-base text-slate">
+                    Explore some of our featured scientific instruments and laboratory solutions.
+                </p>
+            </div>
 
-        {{-- Section Heading --}}
-        <div class="mx-auto mb-10 max-w-7xl text-center">
+            {{-- Product Cards --}}
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                @foreach ($topPicks as $product)
+                    <a href="{{ route('product.show', $product->slug) }}"
+                        class="group flex flex-col overflow-hidden rounded-2xl bg-white
+                               ring-1 ring-gray-100 shadow-sm
+                               hover:shadow-xl hover:ring-cyan/30 hover:-translate-y-1
+                               transition-all duration-300">
 
-            <span class="inline-block border border-cyan px-5 py-2 text-sm font-medium text-navy">
-                FEATURED PRODUCTS
-            </span>
+                        {{-- Product Image --}}
+                        <div class="relative h-52 flex items-center justify-center overflow-hidden bg-ice p-6">
+                            @if ($product->image)
+                                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
+                                    class="max-h-full max-w-full object-contain
+                                           transition-transform duration-500 group-hover:scale-105">
+                            @else
+                                <div class="text-sm text-slate">No image</div>
+                            @endif
 
-            <h2 class="mt-5 text-2xl font-semibold text-navy sm:text-3xl lg:text-4xl">
-                Our <span class="text-cyan">Top Picks</span>
-            </h2>
+                            <span class="absolute left-3 top-3 rounded-full bg-cyan px-3 py-1
+                                         text-[11px] font-bold text-navy shadow-sm">
+                                Top Pick
+                            </span>
+                        </div>
 
-            <p class="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate sm:text-base">
-                Explore some of our featured scientific instruments and laboratory solutions.
-            </p>
+                        {{-- Product Info --}}
+                        <div class="flex flex-1 flex-col p-5">
 
+                            @if ($product->category?->brand)
+                                <p class="text-xs font-bold uppercase tracking-wide text-cyan">
+                                    {{ $product->category->brand->name }}
+                                </p>
+                            @endif
+
+                            <h3 class="mt-2 text-base font-bold text-navy leading-snug line-clamp-2
+                                       group-hover:text-link transition-colors duration-200">
+                                {{ $product->name }}
+                            </h3>
+
+                            @if ($product->short_description)
+                                <p class="mt-2 text-sm text-slate line-clamp-2 leading-relaxed">
+                                    {{ $product->short_description }}
+                                </p>
+                            @endif
+
+                            <div class="mt-auto pt-4">
+                                <span class="inline-flex items-center gap-1.5 text-sm font-semibold text-link
+                                             group-hover:text-navy transition-colors duration-200">
+                                    View Product
+                                    <svg class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1"
+                                        fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5" />
+                                    </svg>
+                                </span>
+                            </div>
+                        </div>
+                    </a>
+                @endforeach
+            </div>
+
+            {{-- View All CTA --}}
+            <div class="mt-10 text-center">
+                <a href="{{ route('search') }}"
+                    class="inline-flex items-center gap-2 rounded-full bg-navy px-8 py-3
+                           text-sm font-semibold text-white shadow-md
+                           hover:bg-link transition-all duration-300">
+                    Explore All Products
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5" />
+                    </svg>
+                </a>
+            </div>
         </div>
-
-
-        {{-- Product Cards --}}
-        <div class="mx-auto grid max-w-7xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-
-            @foreach ($topPicks as $product)
-
-            <a href="{{ route('product.show', $product->slug) }}"
-                class="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#E7EDF2] bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-cyan hover:shadow-xl">
-
-                {{-- Product Image --}}
-                <div class="relative flex h-[220px] items-center justify-center overflow-hidden bg-[#F5F7F8] p-6">
-
-                    @if ($product->image)
-
-                    <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
-                        class="h-full w-full object-contain transition duration-500 group-hover:scale-105">
-
-                    @else
-
-                    <div class="flex h-full w-full items-center justify-center text-sm text-slate">
-                        No image available
-                    </div>
-
-                    @endif
-
-                    {{-- Top Pick Badge --}}
-                    <span
-                        class="absolute left-4 top-4 rounded-full bg-cyan px-3 py-1 text-xs font-semibold text-navy shadow-sm">
-                        Top Pick
-                    </span>
-
-                </div>
-
-
-                {{-- Product Information --}}
-                <div class="flex flex-1 flex-col p-5">
-
-                    {{-- Brand --}}
-                    @if ($product->category?->brand)
-
-                    <p class="text-xs font-semibold uppercase tracking-wide text-cyan">
-                        {{ $product->category->brand->name }}
-                    </p>
-
-                    @endif
-
-
-                    {{-- Product Name --}}
-                    <h3
-                        class="mt-2 line-clamp-2 text-lg font-semibold leading-6 text-navy transition-colors duration-200 group-hover:text-link">
-                        {{ $product->name }}
-                    </h3>
-
-
-                    {{-- Description --}}
-                    @if ($product->short_description)
-
-                    <p class="mt-3 line-clamp-3 text-sm leading-6 text-slate">
-                        {{ $product->short_description }}
-                    </p>
-
-                    @else
-
-                    <p class="mt-3 line-clamp-3 text-sm leading-6 text-slate">
-                        Explore product specifications and application details.
-                    </p>
-
-                    @endif
-
-
-                    {{-- View Product --}}
-                    <div class="mt-auto pt-5">
-
-                        <span
-                            class="inline-flex items-center gap-2 text-sm font-semibold text-link transition-colors duration-200 group-hover:text-navy">
-
-                            View Product
-
-                            <svg xmlns="http://www.w3.org/2000/svg"
-                                class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" fill="none"
-                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5" />
-
-                            </svg>
-
-                        </span>
-
-                    </div>
-
-                </div>
-
-            </a>
-
-            @endforeach
-
-        </div>
-
-
-        {{-- View All Products --}}
-        <div class="mt-10 text-center">
-
-            <a href="{{ route('search') }}"
-                class="inline-flex items-center gap-2 rounded-full bg-navy px-7 py-3 text-sm font-semibold text-white shadow-md transition duration-300 hover:bg-link">
-
-                Explore Products
-
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
-                    stroke="currentColor" stroke-width="2">
-
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" />
-
-                </svg>
-
-            </a>
-
-        </div>
-
     </section>
-
     @endif
 
 
     {{-- =========================================================
         TRUSTED CLIENTS
     ========================================================== --}}
+    @if ($clients->count())
+    <section class="bg-ice py-16 sm:py-20 lg:py-24">
+        <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
-    <section class="mx-[5px] mt-14 pb-10">
-
-        <h2 class="mb-5 text-2xl font-bold text-navy">
-            Our Trusted Clients
-        </h2>
-
-        <div class="grid grid-cols-2 items-center gap-5 sm:grid-cols-4 lg:grid-cols-6">
-
-            @foreach ($clients as $client)
-
-            <div class="flex h-24 items-center justify-center rounded-xl bg-white p-4 shadow-sm ring-1 ring-slate-200">
-
-                @if ($client->logo)
-
-                <img src="{{ asset('storage/' . $client->logo) }}" alt="{{ $client->name }}"
-                    class="max-h-14 max-w-full object-contain">
-
-                @else
-
-                <span class="text-center text-sm text-slate">
-                    {{ $client->name }}
+            {{-- Section Header --}}
+            <div class="text-center mb-12 lg:mb-16">
+                <span class="inline-block rounded-full bg-cyan/10 px-5 py-1.5 text-xs font-bold uppercase tracking-widest text-link">
+                    Our Clients
                 </span>
-
-                @endif
-
+                <h2 class="mt-4 text-2xl sm:text-3xl lg:text-4xl font-bold text-navy">
+                    Trusted by <span class="text-cyan">Industry Leaders</span>
+                </h2>
             </div>
 
-            @endforeach
-
+            {{-- Client Logos --}}
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4 sm:gap-6">
+                @foreach ($clients as $client)
+                    <div class="flex h-24 items-center justify-center rounded-xl bg-white p-4
+                                ring-1 ring-gray-100 shadow-sm
+                                hover:shadow-md hover:ring-cyan/30 transition-all duration-300">
+                        @if ($client->logo)
+                            <img src="{{ asset('storage/' . $client->logo) }}" alt="{{ $client->name }}"
+                                class="max-h-14 max-w-full object-contain">
+                        @else
+                            <span class="text-sm font-medium text-slate text-center">{{ $client->name }}</span>
+                        @endif
+                    </div>
+                @endforeach
+            </div>
         </div>
-
     </section>
+    @endif
 
 </x-layouts.app>
