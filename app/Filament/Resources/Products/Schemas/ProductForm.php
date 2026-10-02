@@ -43,6 +43,19 @@ class ProductForm
                     ->directory('products'),
                 Toggle::make('is_active')
                     ->default(true),
+                Toggle::make('is_top_pick')
+    ->label('Show in Top Picks')
+    ->helperText('Display this product in the homepage Top Picks section.')
+    ->default(false),
+
+TextInput::make('top_pick_order')
+    ->label('Top Pick Order')
+    ->numeric()
+    ->minValue(1)
+    ->placeholder('1, 2, 3...')
+    ->helperText('Lower number appears first.')
+    ->visible(fn ($get) => $get('is_top_pick')),
+
             ]);
     }
 }
