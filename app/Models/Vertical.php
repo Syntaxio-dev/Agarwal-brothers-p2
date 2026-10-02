@@ -11,6 +11,10 @@ class Vertical extends Model
 
     protected $fillable = ['name', 'slug', 'description', 'image', 'sort_order', 'is_active'];
 
+    protected $casts = [
+        'is_active' => 'boolean',
+    ];
+
     public function categories()
     {
         return $this->belongsToMany(Category::class);

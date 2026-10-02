@@ -8,6 +8,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class CategoryForm
 {
@@ -29,7 +30,13 @@ class CategoryForm
                     ->live(onBlur: true)
                     ->afterStateUpdated(fn ($state, $set) => $set('slug', Str::slug($state))),
                 TextInput::make('slug')
-                    ->required(),
+                    ->required()
+                    ->unique(
+                        table: 'categories',
+                        column: 'slug',
+                        ignoreRecord: true,
+                        modifyRuleUsing: fn ($rule, $get) => $rule->where('brand_id', $get('brand_id')),
+                    ),
                 Textarea::make('description')
                     ->columnSpanFull(),
                 FileUpload::make('image')

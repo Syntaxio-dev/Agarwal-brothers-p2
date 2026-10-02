@@ -792,12 +792,6 @@
 
 
         {{-- Dynamic Verticals --}}
-        @php
-        $verticals = \App\Models\Vertical::query()
-        ->orderBy('name')
-        ->get();
-        @endphp
-
         @if ($verticals->count())
 
         <div class="max-w-[1400px] mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-7">
@@ -908,6 +902,153 @@
         @endif
 
     </section>
+
+    {{-- =========================================================
+        TOP PICKS / FEATURED PRODUCTS
+    ========================================================== --}}
+
+    @if ($topPicks->count())
+
+    <section class="relative w-full bg-white py-16 px-4 sm:px-6 lg:px-8">
+
+        {{-- Section Heading --}}
+        <div class="mx-auto mb-10 max-w-7xl text-center">
+
+            <span class="inline-block border border-cyan px-5 py-2 text-sm font-medium text-navy">
+                FEATURED PRODUCTS
+            </span>
+
+            <h2 class="mt-5 text-2xl font-semibold text-navy sm:text-3xl lg:text-4xl">
+                Our <span class="text-cyan">Top Picks</span>
+            </h2>
+
+            <p class="mx-auto mt-3 max-w-2xl text-sm leading-6 text-slate sm:text-base">
+                Explore some of our featured scientific instruments and laboratory solutions.
+            </p>
+
+        </div>
+
+
+        {{-- Product Cards --}}
+        <div class="mx-auto grid max-w-7xl grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+
+            @foreach ($topPicks as $product)
+
+            <a href="{{ route('product.show', $product->slug) }}"
+                class="group flex h-full flex-col overflow-hidden rounded-2xl border border-[#E7EDF2] bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-cyan hover:shadow-xl">
+
+                {{-- Product Image --}}
+                <div class="relative flex h-[220px] items-center justify-center overflow-hidden bg-[#F5F7F8] p-6">
+
+                    @if ($product->image)
+
+                    <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
+                        class="h-full w-full object-contain transition duration-500 group-hover:scale-105">
+
+                    @else
+
+                    <div class="flex h-full w-full items-center justify-center text-sm text-slate">
+                        No image available
+                    </div>
+
+                    @endif
+
+                    {{-- Top Pick Badge --}}
+                    <span
+                        class="absolute left-4 top-4 rounded-full bg-cyan px-3 py-1 text-xs font-semibold text-navy shadow-sm">
+                        Top Pick
+                    </span>
+
+                </div>
+
+
+                {{-- Product Information --}}
+                <div class="flex flex-1 flex-col p-5">
+
+                    {{-- Brand --}}
+                    @if ($product->category?->brand)
+
+                    <p class="text-xs font-semibold uppercase tracking-wide text-cyan">
+                        {{ $product->category->brand->name }}
+                    </p>
+
+                    @endif
+
+
+                    {{-- Product Name --}}
+                    <h3
+                        class="mt-2 line-clamp-2 text-lg font-semibold leading-6 text-navy transition-colors duration-200 group-hover:text-link">
+                        {{ $product->name }}
+                    </h3>
+
+
+                    {{-- Description --}}
+                    @if ($product->short_description)
+
+                    <p class="mt-3 line-clamp-3 text-sm leading-6 text-slate">
+                        {{ $product->short_description }}
+                    </p>
+
+                    @else
+
+                    <p class="mt-3 line-clamp-3 text-sm leading-6 text-slate">
+                        Explore product specifications and application details.
+                    </p>
+
+                    @endif
+
+
+                    {{-- View Product --}}
+                    <div class="mt-auto pt-5">
+
+                        <span
+                            class="inline-flex items-center gap-2 text-sm font-semibold text-link transition-colors duration-200 group-hover:text-navy">
+
+                            View Product
+
+                            <svg xmlns="http://www.w3.org/2000/svg"
+                                class="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5" />
+
+                            </svg>
+
+                        </span>
+
+                    </div>
+
+                </div>
+
+            </a>
+
+            @endforeach
+
+        </div>
+
+
+        {{-- View All Products --}}
+        <div class="mt-10 text-center">
+
+            <a href="{{ route('search') }}"
+                class="inline-flex items-center gap-2 rounded-full bg-navy px-7 py-3 text-sm font-semibold text-white shadow-md transition duration-300 hover:bg-link">
+
+                Explore Products
+
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24"
+                    stroke="currentColor" stroke-width="2">
+
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6" />
+
+                </svg>
+
+            </a>
+
+        </div>
+
+    </section>
+
+    @endif
 
 
     {{-- =========================================================

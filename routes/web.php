@@ -16,5 +16,5 @@ Route::get('/verticals', [PublicController::class, 'verticalsIndex'])->name('ver
 Route::get('/verticals/{vertical:slug}', [PublicController::class, 'vertical'])->name('vertical.show');
 Route::get('/brands/{brand:slug}/{category:slug}', [PublicController::class, 'category'])->name('category.show');
 Route::get('/products/{product:slug}', [PublicController::class, 'product'])->name('product.show');
-Route::post('/enquiries', [PublicController::class, 'storeEnquiry'])->name('enquiry.store');
+Route::post('/enquiries', [PublicController::class, 'storeEnquiry'])->name('enquiry.store')->middleware('throttle:5,1');
 Route::get('/search', [PublicController::class, 'search'])->name('search');

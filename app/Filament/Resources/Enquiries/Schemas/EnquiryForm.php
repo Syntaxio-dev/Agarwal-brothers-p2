@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Enquiries\Schemas;
 
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Schemas\Schema;
@@ -12,9 +13,11 @@ class EnquiryForm
     {
         return $schema
             ->components([
-                TextInput::make('product_id')
-                    ->numeric()
-                    ->default(null),
+                Select::make('product_id')
+                    ->relationship('product', 'name')
+                    ->searchable()
+                    ->preload()
+                    ->label('Product'),
                 TextInput::make('name')
                     ->required(),
                 TextInput::make('email')
@@ -31,7 +34,12 @@ class EnquiryForm
                 Textarea::make('message')
                     ->default(null)
                     ->columnSpanFull(),
-                TextInput::make('status')
+                Select::make('status')
+                    ->options([
+                        'new' => 'New',
+                        'contacted' => 'Contacted',
+                        'closed' => 'Closed',
+                    ])
                     ->required()
                     ->default('new'),
             ]);

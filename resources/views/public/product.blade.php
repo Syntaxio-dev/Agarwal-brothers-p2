@@ -7,7 +7,9 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <div>
             @if ($product->image)
-                <img src="{{ asset('storage/' . $product->image) }}" class="w-full rounded-lg shadow">
+                <img src="{{ asset('storage/' . $product->image) }}"
+                     alt="{{ $product->name }}"
+                     class="w-full rounded-lg shadow">
             @endif
         </div>
 
@@ -34,11 +36,26 @@
         </div>
     </div>
 
-    <div id="enquiry-form" class="hidden mt-10 bg-white rounded-lg shadow p-6 max-w-xl">
+    {{-- Show the form open if there's a success flash or validation errors --}}
+    <div id="enquiry-form"
+         class="{{ (session('success') || $errors->any()) ? '' : 'hidden' }} mt-10 bg-white rounded-lg shadow p-6 max-w-xl">
+
         <h2 class="text-xl font-bold mb-4">Send an Enquiry</h2>
 
         @if (session('success'))
-            <p class="text-success mb-4">{{ session('success') }}</p>
+            <div class="bg-success/10 border border-success text-success rounded px-4 py-3 mb-4">
+                {{ session('success') }}
+            </div>
+        @endif
+
+        @if ($errors->any())
+            <div class="bg-alert/10 border border-alert text-alert rounded px-4 py-3 mb-4">
+                <ul class="list-disc list-inside text-sm">
+                    @foreach ($errors->all() as $error)
+                        <li>{{ $error }}</li>
+                    @endforeach
+                </ul>
+            </div>
         @endif
 
         <form method="POST" action="{{ route('enquiry.store') }}" class="space-y-4">
@@ -47,27 +64,33 @@
 
             <div>
                 <label class="block text-sm font-medium mb-1">Name</label>
-                <input type="text" name="name" required class="w-full border rounded px-3 py-2">
+                <input type="text" name="name" value="{{ old('name') }}" required
+                       class="w-full border rounded px-3 py-2 @error('name') border-alert @enderror">
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1">Email</label>
-                <input type="email" name="email" required class="w-full border rounded px-3 py-2">
+                <input type="email" name="email" value="{{ old('email') }}" required
+                       class="w-full border rounded px-3 py-2 @error('email') border-alert @enderror">
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1">Phone</label>
-                <input type="text" name="phone" class="w-full border rounded px-3 py-2">
+                <input type="text" name="phone" value="{{ old('phone') }}"
+                       class="w-full border rounded px-3 py-2 @error('phone') border-alert @enderror">
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1">Application Budget</label>
-                <input type="text" name="budget" class="w-full border rounded px-3 py-2">
+                <input type="text" name="budget" value="{{ old('budget') }}"
+                       class="w-full border rounded px-3 py-2">
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1">Where is the order coming from?</label>
-                <input type="text" name="order_location" class="w-full border rounded px-3 py-2">
+                <input type="text" name="order_location" value="{{ old('order_location') }}"
+                       class="w-full border rounded px-3 py-2">
             </div>
             <div>
                 <label class="block text-sm font-medium mb-1">Message</label>
-                <textarea name="message" rows="3" class="w-full border rounded px-3 py-2"></textarea>
+                <textarea name="message" rows="3"
+                          class="w-full border rounded px-3 py-2">{{ old('message') }}</textarea>
             </div>
 
             <button type="submit" class="bg-navy text-white font-medium rounded px-6 py-3">
