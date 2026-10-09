@@ -24,7 +24,7 @@
             </svg>
         </button>
         <a href="/" aria-label="Home">
-            <img src="{{ asset('images/new-logo.png') }}" alt="Agarwal Brothers" class="h-10 w-auto object-contain">
+            <img src="{{ asset('sidebar-logo.png') }}" alt="Agarwal Brothers" class="h-9 w-auto object-contain">
         </a>
     </div>
 
@@ -42,10 +42,10 @@
             <div class="flex flex-col h-screen max-h-screen w-full py-4 px-3 space-y-3 overflow-y-auto">
 
                 {{-- Logo --}}
-                <div class="hidden lg:flex items-center justify-center mb-2 pt-2">
+                <div class="hidden lg:flex items-center justify-center px-1 mb-3 pt-3">
                     <a href="/" aria-label="Home">
-                        <img src="{{ asset('images/new-logo.png') }}" alt="Agarwal Brothers"
-                            class="h-[70px] lg:h-[90px] w-auto object-contain">
+                        <img src="{{ asset('sidebar-logo.png') }}" alt="Agarwal Brothers"
+                            class="w-full max-w-[210px] h-auto object-contain">
                     </a>
                 </div>
 

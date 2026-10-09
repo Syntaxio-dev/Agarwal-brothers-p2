@@ -17,7 +17,7 @@
 
             {{-- Role details --}}
             <div class="lg:col-span-2 lg:sticky lg:top-6">
-                <span class="px-4 py-1 text-xs font-medium uppercase rounded-full bg-white border border-cyan/40 text-link">
+                <span class="section-badge">
                     Now hiring
                 </span>
                 <h1 class="mt-4 text-2xl sm:text-3xl font-bold text-navy leading-tight">{{ $opening->title }}</h1>

@@ -121,7 +121,7 @@
         <div class="mt-6 flex justify-end">
             <button type="submit"
                 class="inline-flex items-center gap-2 rounded-full bg-navy px-8 py-3 text-sm font-semibold text-white shadow-md
-                       hover:bg-link hover:scale-105 transition-all duration-300">
+                       hover:bg-link hover:scale-105 transition-all duration-300 btn-primary">
                 Submit Application
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>

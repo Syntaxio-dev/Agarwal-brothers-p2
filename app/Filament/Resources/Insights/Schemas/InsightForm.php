@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Insights\Schemas;
 
 use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -32,8 +33,8 @@ class InsightForm
                             ->required()
                             ->live(),
                         DatePicker::make('event_date')
-                            ->label('Event / webinar date')
-                            ->visible(fn ($get) => in_array($get('type'), ['news', 'webinar'])),
+                            ->label('Event date')
+                            ->visible(fn ($get) => $get('type') === 'news'),
                         TextInput::make('title')
                             ->required()
                             ->live(onBlur: true)
@@ -47,21 +48,71 @@ class InsightForm
                             ->columnSpanFull(),
                     ]),
 
-                Section::make('Cover image')
-                    ->description('Blogs use a wide banner (about 16:8); news posters work best as portrait (about 4:5).')
+                Section::make('Webinar details')
+                    ->description('Shown on the Webinars page with a live countdown. All times are India time (IST).')
                     ->columnSpanFull()
+                    ->columns(2)
+                    ->visible(fn ($get) => $get('type') === 'webinar')
+                    ->schema([
+                        Select::make('brand_id')
+                            ->label('Principal (brand)')
+                            ->relationship('brand', 'name')
+                            ->searchable()
+                            ->preload()
+                            ->helperText('Its logo appears on the webinar and in the "Filter by principal" chips.'),
+                        TextInput::make('venue')
+                            ->label('Mode / venue')
+                            ->placeholder('Online')
+                            ->default('Online'),
+                        DateTimePicker::make('starts_at')
+                            ->label('Starts at (IST)')
+                            ->seconds(false)
+                            ->native(false)
+                            ->required(fn ($get) => $get('type') === 'webinar'),
+                        Toggle::make('time_tbd')
+                            ->label('Time to be announced')
+                            ->helperText('Only the date is shown; the countdown shows days left.')
+                            ->inline(false),
+                        TextInput::make('registration_url')
+                            ->label('Registration link')
+                            ->url()
+                            ->placeholder('https://')
+                            ->columnSpanFull(),
+                        TextInput::make('recording_url')
+                            ->label('Recording link (after the webinar)')
+                            ->url()
+                            ->placeholder('https://')
+                            ->columnSpanFull(),
+                    ]),
+
+                Section::make('Cover image & PDF')
+                    ->description('The cover image is shown on cards. A PDF is optional and appears on the detail page with a download button.')
+                    ->columnSpanFull()
+                    ->columns(2)
                     ->schema([
                         FileUpload::make('image')
+                            ->label('Cover image')
+                            ->helperText('Blogs and webinars: wide (about 16:9). News posters: portrait (about 4:5).')
                             ->image()
                             ->disk('public')
                             ->visibility('public')
                             ->directory('insights'),
+                        FileUpload::make('pdf')
+                            ->label('PDF (optional)')
+                            ->helperText('Brochure, invitation, white paper, etc. Max 20 MB.')
+                            ->acceptedFileTypes(['application/pdf'])
+                            ->maxSize(20480)
+                            ->disk('public')
+                            ->visibility('public')
+                            ->directory('insights/pdfs')
+                            ->downloadable(),
                     ]),
 
                 Section::make('Content')
                     ->columnSpanFull()
                     ->schema([
-                        RichEditor::make('content'),
+                        RichEditor::make('content')
+                            ->helperText('Optional if you attach a PDF.'),
                     ]),
 
                 Section::make('Visibility')

@@ -158,7 +158,7 @@
         <div class="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(1200px_600px_at_20%_-10%,rgba(0,180,216,0.06),transparent),radial-gradient(1200px_600px_at_80%_110%,rgba(0,180,216,0.06),transparent)]"></div>
 
         <div class="text-center flex flex-col justify-center items-center gap-3 mb-10">
-            <span class="px-4 py-1 text-xs sm:text-sm font-medium uppercase rounded-full bg-white border border-cyan/40 text-link">
+            <span class="section-badge">
                 Who We Are
             </span>
             <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight text-center">
@@ -198,7 +198,7 @@
                 <a href="/our-story"
                     class="mt-5 px-7 py-2.5 rounded-full font-semibold shadow-md text-white text-sm
                            bg-navy hover:bg-link transition-all duration-300 inline-flex items-center gap-2
-                           hover:scale-105 hover:shadow-lg">
+                           hover:scale-105 hover:shadow-lg btn-primary">
                     Know More
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/>
@@ -306,7 +306,7 @@
         <div class="w-[98%] mx-auto md:px-5 lg:px-20">
 
             <div class="text-center flex flex-col items-center gap-3 mb-10">
-                <span class="px-4 py-1 text-xs sm:text-sm font-medium uppercase rounded-full bg-white border border-cyan/40 text-link">
+                <span class="section-badge">
                     Our Principals
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
@@ -377,7 +377,7 @@
         <div class="w-[98%] mx-auto md:px-5 lg:px-20">
 
             <div class="text-center flex flex-col items-center gap-3 mb-8">
-                <span class="px-4 py-1 text-xs sm:text-sm font-medium uppercase rounded-full bg-white border border-cyan/40 text-link">
+                <span class="section-badge">
                     Verticals
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
@@ -436,7 +436,7 @@
                     <a href="{{ route('verticals.index') }}"
                         class="inline-flex items-center gap-2 rounded-full bg-navy px-7 py-2.5
                                text-sm font-semibold text-white shadow-md
-                               hover:bg-link hover:scale-105 transition-all duration-300">
+                               hover:bg-link hover:scale-105 transition-all duration-300 btn-primary">
                         Explore All Verticals
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
@@ -460,7 +460,7 @@
         <div class="w-[98%] mx-auto md:px-5 lg:px-20">
 
             <div class="text-center flex flex-col items-center gap-3 mb-8">
-                <span class="px-4 py-1 text-xs sm:text-sm font-medium uppercase rounded-full bg-white border border-cyan/40 text-link">
+                <span class="section-badge">
                     Precision Picks
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
@@ -536,7 +536,7 @@
                             <a href="{{ route('product.show', $product->slug) }}"
                                class="mt-5 inline-flex items-center gap-2 rounded-full bg-navy px-6 py-2.5
                                       text-sm font-semibold text-white shadow-md
-                                      hover:bg-link hover:scale-105 transition-all duration-300">
+                                      hover:bg-link hover:scale-105 transition-all duration-300 btn-primary">
                                 Explore
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
@@ -562,7 +562,7 @@
         <div class="w-[98%] mx-auto md:px-5">
 
             <div class="text-center flex flex-col items-center gap-3 mb-4">
-                <span class="px-4 py-1 text-xs sm:text-sm font-medium uppercase rounded-full bg-white border border-cyan/40 text-link">
+                <span class="section-badge">
                     Global Presence
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
@@ -636,7 +636,7 @@
         <div class="w-[98%] mx-auto md:px-5 lg:px-20">
 
             <div class="text-center flex flex-col items-center gap-3 mb-8">
-                <span class="px-4 py-1 text-xs sm:text-sm font-medium uppercase rounded-full bg-white border border-cyan/40 text-link">
+                <span class="section-badge">
                     Blogs
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
@@ -691,7 +691,7 @@
                     <a :href="urls[active]"
                        class="inline-flex items-center gap-2 rounded-full bg-navy px-7 py-2.5
                               text-sm font-semibold text-white shadow-md
-                              hover:bg-link hover:scale-105 transition-all duration-300">
+                              hover:bg-link hover:scale-105 transition-all duration-300 btn-primary">
                         Read More
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
@@ -717,7 +717,7 @@
         <div class="w-[98%] mx-auto md:px-5 lg:px-20">
 
             <div class="text-center flex flex-col items-center gap-3 mb-8">
-                <span class="px-4 py-1 text-xs sm:text-sm font-medium uppercase rounded-full bg-white border border-cyan/40 text-link">
+                <span class="section-badge">
                     News & Events
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
@@ -753,7 +753,7 @@
                             <a href="{{ route('insights.show', $item->slug) }}"
                                class="mt-3 inline-flex items-center gap-1.5 rounded-full bg-navy px-5 py-2
                                       text-xs font-semibold text-white shadow
-                                      hover:bg-link hover:scale-105 transition-all duration-300">
+                                      hover:bg-link hover:scale-105 transition-all duration-300 btn-primary">
                                 Know More
                                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
@@ -781,7 +781,7 @@
         <div class="w-[98%] mx-auto md:px-5 lg:px-20">
 
             <div class="text-center flex flex-col items-center gap-3 mb-8">
-                <span class="px-4 py-1 text-xs sm:text-sm font-medium uppercase rounded-full bg-white border border-cyan/40 text-link">
+                <span class="section-badge">
                     Our Clients
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
@@ -889,7 +889,7 @@
         <div class="w-[98%] mx-auto md:px-5 lg:px-20">
 
             <div class="text-center flex flex-col items-center gap-3 mb-10">
-                <span class="px-4 py-1 text-xs sm:text-sm font-medium uppercase rounded-full bg-white border border-cyan/40 text-link">
+                <span class="section-badge">
                     Reviews
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">

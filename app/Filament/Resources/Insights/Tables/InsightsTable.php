@@ -38,10 +38,20 @@ class InsightsTable
                         'webinar' => 'success',
                         default => 'gray',
                     }),
+                TextColumn::make('brand.name')
+                    ->label('Principal')
+                    ->placeholder('—'),
                 TextColumn::make('event_date')
+                    ->label('Date')
                     ->date('d M Y')
                     ->placeholder('—')
                     ->sortable(),
+                TextColumn::make('pdf')
+                    ->label('PDF')
+                    ->state(fn ($record) => filled($record->pdf) ? 'PDF' : null)
+                    ->badge()
+                    ->color('info')
+                    ->placeholder('—'),
                 ToggleColumn::make('is_featured')
                     ->label('Featured'),
                 ToggleColumn::make('is_active')

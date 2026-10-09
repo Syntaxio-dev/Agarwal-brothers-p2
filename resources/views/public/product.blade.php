@@ -147,7 +147,7 @@
                 <button type="submit"
                     class="inline-flex items-center gap-2 rounded-full bg-navy px-8 py-3
                            text-sm font-bold text-white shadow-md
-                           hover:bg-link transition-all duration-300">
+                           hover:bg-link transition-all duration-300 btn-primary">
                     Submit Enquiry
                     <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5" />

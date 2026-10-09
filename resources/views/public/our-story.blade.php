@@ -10,7 +10,7 @@
 
         {{-- Hero --}}
         <div class="mb-14">
-            <span class="px-4 py-1 text-xs font-medium uppercase rounded-full bg-white border border-cyan/40 text-link">
+            <span class="section-badge">
                 Who We Are
             </span>
             <h1 class="mt-4 text-3xl sm:text-4xl font-bold text-navy leading-tight">
@@ -101,7 +101,7 @@
         {{-- Values grid --}}
         <div class="mb-16">
             <div class="text-center mb-10">
-                <span class="px-4 py-1 text-xs font-medium uppercase rounded-full bg-white border border-cyan/40 text-link">
+                <span class="section-badge">
                     Our Values
                 </span>
                 <h2 class="mt-4 text-2xl font-bold text-navy">What Drives Us</h2>

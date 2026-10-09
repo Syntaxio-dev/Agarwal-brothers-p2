@@ -183,15 +183,99 @@ class PublicController extends Controller
 
         abort_unless(array_key_exists($type, $titles), 404);
 
+        if ($type === 'webinar') {
+            return $this->webinarsPage($request);
+        }
+
+        $date = 'COALESCE(event_date, DATE(created_at))';
+
+        $month = (int) $request->input('month');
+        $year = (int) $request->input('year');
+        $upcoming = $type !== 'blog' && $request->boolean('upcoming');
+
         $insights = Insight::where('type', $type)
             ->where('is_active', true)
-            ->latest()
+            ->when($month >= 1 && $month <= 12, fn ($q) => $q->whereRaw("MONTH($date) = ?", [$month]))
+            ->when($year > 0, fn ($q) => $q->whereRaw("YEAR($date) = ?", [$year]))
+            ->when($upcoming, fn ($q) => $q->whereDate('event_date', '>=', today()))
+            ->orderByRaw("$date DESC")
             ->get();
+
+        $years = Insight::where('type', $type)
+            ->where('is_active', true)
+            ->selectRaw("DISTINCT YEAR($date) as y")
+            ->orderByDesc('y')
+            ->pluck('y');
+
+        $filters = [
+            'month' => $month >= 1 && $month <= 12 ? $month : null,
+            'year' => $year > 0 ? $year : null,
+            'upcoming' => $upcoming,
+        ];
+
+        $heroField = ['blog' => 'blogs_hero', 'news' => 'news_hero', 'webinar' => 'webinars_hero'][$type];
+        $heroPath = optional(\App\Models\SiteSetting::latest()->first())->{$heroField};
 
         return view('public.insights', [
             'insights' => $insights,
             'title' => $titles[$type],
+            'type' => $type,
+            'years' => $years,
+            'filters' => $filters,
+            'hasFilters' => (bool) array_filter($filters),
+            'hero' => $heroPath ? asset('storage/' . $heroPath) : null,
         ]);
+    }
+
+    private function webinarsPage(Request $request)
+    {
+        $all = Insight::with('brand')
+            ->where('type', 'webinar')
+            ->where('is_active', true)
+            ->get();
+
+        // Principals that have at least one webinar, with counts, for the filter chips.
+        $principals = $all->filter(fn ($w) => $w->brand)
+            ->groupBy('brand_id')
+            ->map(fn ($group) => ['brand' => $group->first()->brand, 'count' => $group->count()])
+            ->sortBy(fn ($row) => $row['brand']->name)
+            ->values();
+
+        $selected = $principals->firstWhere(fn ($row) => $row['brand']->slug === $request->input('principal'));
+        $selectedSlug = $selected ? $selected['brand']->slug : null;
+
+        $shown = $selected ? $all->where('brand_id', $selected['brand']->id) : $all;
+
+        $upcoming = $shown->filter(fn ($w) => $w->isUpcoming())->sortBy('starts_at')->values();
+        $past = $shown->reject(fn ($w) => $w->isUpcoming())
+            ->sortByDesc(fn ($w) => $w->starts_at ?? $w->created_at)
+            ->values();
+
+        // The hero always features the next webinar overall, regardless of the filter.
+        $next = $all->filter(fn ($w) => $w->isUpcoming())->sortBy('starts_at')->first();
+
+        $heroPath = optional(\App\Models\SiteSetting::latest()->first())->webinars_hero;
+
+        return view('public.webinars', [
+            'title' => 'Webinars',
+            'next' => $next,
+            'principals' => $principals,
+            'totalCount' => $all->count(),
+            'selectedSlug' => $selectedSlug,
+            'upcoming' => $upcoming,
+            'past' => $past,
+            'hero' => $heroPath ? asset('storage/' . $heroPath) : null,
+        ]);
+    }
+
+    public function applicationResources()
+    {
+        $resources = \App\Models\ApplicationResource::where('is_active', true)
+            ->orderBy('sort_order')
+            ->orderBy('id')
+            ->get();
+
+        return view('public.application-resources', compact('resources'));
     }
 
     public function insightShow(Insight $insight)

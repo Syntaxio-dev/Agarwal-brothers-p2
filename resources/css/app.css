@@ -26,3 +26,119 @@ html {
     outline: 2px solid #00B4D8;
     outline-offset: 2px;
 }
+
+/* ------------------------------------------------------------------
+   Signature components (buttons, capsules)
+------------------------------------------------------------------- */
+@layer components {
+    /* Primary button: navy to blue sweep with a light shine on hover */
+    .btn-primary {
+        position: relative;
+        overflow: hidden;
+        isolation: isolate;
+        background-image: linear-gradient(110deg, #0B2545 0%, #0E3C69 45%, #0077B6 100%);
+        background-size: 220% 100%;
+        background-position: 0% 0;
+        border: 1px solid rgb(255 255 255 / 0.14);
+        box-shadow: 0 8px 18px -8px rgb(0 119 182 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.2);
+        letter-spacing: 0.01em;
+        transition: background-position 0.55s ease, box-shadow 0.3s ease, transform 0.3s ease;
+    }
+    .btn-primary::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        pointer-events: none;
+        background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.3) 50%, transparent 70%);
+        transform: translateX(-130%);
+        transition: transform 0.75s ease;
+    }
+    .btn-primary:hover,
+    .group:hover .btn-primary {
+        background-position: 100% 0;
+        box-shadow: 0 12px 24px -10px rgb(0 180 216 / 0.7), inset 0 1px 0 rgb(255 255 255 / 0.3);
+    }
+    .btn-primary:hover::after,
+    .group:hover .btn-primary::after {
+        transform: translateX(130%);
+    }
+    .btn-primary:active {
+        transform: translateY(1px) scale(0.99);
+    }
+
+    /* Secondary button: outlined with a cyan underline that grows in */
+    .btn-ghost {
+        position: relative;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        border-radius: 9999px;
+        border: 1.5px solid rgb(11 37 69 / 0.18);
+        background: rgb(255 255 255 / 0.85);
+        padding: 0.6rem 1.35rem;
+        font-size: 0.875rem;
+        font-weight: 600;
+        color: #0B2545;
+        transition: border-color 0.25s ease, color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+    }
+    .btn-ghost:hover {
+        border-color: #00B4D8;
+        color: #0077B6;
+        box-shadow: 0 8px 18px -10px rgb(0 180 216 / 0.7);
+        transform: translateY(-1px);
+    }
+
+    /* Section capsule: glowing dot + soft gradient */
+    .section-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.55rem;
+        padding: 0.4rem 1.1rem 0.4rem 0.8rem;
+        border-radius: 9999px;
+        border: 1px solid rgb(0 180 216 / 0.35);
+        background: linear-gradient(180deg, #ffffff, #F4F9FB);
+        box-shadow: 0 4px 12px -6px rgb(0 119 182 / 0.45);
+        color: #0077B6;
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        line-height: 1;
+    }
+    .section-badge::before {
+        content: '';
+        width: 0.5rem;
+        height: 0.5rem;
+        border-radius: 9999px;
+        background: #00B4D8;
+        box-shadow: 0 0 0 3px rgb(0 180 216 / 0.22);
+    }
+
+    /* Filter chip (principal / category pickers) */
+    .chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        border-radius: 9999px;
+        border: 1px solid rgb(11 37 69 / 0.12);
+        background: rgb(255 255 255 / 0.9);
+        padding: 0.4rem 0.9rem 0.4rem 0.5rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: #0B2545;
+        transition: all 0.25s ease;
+    }
+    .chip:hover {
+        border-color: #00B4D8;
+        box-shadow: 0 8px 16px -10px rgb(0 180 216 / 0.7);
+        transform: translateY(-1px);
+    }
+    .chip-active,
+    .chip-active:hover {
+        border-color: transparent;
+        color: #ffffff;
+        background-image: linear-gradient(110deg, #0B2545, #0077B6);
+        box-shadow: 0 10px 20px -10px rgb(0 119 182 / 0.8);
+    }
+}

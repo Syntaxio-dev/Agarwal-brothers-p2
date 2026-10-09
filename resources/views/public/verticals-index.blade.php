@@ -15,7 +15,7 @@
 
         {{-- Header --}}
         <div class="text-center flex flex-col items-center gap-3 mb-10">
-            <span class="px-4 py-1 text-xs sm:text-sm font-medium uppercase rounded-full bg-white border border-cyan/40 text-link">
+            <span class="section-badge">
                 Verticals
             </span>
             <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-navy leading-tight">
@@ -38,7 +38,7 @@
                 </svg>
                 <button type="submit"
                     class="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 rounded-full bg-navy px-5 text-sm font-semibold text-white
-                           hover:bg-link transition-colors">
+                           hover:bg-link transition-colors btn-primary">
                     Search
                 </button>
             </form>
@@ -111,7 +111,7 @@
             </div>
             <a href="/contact-us"
                class="shrink-0 inline-flex items-center gap-2 rounded-full bg-navy px-6 py-2.5 text-sm font-semibold text-white shadow-md
-                      hover:bg-link hover:scale-105 transition-all duration-300">
+                      hover:bg-link hover:scale-105 transition-all duration-300 btn-primary">
                 Talk to an Expert
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
