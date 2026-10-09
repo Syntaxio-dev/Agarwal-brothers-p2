@@ -1,0 +1,133 @@
+@import '../../../../vendor/filament/filament/resources/css/theme.css';
+@import '@fontsource/ibm-plex-sans/latin-400.css';
+@import '@fontsource/ibm-plex-sans/latin-500.css';
+@import '@fontsource/ibm-plex-sans/latin-600.css';
+@import '@fontsource/ibm-plex-mono/latin-400.css';
+
+@source '../../../../app/Filament/**/*';
+@source '../../../../resources/views/filament/**/*';
+
+@theme {
+    --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, monospace;
+}
+
+/* Site palette: navy #0B2545, link #0077B6, cyan #00B4D8, ice #F4F9FB */
+
+html:not(.dark) .fi-body,
+html:not(.dark) .fi-layout {
+    background-color: #F4F9FB;
+}
+
+/* Navy sidebar */
+.fi-sidebar {
+    background-color: #0B2545;
+    --tw-ring-color: transparent;
+}
+.fi-sidebar-header {
+    background-color: #0B2545;
+    box-shadow: inset 0 -1px 0 rgb(255 255 255 / 0.08);
+}
+.fi-sidebar .fi-sidebar-group-label,
+.fi-sidebar .fi-sidebar-group-btn span {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.5);
+}
+.fi-sidebar .fi-sidebar-item-btn {
+    border-radius: 0.5rem;
+}
+.fi-sidebar .fi-sidebar-item-label,
+.fi-sidebar .fi-sidebar-item-icon {
+    color: rgb(255 255 255 / 0.78);
+}
+.fi-sidebar .fi-sidebar-item-btn:hover {
+    background-color: rgb(255 255 255 / 0.08);
+}
+.fi-sidebar .fi-sidebar-item-active > .fi-sidebar-item-btn {
+    background-color: rgb(255 255 255 / 0.1);
+    box-shadow: inset 3px 0 0 #00B4D8;
+}
+.fi-sidebar .fi-sidebar-item-active .fi-sidebar-item-label,
+.fi-sidebar .fi-sidebar-item-active .fi-sidebar-item-icon {
+    color: #ffffff;
+}
+.fi-sidebar .fi-icon-btn,
+.fi-sidebar .fi-sidebar-group-collapse-btn {
+    color: rgb(255 255 255 / 0.7);
+}
+
+/* Top bar and cards: flat, light ring, no heavy shadows */
+html:not(.dark) .fi-topbar > nav {
+    background-color: #ffffff;
+}
+.fi-section,
+.fi-ta-ctn,
+.fi-wi-stats-overview-stat {
+    border-radius: 0.75rem;
+}
+
+/* Page headings: tight, semibold, like the website */
+.fi-header-heading {
+    font-weight: 600;
+    letter-spacing: -0.021em;
+    color: #0B2545;
+}
+html.dark .fi-header-heading {
+    color: #ffffff;
+}
+
+/* Solid buttons with a cyan status edge, matching the site's primary button.
+   Text and icons are forced to white so they stay readable in light and dark mode. */
+.fi-btn.fi-color.fi-color-primary:not(.fi-outlined):not(label),
+.fi-btn.fi-color.fi-color-primary:not(.fi-outlined):not(label):hover {
+    background-color: #0B2545;
+    color: #ffffff;
+    box-shadow: inset 0 -2px 0 rgb(0 180 216 / 0.85);
+}
+.fi-btn.fi-color.fi-color-primary:not(.fi-outlined):not(label):hover {
+    background-color: #0077B6;
+}
+.fi-btn.fi-color.fi-color-primary:not(.fi-outlined):not(label) > .fi-icon,
+.fi-btn.fi-color.fi-color-primary:not(.fi-outlined):not(label) .fi-btn-label,
+.fi-btn.fi-color.fi-color-primary:not(.fi-outlined):not(label) span {
+    color: #ffffff;
+}
+
+/* Other solid colours: white text */
+.fi-btn.fi-color.fi-color-danger:not(.fi-outlined):not(label),
+.fi-btn.fi-color.fi-color-success:not(.fi-outlined):not(label),
+.fi-btn.fi-color.fi-color-info:not(.fi-outlined):not(label) {
+    color: #ffffff;
+}
+.fi-btn.fi-color.fi-color-danger:not(.fi-outlined):not(label) > .fi-icon,
+.fi-btn.fi-color.fi-color-success:not(.fi-outlined):not(label) > .fi-icon,
+.fi-btn.fi-color.fi-color-info:not(.fi-outlined):not(label) > .fi-icon {
+    color: #ffffff;
+}
+
+/* Grey buttons: dark text on light, white on dark */
+html:not(.dark) .fi-btn.fi-color.fi-color-gray:not(.fi-outlined):not(label) {
+    color: #0B2545;
+}
+html:not(.dark) .fi-btn.fi-color.fi-color-gray:not(.fi-outlined):not(label) > .fi-icon {
+    color: #0077B6;
+}
+
+/* Outlined buttons: coloured text, readable on hover */
+.fi-btn.fi-outlined.fi-color-primary { color: #0077B6; }
+.fi-btn.fi-outlined.fi-color-danger { color: #E76F51; }
+
+/* Table header labels: small mono eyebrow style */
+.fi-ta-header-cell-label {
+    font-family: var(--font-mono);
+    font-size: 0.6875rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+}
+
+:focus-visible {
+    outline-color: #00B4D8;
+}

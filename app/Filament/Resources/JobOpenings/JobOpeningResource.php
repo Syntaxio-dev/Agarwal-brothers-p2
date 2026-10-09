@@ -8,6 +8,7 @@ use App\Filament\Resources\JobOpenings\Pages\ListJobOpenings;
 use App\Filament\Resources\JobOpenings\Schemas\JobOpeningForm;
 use App\Filament\Resources\JobOpenings\Tables\JobOpeningsTable;
 use App\Models\JobOpening;
+use App\Filament\Concerns\RestrictedByRole;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -16,6 +17,10 @@ use Filament\Tables\Table;
 
 class JobOpeningResource extends Resource
 {
+    use RestrictedByRole;
+
+    protected static string $accessKey = 'job-openings';
+
     protected static ?string $model = JobOpening::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBriefcase;

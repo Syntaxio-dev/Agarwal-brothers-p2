@@ -10,6 +10,7 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook;
 use Filament\Widgets\AccountWidget;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
@@ -34,9 +35,21 @@ class AdminPanelProvider extends PanelProvider
                 'success' => Color::hex('#2A9D8F'),
                 'danger' => Color::hex('#E76F51'),
             ])
-            ->font('Roboto')
+            ->font('IBM Plex Sans', provider: \Filament\FontProviders\LocalFontProvider::class)
+            ->viteTheme('resources/css/filament/admin/theme.css')
+            ->brandLogo(asset('sidebar-logo.png'))
+            ->brandLogoHeight('2.25rem')
+            ->favicon(asset('favicon.png'))
             ->sidebarCollapsibleOnDesktop()
-            ->navigationGroups(['Homepage', 'Catalogue', 'Content', 'Leads', 'Careers', 'Settings'])
+            ->renderHook(PanelsRenderHook::CONTENT_START, function () {
+                $topic = \App\Support\HelpGuide::topicFor(request()->path());
+                if (! $topic || request()->is('admin/help') || ! auth()->check()) {
+                    return '';
+                }
+
+                return view('filament.partials.help-link', ['topic' => $topic]);
+            })
+            ->navigationGroups(['Homepage', 'Catalogue', 'Content', 'Leads', 'Careers', 'Settings', 'Help'])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([

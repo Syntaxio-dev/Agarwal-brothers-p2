@@ -8,6 +8,7 @@ use App\Filament\Resources\SiteSettings\Pages\ListSiteSettings;
 use App\Filament\Resources\SiteSettings\Schemas\SiteSettingForm;
 use App\Filament\Resources\SiteSettings\Tables\SiteSettingsTable;
 use App\Models\SiteSetting;
+use App\Filament\Concerns\RestrictedByRole;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -16,6 +17,10 @@ use Filament\Tables\Table;
 
 class SiteSettingResource extends Resource
 {
+    use RestrictedByRole;
+
+    protected static string $accessKey = 'site-settings';
+
     protected static ?string $model = SiteSetting::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
@@ -31,7 +36,7 @@ class SiteSettingResource extends Resource
     // Only one settings row is used by the site, so don't allow creating more.
     public static function canCreate(): bool
     {
-        return ! SiteSetting::exists();
+        return static::roleAllows() && ! SiteSetting::exists();
     }
 
     public static function form(Schema $schema): Schema

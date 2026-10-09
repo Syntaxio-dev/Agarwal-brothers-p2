@@ -38,7 +38,7 @@
                     <div class="mt-5 text-sm text-slate leading-relaxed
                                 [&_p]:mb-3 [&_ul]:list-disc [&_ul]:pl-5 [&_ul]:mb-3 [&_ol]:list-decimal [&_ol]:pl-5 [&_li]:mb-1
                                 [&_strong]:text-navy [&_h2]:text-base [&_h2]:font-bold [&_h2]:text-navy [&_h3]:font-bold [&_h3]:text-navy">
-                        {!! $opening->description !!}
+                        {!! \Illuminate\Support\Str::sanitizeHtml((string) $opening->description) !!}
                     </div>
                 @endif
             </div>

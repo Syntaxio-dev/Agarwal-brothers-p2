@@ -49,7 +49,11 @@ class BrandsTable
             ])
             ->toolbarActions([
                 BulkActionGroup::make([
-                    DeleteBulkAction::make(),
+                    DeleteBulkAction::make()
+                        ->modalDescription('Brands that still have product lines are skipped, so no products are deleted by accident.')
+                        ->failureNotificationTitle(fn (int $successCount, int $totalCount): string => $successCount
+                            ? "Deleted {$successCount} of {$totalCount}. The rest still have product lines."
+                            : 'Nothing deleted: the selected brands still have product lines.'),
                 ]),
             ]);
     }

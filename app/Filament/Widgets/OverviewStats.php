@@ -11,7 +11,13 @@ use Filament\Widgets\StatsOverviewWidget\Stat;
 
 class OverviewStats extends StatsOverviewWidget
 {
-    protected static ?int $sort = 1;
+    protected static ?int $sort = 2;
+
+    public static function canView(): bool
+    {
+        // The numbers cover the catalogue and content, so they are for admins and editors.
+        return (bool) auth()->user()?->canManage('brands');
+    }
 
     protected function getStats(): array
     {

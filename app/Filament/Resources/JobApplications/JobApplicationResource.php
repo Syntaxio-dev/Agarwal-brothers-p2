@@ -7,6 +7,7 @@ use App\Filament\Resources\JobApplications\Pages\ListJobApplications;
 use App\Filament\Resources\JobApplications\Schemas\JobApplicationForm;
 use App\Filament\Resources\JobApplications\Tables\JobApplicationsTable;
 use App\Models\JobApplication;
+use App\Filament\Concerns\RestrictedByRole;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -15,6 +16,10 @@ use Filament\Tables\Table;
 
 class JobApplicationResource extends Resource
 {
+    use RestrictedByRole;
+
+    protected static string $accessKey = 'job-applications';
+
     protected static ?string $model = JobApplication::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUserGroup;

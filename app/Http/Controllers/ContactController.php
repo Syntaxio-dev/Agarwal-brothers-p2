@@ -32,7 +32,7 @@ class ContactController extends Controller
         $contact = ContactMessage::create($data);
 
         try {
-            Mail::to(config('contact.inbox'))->send(new NewContactMessage($contact));
+            Mail::to(config('contact.inbox'))->queue(new NewContactMessage($contact));
         } catch (\Throwable $e) {
             report($e);
         }

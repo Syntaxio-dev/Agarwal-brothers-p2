@@ -13,7 +13,9 @@ class EditBrand extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            DeleteAction::make()
+                ->modalDescription('A brand can only be deleted after its product lines are deleted or moved to another brand.')
+                ->failureNotificationTitle('Not deleted: this brand still has product lines. Delete or move them first.'),
         ];
     }
 }

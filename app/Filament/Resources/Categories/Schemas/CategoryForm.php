@@ -48,6 +48,8 @@ class CategoryForm
                             ),
                         FileUpload::make('image')
                             ->image()
+                            ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
+                            ->maxSize(\App\Filament\Support\Uploads::IMAGE_MAX_KB)
                             ->disk('public')
                             ->visibility('public')
                             ->directory('categories'),

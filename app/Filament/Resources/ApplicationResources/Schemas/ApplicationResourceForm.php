@@ -46,6 +46,8 @@ class ApplicationResourceForm
                             ->label('Cover image')
                             ->helperText('Shown on the card. Landscape (about 16:10) works best.')
                             ->image()
+                            ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
+                            ->maxSize(\App\Filament\Support\Uploads::IMAGE_MAX_KB)
                             ->disk('public')
                             ->visibility('public')
                             ->directory('resources/covers'),

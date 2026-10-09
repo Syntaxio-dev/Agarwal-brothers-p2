@@ -73,8 +73,8 @@
             @endif
 
             <div class="md:col-span-2">
-                <label class="{{ $label }}" for="resume">Resume * <span class="font-normal text-slate">(PDF, DOC or DOCX, max 5 MB)</span></label>
-                <input id="resume" name="resume" type="file" accept=".pdf,.doc,.docx" required
+                <label class="{{ $label }}" for="resume">Resume * <span class="font-normal text-slate">(PDF or DOCX, max 5 MB)</span></label>
+                <input id="resume" name="resume" type="file" accept=".pdf,.docx" required
                        class="block w-full rounded-lg border border-dashed border-cyan/50 bg-ice px-4 py-3 text-sm text-slate
                               file:mr-4 file:rounded-full file:border-0 file:bg-navy file:px-4 file:py-1.5 file:text-sm file:font-semibold file:text-white
                               hover:file:bg-link cursor-pointer">

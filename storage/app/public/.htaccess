@@ -1,0 +1,26 @@
+# Uploaded files (served at /storage via the public/storage symlink).
+# Defence in depth: uploads are content, never code.
+
+Options -Indexes -ExecCGI
+
+# Never execute or serve server-side scripts from the upload area.
+<FilesMatch "(?i)\.(php\d?|phtml|phar|pl|py|cgi|sh|asp|aspx|jsp)$">
+    Require all denied
+</FilesMatch>
+
+<IfModule mod_php.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+
+<IfModule mod_headers.c>
+    Header set X-Content-Type-Options "nosniff"
+
+    # Formats that can carry script (e.g. an old SVG logo) are sandboxed when
+    # opened directly; they still render normally inside <img>.
+    <FilesMatch "(?i)\.(svgz?|html?|xhtml|xml|js)$">
+        Header set Content-Security-Policy "sandbox; default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'"
+    </FilesMatch>
+</IfModule>

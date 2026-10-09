@@ -17,6 +17,12 @@ class Brand extends Model
         'is_active' => 'boolean',
     ];
 
+    protected static function booted(): void
+    {
+        // categories (and their products) are ON DELETE CASCADE; never wipe them implicitly.
+        static::deleting(fn (Brand $brand) => $brand->categories()->exists() ? false : null);
+    }
+
     public function country()
     {
         return $this->belongsTo(Country::class);

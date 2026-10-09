@@ -8,6 +8,7 @@ use App\Filament\Resources\Clients\Pages\ListClients;
 use App\Filament\Resources\Clients\Schemas\ClientForm;
 use App\Filament\Resources\Clients\Tables\ClientsTable;
 use App\Models\Client;
+use App\Filament\Concerns\RestrictedByRole;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -16,6 +17,10 @@ use Filament\Tables\Table;
 
 class ClientResource extends Resource
 {
+    use RestrictedByRole;
+
+    protected static string $accessKey = 'clients';
+
     protected static ?string $model = Client::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedBuildingOffice2;

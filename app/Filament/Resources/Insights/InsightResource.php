@@ -8,6 +8,7 @@ use App\Filament\Resources\Insights\Pages\ListInsights;
 use App\Filament\Resources\Insights\Schemas\InsightForm;
 use App\Filament\Resources\Insights\Tables\InsightsTable;
 use App\Models\Insight;
+use App\Filament\Concerns\RestrictedByRole;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -16,6 +17,10 @@ use Filament\Tables\Table;
 
 class InsightResource extends Resource
 {
+    use RestrictedByRole;
+
+    protected static string $accessKey = 'insights';
+
     protected static ?string $model = Insight::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedNewspaper;

@@ -17,6 +17,12 @@ class Category extends Model
         'faqs' => 'array',
     ];
 
+    protected static function booted(): void
+    {
+        // products are ON DELETE CASCADE; never wipe them implicitly.
+        static::deleting(fn (Category $category) => $category->products()->exists() ? false : null);
+    }
+
     public function brand()
     {
         return $this->belongsTo(Brand::class);

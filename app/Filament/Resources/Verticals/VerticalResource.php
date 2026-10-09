@@ -8,6 +8,7 @@ use App\Filament\Resources\Verticals\Pages\ListVerticals;
 use App\Filament\Resources\Verticals\Schemas\VerticalForm;
 use App\Filament\Resources\Verticals\Tables\VerticalsTable;
 use App\Models\Vertical;
+use App\Filament\Concerns\RestrictedByRole;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -16,6 +17,10 @@ use Filament\Tables\Table;
 
 class VerticalResource extends Resource
 {
+    use RestrictedByRole;
+
+    protected static string $accessKey = 'verticals';
+
     protected static ?string $model = Vertical::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquares2x2;

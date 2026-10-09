@@ -8,6 +8,7 @@ use App\Filament\Resources\Slides\Pages\ListSlides;
 use App\Filament\Resources\Slides\Schemas\SlideForm;
 use App\Filament\Resources\Slides\Tables\SlidesTable;
 use App\Models\Slide;
+use App\Filament\Concerns\RestrictedByRole;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -16,6 +17,10 @@ use Filament\Tables\Table;
 
 class SlideResource extends Resource
 {
+    use RestrictedByRole;
+
+    protected static string $accessKey = 'slides';
+
     protected static ?string $model = Slide::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPhoto;

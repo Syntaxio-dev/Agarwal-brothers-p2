@@ -113,7 +113,7 @@
                 @if ($overview)
                     <div class="mx-auto mt-5 max-w-4xl text-left leading-relaxed text-slate sm:text-center
                                 [&_p]:mb-4 [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:text-left [&_ol]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:text-left [&_strong]:text-navy [&_a]:text-link [&_a]:underline">
-                        {!! $overview !!}
+                        {!! \Illuminate\Support\Str::sanitizeHtml((string) $overview) !!}
                     </div>
                 @else
                     <p class="mx-auto mt-5 max-w-4xl leading-relaxed text-slate">{{ $product->short_description }}</p>
@@ -257,6 +257,9 @@
                     <form method="POST" action="{{ route('enquiry.store') }}" class="mt-6 space-y-4">
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
+                        <div class="hidden" aria-hidden="true">
+                            <input type="text" name="website" tabindex="-1" autocomplete="off">
+                        </div>
 
                         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
                             <div>

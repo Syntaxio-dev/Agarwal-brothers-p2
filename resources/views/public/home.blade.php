@@ -95,7 +95,7 @@
                                             {{ $slide->subtitle }}
                                         </p>
                                     @endif
-                                    @if ($slide->link_url)
+                                    @if (\App\Rules\SafeLink::passes($slide->link_url))
                                         <a href="{{ $slide->link_url }}"
                                             class="btn-glass mt-6 px-7 py-3">
                                             Explore

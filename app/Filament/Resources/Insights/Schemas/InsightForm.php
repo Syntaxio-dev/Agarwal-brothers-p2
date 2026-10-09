@@ -94,6 +94,8 @@ class InsightForm
                             ->label('Cover image')
                             ->helperText('Blogs and webinars: wide (about 16:9). News posters: portrait (about 4:5).')
                             ->image()
+                            ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
+                            ->maxSize(\App\Filament\Support\Uploads::IMAGE_MAX_KB)
                             ->disk('public')
                             ->visibility('public')
                             ->directory('insights'),

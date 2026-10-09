@@ -35,6 +35,8 @@ class VerticalForm
                             ->label('Icon / image')
                             ->helperText('Shown as a small square on the homepage card; a square image works best.')
                             ->image()
+                            ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
+                            ->maxSize(\App\Filament\Support\Uploads::IMAGE_MAX_KB)
                             ->disk('public')
                             ->visibility('public')
                             ->directory('verticals'),

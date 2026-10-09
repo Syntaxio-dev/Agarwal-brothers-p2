@@ -96,7 +96,7 @@
         {{-- Long-form content --}}
         @if (filled($category->content))
             <div class="rich-text mx-auto mt-14 max-w-4xl">
-                {!! $category->content !!}
+                {!! \Illuminate\Support\Str::sanitizeHtml((string) $category->content) !!}
             </div>
         @endif
 

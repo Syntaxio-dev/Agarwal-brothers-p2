@@ -64,6 +64,8 @@ class ProductForm
                             ->label('Main image')
                             ->helperText('A clean product shot on a white or transparent background.')
                             ->image()
+                            ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
+                            ->maxSize(\App\Filament\Support\Uploads::IMAGE_MAX_KB)
                             ->disk('public')
                             ->visibility('public')
                             ->directory('products'),
@@ -71,6 +73,8 @@ class ProductForm
                             ->label('Extra images (gallery)')
                             ->helperText('Opened by the "Show Image" button.')
                             ->image()
+                            ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
+                            ->maxSize(\App\Filament\Support\Uploads::IMAGE_MAX_KB)
                             ->multiple()
                             ->reorderable()
                             ->disk('public')

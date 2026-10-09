@@ -8,6 +8,7 @@ use App\Filament\Resources\Enquiries\Pages\ListEnquiries;
 use App\Filament\Resources\Enquiries\Schemas\EnquiryForm;
 use App\Filament\Resources\Enquiries\Tables\EnquiriesTable;
 use App\Models\Enquiry;
+use App\Filament\Concerns\RestrictedByRole;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -16,6 +17,10 @@ use Filament\Tables\Table;
 
 class EnquiryResource extends Resource
 {
+    use RestrictedByRole;
+
+    protected static string $accessKey = 'enquiries';
+
     protected static ?string $model = Enquiry::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedInboxArrowDown;

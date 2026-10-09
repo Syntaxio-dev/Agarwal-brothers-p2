@@ -8,6 +8,7 @@ use App\Filament\Resources\Countries\Pages\ListCountries;
 use App\Filament\Resources\Countries\Schemas\CountryForm;
 use App\Filament\Resources\Countries\Tables\CountriesTable;
 use App\Models\Country;
+use App\Filament\Concerns\RestrictedByRole;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -16,6 +17,10 @@ use Filament\Tables\Table;
 
 class CountryResource extends Resource
 {
+    use RestrictedByRole;
+
+    protected static string $accessKey = 'countries';
+
     protected static ?string $model = Country::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedGlobeAlt;

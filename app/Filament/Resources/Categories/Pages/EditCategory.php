@@ -13,7 +13,9 @@ class EditCategory extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
-            DeleteAction::make(),
+            DeleteAction::make()
+                ->modalDescription('A product line can only be deleted after its products are deleted or moved.')
+                ->failureNotificationTitle('Not deleted: this product line still has products. Delete or move them first.'),
         ];
     }
 }

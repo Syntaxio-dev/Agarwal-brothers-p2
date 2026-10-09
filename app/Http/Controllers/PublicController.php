@@ -37,6 +37,7 @@ class PublicController extends Controller
 
         $topPicks = Product::where('is_active', true)
             ->where('is_top_pick', true)
+            ->whereHas('category.brand', fn ($q) => $q->where('is_active', true))
             ->with('category.brand')
             ->orderByRaw('top_pick_order IS NULL, top_pick_order ASC')
             ->limit(6)
@@ -184,9 +185,9 @@ class PublicController extends Controller
 
     public function product(Request $request, Product $product)
     {
-        abort_unless($product->is_active, 404);
-
         $product->load('category.brand');
+
+        abort_unless($product->is_active && $product->category?->brand?->is_active, 404);
 
         $related = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
@@ -235,7 +236,7 @@ class PublicController extends Controller
             ->where('is_active', true)
             ->when($month >= 1 && $month <= 12, fn ($q) => $q->whereRaw("MONTH($date) = ?", [$month]))
             ->when($year > 0, fn ($q) => $q->whereRaw("YEAR($date) = ?", [$year]))
-            ->when($upcoming, fn ($q) => $q->whereDate('event_date', '>=', today()))
+            ->when($upcoming, fn ($q) => $q->whereDate('event_date', '>=', now(Insight::TZ)->toDateString()))
             ->orderByRaw("$date DESC")
             ->get();
 
@@ -410,8 +411,8 @@ class PublicController extends Controller
         $enquiry = Enquiry::create($request->validated());
 
         try {
-            Mail::to(config('mail.from.address'))
-                ->send(new NewEnquiry($enquiry));
+            Mail::to(config('contact.inbox') ?: config('mail.from.address'))
+                ->queue(new NewEnquiry($enquiry));
         } catch (\Throwable $e) {
             report($e);
         }

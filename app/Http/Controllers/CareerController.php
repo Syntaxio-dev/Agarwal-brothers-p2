@@ -106,7 +106,7 @@ class CareerController extends Controller
             'email' => ['required', 'email', 'max:255'],
             'phone' => ['required', 'string', 'max:20'],
             'message' => ['nullable', 'string', 'max:2000'],
-            'resume' => ['required', 'file', 'mimes:pdf,doc,docx', 'max:5120'],
+            'resume' => ['required', 'file', 'mimes:pdf,docx', 'max:5120'],
             // Honeypot: real users never fill this in.
             'website' => ['prohibited'],
         ];

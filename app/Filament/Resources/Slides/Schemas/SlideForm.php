@@ -24,6 +24,9 @@ class SlideForm
                         TextInput::make('link_url')
                             ->label('Button link (optional)')
                             ->placeholder('/verticals')
+                            ->maxLength(255)
+                            ->rule(new \App\Rules\SafeLink)
+                            ->helperText('A page on this site (e.g. /verticals) or a full https:// link.')
                             ->columnSpanFull(),
                     ]),
 
@@ -34,6 +37,8 @@ class SlideForm
                     ->schema([
                         FileUpload::make('image')
                             ->image()
+                            ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
+                            ->maxSize(\App\Filament\Support\Uploads::IMAGE_MAX_KB)
                             ->disk('public')
                             ->visibility('public')
                             ->directory('slides'),

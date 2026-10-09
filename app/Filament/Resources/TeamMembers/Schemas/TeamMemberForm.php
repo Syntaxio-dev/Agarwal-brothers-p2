@@ -25,6 +25,8 @@ class TeamMemberForm
                         FileUpload::make('photo')
                             ->helperText('A transparent PNG cut-out looks best in leadership blocks (about 4:5). Without a photo, a placeholder silhouette is shown.')
                             ->image()
+                            ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
+                            ->maxSize(\App\Filament\Support\Uploads::IMAGE_MAX_KB)
                             ->disk('public')
                             ->visibility('public')
                             ->directory('team')

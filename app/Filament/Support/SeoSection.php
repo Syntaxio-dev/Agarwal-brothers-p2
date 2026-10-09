@@ -31,6 +31,8 @@ class SeoSection
                     ->label('Share image (Open Graph)')
                     ->helperText('Shown when the page is shared on WhatsApp, LinkedIn, etc. 1200x630 works best.')
                     ->image()
+                    ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
+                    ->maxSize(\App\Filament\Support\Uploads::IMAGE_MAX_KB)
                     ->disk('public')
                     ->visibility('public')
                     ->directory('seo'),

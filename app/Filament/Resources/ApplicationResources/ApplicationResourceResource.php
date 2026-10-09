@@ -8,6 +8,7 @@ use App\Filament\Resources\ApplicationResources\Pages\ListApplicationResources;
 use App\Filament\Resources\ApplicationResources\Schemas\ApplicationResourceForm;
 use App\Filament\Resources\ApplicationResources\Tables\ApplicationResourcesTable;
 use App\Models\ApplicationResource;
+use App\Filament\Concerns\RestrictedByRole;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -16,6 +17,10 @@ use Filament\Tables\Table;
 
 class ApplicationResourceResource extends Resource
 {
+    use RestrictedByRole;
+
+    protected static string $accessKey = 'application-resources';
+
     protected static ?string $model = ApplicationResource::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentArrowDown;

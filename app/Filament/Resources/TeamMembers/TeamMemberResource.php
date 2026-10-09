@@ -8,6 +8,7 @@ use App\Filament\Resources\TeamMembers\Pages\ListTeamMembers;
 use App\Filament\Resources\TeamMembers\Schemas\TeamMemberForm;
 use App\Filament\Resources\TeamMembers\Tables\TeamMembersTable;
 use App\Models\TeamMember;
+use App\Filament\Concerns\RestrictedByRole;
 use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -16,6 +17,10 @@ use Filament\Tables\Table;
 
 class TeamMemberResource extends Resource
 {
+    use RestrictedByRole;
+
+    protected static string $accessKey = 'team-members';
+
     protected static ?string $model = TeamMember::class;
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedUsers;

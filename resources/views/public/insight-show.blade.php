@@ -188,7 +188,7 @@
 
                 {{-- Body --}}
                 @if (filled($insight->content))
-                    <div class="rich-text mt-10">{!! $insight->content !!}</div>
+                    <div class="rich-text mt-10">{!! \Illuminate\Support\Str::sanitizeHtml((string) $insight->content) !!}</div>
                 @endif
 
                 {{-- Share --}}
