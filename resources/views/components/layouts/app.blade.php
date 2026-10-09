@@ -4,8 +4,33 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ $title ?? 'Agarwal Brothers' }} — Lab Equipment & Scientific Solutions</title>
-    <meta name="description" content="{{ $metaDescription ?? 'Agarwal Brothers — 43+ years of excellence in laboratory equipment, scientific instruments, and chemicals across India.' }}">
+    @php
+        $seoTitle = \App\Support\Seo::title($title ?? null);
+        $seoDescription = \App\Support\Seo::description($description ?? $metaDescription ?? null);
+        $seoImage = \App\Support\Seo::image($image ?? null);
+        $seoUrl = \App\Support\Seo::canonical();
+        $seoNoindex = ($noindex ?? false) || ! \App\Support\Seo::indexable();
+    @endphp
+    <title>{{ $seoTitle }}</title>
+    <meta name="description" content="{{ $seoDescription }}">
+    <meta name="robots" content="{{ $seoNoindex ? 'noindex, nofollow' : 'index, follow, max-image-preview:large' }}">
+    <link rel="canonical" href="{{ $seoUrl }}">
+
+    <meta property="og:site_name" content="Agarwal Brothers">
+    <meta property="og:locale" content="en_IN">
+    <meta property="og:type" content="{{ $ogType ?? 'website' }}">
+    <meta property="og:title" content="{{ $seoTitle }}">
+    <meta property="og:description" content="{{ $seoDescription }}">
+    <meta property="og:url" content="{{ $seoUrl }}">
+    <meta property="og:image" content="{{ $seoImage }}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{{ $seoTitle }}">
+    <meta name="twitter:description" content="{{ $seoDescription }}">
+    <meta name="twitter:image" content="{{ $seoImage }}">
+
+    @isset($schema)
+        <script type="application/ld+json">{!! json_encode($schema, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE | JSON_HEX_TAG | JSON_HEX_AMP) !!}</script>
+    @endisset
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="shortcut icon" href="{{ asset('favicon.png') }}">
     @vite(['resources/css/app.css', 'resources/js/app.js'])

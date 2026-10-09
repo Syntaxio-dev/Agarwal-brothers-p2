@@ -1,4 +1,4 @@
-<x-layouts.app title="Explore Our Scientific Verticals">
+<x-layouts.app title="Scientific Verticals" description="Explore Agarwal Brothers' scientific verticals: analytical, life sciences, pharma, materials, environmental and more, with instruments from leading global brands.">
   <div class="relative overflow-hidden">
     {{-- Soft blue tint fading into white --}}
     <div class="pointer-events-none absolute inset-x-0 top-0 h-[620px]
@@ -22,25 +22,17 @@
                 Explore Our <span class="text-cyan">Scientific Verticals</span>
             </h1>
 
-            <form action="{{ route('search') }}" method="GET"
+            <form action="{{ route('search') }}" method="GET" role="search"
                   x-data="ghostSearch()" x-init="startGhost()"
-                  class="relative w-full max-w-xl mt-2">
-                <input type="text" name="q" x-ref="input"
-                    :placeholder="ghost"
-                    @focus="stopGhost()" @blur="startGhost()"
-                    class="h-12 w-full rounded-full border-2 border-cyan/40 bg-white pl-12 pr-28
-                           text-base text-navy placeholder:text-slate/60 shadow-sm
-                           outline-none focus:border-cyan focus:ring-4 focus:ring-cyan/15
-                           transition-all duration-200">
-                <svg class="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-slate" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  class="mt-2 flex w-full max-w-xl items-center gap-2 rounded-xl border border-gray-200 bg-white p-1.5 shadow-sm transition focus-within:border-cyan focus-within:ring-2 focus-within:ring-cyan/20">
+                <svg class="ml-3 h-5 w-5 shrink-0 text-slate" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <circle cx="11" cy="11" r="8"/>
                     <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35"/>
                 </svg>
-                <button type="submit"
-                    class="absolute right-1.5 top-1/2 -translate-y-1/2 h-9 rounded-full bg-navy px-5 text-sm font-semibold text-white
-                           hover:bg-link transition-colors btn-primary">
-                    Search
-                </button>
+                <input type="text" name="q" x-ref="input" maxlength="80" autocomplete="off" aria-label="Search"
+                       :placeholder="ghost" @focus="stopGhost()" @blur="startGhost()"
+                       class="min-w-0 flex-1 bg-transparent px-1 py-2.5 text-base text-navy placeholder:text-slate/60 outline-none">
+                <button type="submit" class="btn-primary shrink-0 rounded-lg px-6 py-2.5 text-sm font-semibold text-white">Search</button>
             </form>
 
             <p class="max-w-2xl text-sm sm:text-base text-slate leading-relaxed">

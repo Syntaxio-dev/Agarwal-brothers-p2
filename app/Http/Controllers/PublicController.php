@@ -132,11 +132,21 @@ class PublicController extends Controller
     {
         abort_unless($vertical->is_active, 404);
 
-        $vertical->load(['categories' => function ($q) {
-            $q->orderBy('sort_order');
-        }, 'categories.brand']);
+        $categories = $vertical->categories()
+            ->whereHas('brand', fn ($q) => $q->where('is_active', true))
+            ->with('brand')
+            ->withCount(['products' => fn ($q) => $q->where('is_active', true)])
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get();
 
-        return view('public.vertical', compact('vertical'));
+        // Brand cards, each listing that brand's categories inside this vertical.
+        $brandGroups = $categories->groupBy('brand_id')
+            ->map(fn ($items) => ['brand' => $items->first()->brand, 'categories' => $items])
+            ->sortBy(fn ($g) => $g['brand']->name)
+            ->values();
+
+        return view('public.vertical', compact('vertical', 'brandGroups'));
     }
 
     public function brand(Brand $brand)
@@ -155,24 +165,50 @@ class PublicController extends Controller
         return view('public.brand', compact('brand', 'products'));
     }
 
-    public function category(Brand $brand, Category $category)
+    public function category(Request $request, Brand $brand, Category $category)
     {
-        abort_unless($brand->is_active, 404);
+        abort_unless($brand->is_active && $category->brand_id === $brand->id, 404);
 
-        $category->load(['products' => function ($q) {
-            $q->where('is_active', true);
-        }]);
+        $products = $category->products()
+            ->where('is_active', true)
+            ->orderBy('id')
+            ->get();
 
-        return view('public.category', compact('brand', 'category'));
+        // Group models (e.g. "Standard Models"), keeping first-seen order.
+        $groups = $products->groupBy(fn ($p) => $p->model_group ?: 'Models');
+
+        $vertical = $this->contextVertical($request, $category);
+
+        return view('public.category', compact('brand', 'category', 'groups', 'products', 'vertical'));
     }
 
-    public function product(Product $product)
+    public function product(Request $request, Product $product)
     {
         abort_unless($product->is_active, 404);
 
         $product->load('category.brand');
 
-        return view('public.product', compact('product'));
+        $related = Product::where('category_id', $product->category_id)
+            ->where('id', '!=', $product->id)
+            ->where('is_active', true)
+            ->limit(4)
+            ->get();
+
+        $vertical = $this->contextVertical($request, $product->category);
+
+        return view('public.product', compact('product', 'related', 'vertical'));
+    }
+
+    /** The vertical the visitor came through (?v=slug), if it really contains this category. */
+    private function contextVertical(Request $request, Category $category): ?Vertical
+    {
+        $slug = $request->query('v');
+
+        if (! $slug) {
+            return null;
+        }
+
+        return $category->verticals()->where('slug', $slug)->where('is_active', true)->first();
     }
 
     public function insights(Request $request, string $type)
@@ -297,40 +333,76 @@ class PublicController extends Controller
     {
         abort_unless($insight->is_active, 404);
 
-        return view('public.insight-show', compact('insight'));
+        $insight->load('brand');
+
+        $related = Insight::where('type', $insight->type)
+            ->where('is_active', true)
+            ->where('id', '!=', $insight->id)
+            ->latest()
+            ->limit(3)
+            ->get();
+
+        return view('public.insight-show', compact('insight', 'related'));
     }
 
     public function search(Request $request)
     {
-        $query = trim($request->input('q', ''));
+        $query = trim((string) $request->input('q', ''));
+        $query = mb_substr($query, 0, 80);
 
         $products = collect();
+        $brands = collect();
+        $lines = collect();
+        $verticals = collect();
 
-        if (strlen($query) >= 1) {
-            $products = Product::where('is_active', true)
-                ->where(function ($q) use ($query) {
-                    $q->where('products.name', 'like', "%{$query}%")
-                        ->orWhere('products.short_description', 'like', "%{$query}%")
-                        ->orWhereHas('category', function ($catQ) use ($query) {
-                            $catQ->where('categories.name', 'like', "%{$query}%");
-                        })
-                        ->orWhereHas('category.brand', function ($brandQ) use ($query) {
-                            $brandQ->where('brands.name', 'like', "%{$query}%");
-                        });
+        if ($query !== '') {
+            // Escape LIKE wildcards so "50%" or "a_b" are searched literally.
+            $escaped = addcslashes($query, '\\%_');
+            $contains = "%{$escaped}%";
+            $starts = "{$escaped}%";
+
+            $products = Product::where('products.is_active', true)
+                ->whereHas('category.brand', fn ($q) => $q->where('brands.is_active', true))
+                ->where(function ($q) use ($contains) {
+                    $q->where('products.name', 'like', $contains)
+                        ->orWhere('products.short_description', 'like', $contains)
+                        ->orWhereHas('category', fn ($c) => $c->where('categories.name', 'like', $contains))
+                        ->orWhereHas('category.brand', fn ($b) => $b->where('brands.name', 'like', $contains));
                 })
                 ->with('category.brand')
-                ->orderByRaw("
-                    CASE
-                        WHEN products.name LIKE ? THEN 1
-                        WHEN products.name LIKE ? THEN 2
-                        ELSE 3
-                    END
-                ", ["{$query}%", "%{$query}%"])
+                ->orderByRaw('CASE WHEN products.name LIKE ? THEN 1 WHEN products.name LIKE ? THEN 2 ELSE 3 END', [$starts, $contains])
+                ->orderBy('products.name')
                 ->limit(60)
+                ->get();
+
+            $brands = Brand::where('is_active', true)
+                ->where('name', 'like', $contains)
+                ->withCount('categories')
+                ->orderBy('name')
+                ->limit(8)
+                ->get();
+
+            $lines = Category::whereHas('brand', fn ($b) => $b->where('is_active', true))
+                ->where('name', 'like', $contains)
+                ->with('brand')
+                ->orderBy('name')
+                ->limit(10)
+                ->get();
+
+            $verticals = Vertical::where('is_active', true)
+                ->where('name', 'like', $contains)
+                ->orderBy('sort_order')
+                ->limit(6)
                 ->get();
         }
 
-        return view('public.search', compact('products', 'query'));
+        // Shown when there is no query or nothing matched.
+        $suggestVerticals = Vertical::where('is_active', true)->orderBy('sort_order')->limit(8)->get();
+        $suggestBrands = Brand::where('is_active', true)->orderBy('name')->limit(10)->get();
+
+        return view('public.search', compact(
+            'products', 'brands', 'lines', 'verticals', 'query', 'suggestVerticals', 'suggestBrands'
+        ));
     }
 
     public function storeEnquiry(StoreEnquiryRequest $request)

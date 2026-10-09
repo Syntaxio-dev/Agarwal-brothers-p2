@@ -126,6 +126,30 @@ class SiteSettingForm
                         Textarea::make('story_vision')->label('Vision')->rows(3),
                         Textarea::make('story_goal')->label('Goal')->rows(3)->columnSpanFull(),
                     ]),
+
+                Section::make('Home page SEO & sharing')
+                    ->description('Default title and description for the home page, and the share image used when a page has none of its own.')
+                    ->columnSpanFull()
+                    ->columns(1)
+                    ->schema([
+                        TextInput::make('seo_title')
+                            ->label('Home page title')
+                            ->maxLength(70)
+                            ->placeholder('Laboratory Equipment Supplier in India')
+                            ->helperText('" | Agarwal Brothers" is added automatically.'),
+                        Textarea::make('seo_description')
+                            ->label('Home page description')
+                            ->rows(2)
+                            ->maxLength(160)
+                            ->helperText('Up to 160 characters. Also used as the default description.'),
+                        FileUpload::make('default_og_image')
+                            ->label('Default share image')
+                            ->helperText('Used when a page has no image of its own. 1200x630 works best.')
+                            ->image()
+                            ->disk('public')
+                            ->visibility('public')
+                            ->directory('seo'),
+                    ]),
             ]);
     }
 }

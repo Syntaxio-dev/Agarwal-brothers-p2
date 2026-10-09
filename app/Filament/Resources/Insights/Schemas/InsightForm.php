@@ -127,6 +127,8 @@ class InsightForm
                             ->helperText('Blogs: up to 4, News & Events: up to 3. If none are featured, the latest are shown.')
                             ->default(false),
                     ]),
+
+                \App\Filament\Support\SeoSection::make(),
             ]);
     }
 }

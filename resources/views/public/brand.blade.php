@@ -1,4 +1,4 @@
-<x-layouts.app :title="$brand->name">
+<x-layouts.app :title="$brand->seoTitle()" :description="$brand->seoDescription()" :image="$brand->seoImage()">
     <div class="w-[98%] mx-auto px-4 md:px-10 lg:px-20 py-10 sm:py-14 lg:py-16">
 
         <div class="text-sm text-slate mb-6">

@@ -35,7 +35,11 @@
     $select = 'h-11 min-w-[10rem] rounded-lg border border-gray-200 bg-white px-4 text-sm text-navy outline-none focus:border-cyan focus:ring-2 focus:ring-cyan/20 transition';
 @endphp
 
-<x-layouts.app :title="$title">
+<x-layouts.app :title="$title" :description="[
+        'blog' => 'Blogs and insights from Agarwal Brothers on laboratory instruments, applications and scientific research.',
+        'news' => 'News, events and exhibitions from Agarwal Brothers: where to meet our specialists and see instruments in action.',
+        'webinar' => 'Upcoming and recorded webinars on analytical instruments and laboratory workflows.',
+     ][$type] ?? null">
   <div class="relative overflow-hidden">
     <div class="pointer-events-none absolute inset-x-0 top-0 h-[620px]
                 bg-[radial-gradient(900px_420px_at_50%_-8%,rgba(0,180,216,0.18),transparent_70%),radial-gradient(700px_380px_at_8%_14%,rgba(0,119,182,0.09),transparent_70%),radial-gradient(700px_380px_at_95%_20%,rgba(0,180,216,0.11),transparent_70%),linear-gradient(to_bottom,rgba(244,249,251,1),rgba(255,255,255,0))]"></div>
@@ -155,9 +159,9 @@
 
         {{-- ===== Heading ===== --}}
         <div class="mt-14 mb-8">
-            <h2 class="text-2xl sm:text-3xl font-bold text-navy leading-tight">
+            <{{ ($type === 'news' && ! $hero) ? 'h2' : 'h1' }} class="text-2xl sm:text-3xl font-bold text-navy leading-tight">
                 {{ $meta['heading'] }} <span class="text-cyan">{{ $meta['accent'] }}</span>
-            </h2>
+            </{{ ($type === 'news' && ! $hero) ? 'h2' : 'h1' }}>
             <div class="mt-3 h-1 w-16 rounded-full bg-cyan"></div>
         </div>
 

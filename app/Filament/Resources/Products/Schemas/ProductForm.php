@@ -4,6 +4,8 @@ namespace App\Filament\Resources\Products\Schemas;
 
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -37,22 +39,160 @@ class ProductForm
                         TextInput::make('slug')
                             ->required()
                             ->unique(ignoreRecord: true),
+                        TextInput::make('heading')
+                            ->label('Page heading (optional)')
+                            ->placeholder('e.g. Hei-VAP Core Rotary Evaporator, Distributor & Service Provider in India')
+                            ->helperText('Shown in the large banner on the product page. Defaults to the product name.')
+                            ->columnSpanFull(),
+                        TextInput::make('model_group')
+                            ->label('Model group')
+                            ->placeholder('e.g. Standard Models, Control Models')
+                            ->helperText('Products with the same group are listed together on the category page.')
+                            ->columnSpanFull(),
                         Textarea::make('short_description')
+                            ->label('Short description')
                             ->rows(3)
+                            ->helperText('Shown on cards and in the product banner.')
                             ->columnSpanFull(),
                     ]),
 
-                Section::make('Image & specifications')
+                Section::make('Images & video')
                     ->columnSpanFull()
+                    ->columns(2)
                     ->schema([
                         FileUpload::make('image')
+                            ->label('Main image')
+                            ->helperText('A clean product shot on a white or transparent background.')
                             ->image()
                             ->disk('public')
                             ->visibility('public')
                             ->directory('products'),
+                        FileUpload::make('gallery')
+                            ->label('Extra images (gallery)')
+                            ->helperText('Opened by the "Show Image" button.')
+                            ->image()
+                            ->multiple()
+                            ->reorderable()
+                            ->disk('public')
+                            ->visibility('public')
+                            ->directory('products/gallery'),
+                        TextInput::make('video_url')
+                            ->label('Video link (YouTube)')
+                            ->url()
+                            ->placeholder('https://www.youtube.com/watch?v=...')
+                            ->columnSpanFull(),
+                    ]),
+
+                Section::make('Overview')
+                    ->columnSpanFull()
+                    ->collapsible()
+                    ->schema([
+                        RichEditor::make('overview')
+                            ->helperText('A longer introduction shown under "Overview". Falls back to the short description.'),
+                    ]),
+
+                Section::make('Key features')
+                    ->columnSpanFull()
+                    ->collapsible()
+                    ->collapsed()
+                    ->schema([
+                        Repeater::make('features')
+                            ->label('')
+                            ->addActionLabel('Add feature')
+                            ->reorderable()
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string => $state['title'] ?? null)
+                            ->defaultItems(0)
+                            ->schema([
+                                TextInput::make('title')->required(),
+                                Textarea::make('text')->label('Description')->rows(2),
+                            ]),
+                    ]),
+
+                Section::make('Key advantages')
+                    ->columnSpanFull()
+                    ->collapsible()
+                    ->collapsed()
+                    ->schema([
+                        Repeater::make('advantages')
+                            ->label('')
+                            ->addActionLabel('Add advantage')
+                            ->reorderable()
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string => $state['title'] ?? null)
+                            ->defaultItems(0)
+                            ->schema([
+                                TextInput::make('title')->required(),
+                                Textarea::make('text')->label('Description')->rows(2),
+                            ]),
+                    ]),
+
+                Section::make('Technical specifications')
+                    ->columnSpanFull()
+                    ->collapsible()
+                    ->schema([
                         KeyValue::make('specs')
                             ->keyLabel('Specification')
-                            ->valueLabel('Value'),
+                            ->valueLabel('Value')
+                            ->reorderable(),
+                    ]),
+
+                Section::make('Documents & research papers')
+                    ->description('Brochures, datasheets, application notes or research papers. Upload a PDF or paste a link.')
+                    ->columnSpanFull()
+                    ->collapsible()
+                    ->collapsed()
+                    ->schema([
+                        Repeater::make('documents')
+                            ->label('')
+                            ->addActionLabel('Add document')
+                            ->reorderable()
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string => $state['title'] ?? null)
+                            ->defaultItems(0)
+                            ->columns(2)
+                            ->schema([
+                                TextInput::make('title')->required()->columnSpanFull(),
+                                Select::make('type')
+                                    ->options([
+                                        'Brochure' => 'Brochure',
+                                        'Datasheet' => 'Datasheet',
+                                        'Application note' => 'Application note',
+                                        'Research paper' => 'Research paper',
+                                        'Manual' => 'Manual',
+                                    ])
+                                    ->default('Brochure'),
+                                FileUpload::make('file')
+                                    ->label('PDF')
+                                    ->acceptedFileTypes(['application/pdf'])
+                                    ->maxSize(20480)
+                                    ->disk('public')
+                                    ->visibility('public')
+                                    ->directory('products/documents'),
+                                TextInput::make('url')
+                                    ->label('Or external link')
+                                    ->url()
+                                    ->placeholder('https://')
+                                    ->columnSpanFull(),
+                            ]),
+                    ]),
+
+                Section::make('FAQs')
+                    ->columnSpanFull()
+                    ->collapsible()
+                    ->collapsed()
+                    ->schema([
+                        Repeater::make('faqs')
+                            ->label('')
+                            ->addActionLabel('Add question')
+                            ->reorderable()
+                            ->collapsible()
+                            ->itemLabel(fn (array $state): ?string => $state['question'] ?? null)
+                            ->defaultItems(0)
+                            ->schema([
+                                TextInput::make('question')->required(),
+                                Textarea::make('answer')->required()->rows(3),
+                            ]),
                     ]),
 
                 Section::make('Visibility')
@@ -75,6 +215,8 @@ class ProductForm
                             ->helperText('Lower number appears first.')
                             ->visible(fn ($get) => $get('is_top_pick')),
                     ]),
+
+                \App\Filament\Support\SeoSection::make(),
             ]);
     }
 }

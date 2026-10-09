@@ -18,7 +18,7 @@
     }
 @endphp
 
-<x-layouts.app title="Webinars">
+<x-layouts.app title="Webinars" description="Upcoming and recorded webinars on analytical instruments and laboratory workflows, presented with our principals.">
   <div class="relative overflow-hidden">
     <div class="pointer-events-none absolute inset-x-0 top-0 h-[640px]
                 bg-[radial-gradient(900px_420px_at_50%_-8%,rgba(0,180,216,0.20),transparent_70%),radial-gradient(700px_380px_at_6%_16%,rgba(0,119,182,0.10),transparent_70%),radial-gradient(700px_380px_at_96%_22%,rgba(0,180,216,0.13),transparent_70%),linear-gradient(to_bottom,rgba(244,249,251,1),rgba(255,255,255,0))]"></div>

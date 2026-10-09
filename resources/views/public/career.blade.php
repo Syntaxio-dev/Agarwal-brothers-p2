@@ -1,4 +1,4 @@
-<x-layouts.app :title="$opening->title">
+<x-layouts.app :title="$opening->title" :description="$opening->summary ?: $opening->title . ' at Agarwal Brothers, ' . $opening->location . '. Apply online.'">
   <div class="relative overflow-hidden">
     <div class="pointer-events-none absolute inset-x-0 top-0 h-[480px]
                 bg-[radial-gradient(900px_380px_at_50%_-8%,rgba(0,180,216,0.18),transparent_70%),linear-gradient(to_bottom,rgba(244,249,251,1),rgba(255,255,255,0))]"></div>

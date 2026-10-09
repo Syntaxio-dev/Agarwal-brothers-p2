@@ -4,8 +4,11 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CareerController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\PublicController;
+use App\Http\Controllers\SeoController;
 
 Route::get('/', [PublicController::class, 'home'])->name('home');
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
+Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
 Route::get('/our-story', [PublicController::class, 'ourStory'])->name('our-story');
 Route::get('/application-resources', [PublicController::class, 'applicationResources'])->name('application-resources');
 Route::get('/careers', [CareerController::class, 'index'])->name('careers');

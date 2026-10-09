@@ -1,4 +1,27 @@
-<x-layouts.app title="Agarwal Brothers">
+@php
+    $siteSeo = \App\Models\SiteSetting::current();
+    $orgSchema = array_filter([
+        '@context' => 'https://schema.org',
+        '@type' => 'Organization',
+        'name' => 'Agarwal Brothers',
+        'url' => \App\Support\Seo::absolute('/'),
+        'logo' => \App\Support\Seo::absolute('sidebar-logo.png'),
+        'description' => $siteSeo?->seo_description ?: \App\Support\Seo::DEFAULT_DESCRIPTION,
+        'foundingDate' => (string) ($siteSeo?->founded_year ?: 1981),
+        'address' => [
+            '@type' => 'PostalAddress',
+            'addressLocality' => config('contact.head_office.city'),
+            'addressRegion' => 'Rajasthan',
+            'addressCountry' => 'IN',
+        ],
+    ]);
+@endphp
+<x-layouts.app :title="$siteSeo?->seo_title ?: \App\Support\Seo::DEFAULT_TITLE"
+               :description="$siteSeo?->seo_description ?: \App\Support\Seo::DEFAULT_DESCRIPTION"
+               :image="$siteSeo?->default_og_image ? \App\Support\Seo::storage($siteSeo->default_og_image) : null"
+               :schema="$orgSchema">
+
+    <h1 class="sr-only">Laboratory equipment, scientific instruments and chemicals supplier in India</h1>
 
     {{-- Marquee animation --}}
     <style>

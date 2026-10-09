@@ -52,6 +52,8 @@ class VerticalForm
                             ->default(0)
                             ->helperText('Lower number appears first. The homepage shows the first 8.'),
                     ]),
+
+                \App\Filament\Support\SeoSection::make(),
             ]);
     }
 }

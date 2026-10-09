@@ -42,7 +42,7 @@
     $banner = $img('story_banner');
 @endphp
 
-<x-layouts.app title="Our Story">
+<x-layouts.app title="Our Story" description="Agarwal Brothers has supplied laboratory equipment, scientific instruments and chemicals from Jaipur since 1981. Read our story, values and leadership.">
   <div class="relative overflow-hidden">
     <div class="pointer-events-none absolute inset-x-0 top-0 h-[640px]
                 bg-[radial-gradient(900px_420px_at_50%_-8%,rgba(0,180,216,0.16),transparent_70%),radial-gradient(700px_380px_at_6%_16%,rgba(0,119,182,0.08),transparent_70%),radial-gradient(700px_380px_at_96%_22%,rgba(0,180,216,0.10),transparent_70%),linear-gradient(to_bottom,rgba(244,249,251,1),rgba(255,255,255,0))]"></div>

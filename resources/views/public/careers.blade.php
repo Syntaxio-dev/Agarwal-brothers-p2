@@ -1,4 +1,4 @@
-<x-layouts.app title="Careers">
+<x-layouts.app title="Careers" description="Join Agarwal Brothers. Explore open roles in sales, service and marketing, or share your profile for future opportunities.">
   <div class="relative overflow-hidden">
     <div class="pointer-events-none absolute inset-x-0 top-0 h-[620px]
                 bg-[radial-gradient(900px_420px_at_50%_-8%,rgba(0,180,216,0.20),transparent_70%),radial-gradient(700px_380px_at_8%_12%,rgba(0,119,182,0.10),transparent_70%),radial-gradient(700px_380px_at_95%_18%,rgba(0,180,216,0.12),transparent_70%),linear-gradient(to_bottom,rgba(244,249,251,1),rgba(255,255,255,0))]"></div>

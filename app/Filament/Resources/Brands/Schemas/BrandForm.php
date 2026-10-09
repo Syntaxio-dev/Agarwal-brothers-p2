@@ -59,6 +59,8 @@ class BrandForm
                             ->visibility('public')
                             ->directory('brands'),
                     ]),
+
+                \App\Filament\Support\SeoSection::make(),
             ]);
     }
 }

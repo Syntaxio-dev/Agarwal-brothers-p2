@@ -3,11 +3,13 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Models\Concerns\HasSeo;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Carbon;
 
 class Insight extends Model
 {
+    use HasSeo;
     use HasFactory;
 
     public const TZ = 'Asia/Kolkata';
@@ -15,8 +17,7 @@ class Insight extends Model
     protected $fillable = [
         'type', 'brand_id', 'title', 'slug', 'excerpt', 'content', 'image', 'pdf',
         'event_date', 'starts_at', 'time_tbd', 'venue', 'registration_url', 'recording_url',
-        'is_active', 'is_featured',
-    ];
+        'is_active', 'is_featured', 'seo_title', 'seo_description', 'og_image',];
 
     protected $casts = [
         'event_date' => 'date',
@@ -58,5 +59,20 @@ class Insight extends Model
         $now = now(self::TZ);
 
         return $this->time_tbd ? $start->copy()->endOfDay()->gte($now) : $start->gte($now);
+    }
+
+    protected function seoName(): string
+    {
+        return $this->title;
+    }
+
+    protected function seoFallbackDescription(): ?string
+    {
+        return $this->excerpt ?: $this->content;
+    }
+
+    protected function seoFallbackImage(): ?string
+    {
+        return $this->image;
     }
 }
