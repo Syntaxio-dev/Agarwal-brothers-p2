@@ -5,9 +5,9 @@ namespace App\Filament\Resources\Slides\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
 
 class SlidesTable
@@ -16,32 +16,26 @@ class SlidesTable
     {
         return $table
             ->columns([
+                ImageColumn::make('image')
+                    ->disk('public')
+                    ->width(120)
+                    ->height(68),
                 TextColumn::make('title')
-                    ->searchable(),
-                TextColumn::make('subtitle')
-                    ->searchable(),
-                ImageColumn::make('image'),
-                TextColumn::make('video_url')
-                    ->searchable(),
-                TextColumn::make('link_url')
-                    ->searchable(),
-                TextColumn::make('sort_order')
-                    ->numeric()
-                    ->sortable(),
-                IconColumn::make('is_active')
-                    ->boolean(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->searchable()
+                    ->description(fn ($record) => $record->subtitle)
+                    ->placeholder('Untitled slide'),
+                TextColumn::make('video')
+                    ->label('Media')
+                    ->state(fn ($record) => $record->video ? 'Video' : 'Image')
+                    ->badge()
+                    ->color(fn (string $state) => $state === 'Video' ? 'info' : 'gray'),
+                ToggleColumn::make('is_active')
+                    ->label('Active'),
             ])
-            ->filters([
-                //
-            ])
+            ->reorderable('sort_order')
+            ->defaultSort('sort_order')
+            ->emptyStateHeading('No slides yet')
+            ->emptyStateDescription('Add a slide to show it in the homepage hero carousel. Drag rows to change the order.')
             ->recordActions([
                 EditAction::make(),
             ])

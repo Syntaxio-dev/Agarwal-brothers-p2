@@ -1,4 +1,6 @@
 import Alpine from 'alpinejs';
+import './brand-map';
+import './review-carousel';
 
 // Ghost search — animated placeholder that cycles through search suggestions
 window.ghostSearch = function () {

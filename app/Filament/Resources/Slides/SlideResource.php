@@ -18,7 +18,13 @@ class SlideResource extends Resource
 {
     protected static ?string $model = Slide::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedPhoto;
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Homepage';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $navigationLabel = 'Hero Slides';
 
     protected static ?string $recordTitleAttribute = 'title';
 

@@ -9,9 +9,10 @@ class Insight extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['type', 'title', 'slug', 'excerpt', 'content', 'image', 'event_date', 'is_active'];
+    protected $fillable = ['type', 'title', 'slug', 'excerpt', 'content', 'image', 'event_date', 'is_active', 'is_featured'];
     protected $casts = [
         'event_date' => 'date',
         'is_active' => 'boolean',
+        'is_featured' => 'boolean',
     ];
 }

@@ -7,9 +7,11 @@ use App\Mail\NewEnquiry;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Client;
+use App\Models\Country;
 use App\Models\Enquiry;
 use App\Models\Insight;
 use App\Models\Product;
+use App\Models\Review;
 use App\Models\Slide;
 use App\Models\Vertical;
 use Illuminate\Http\Request;
@@ -35,6 +37,7 @@ class PublicController extends Controller
             ->where('is_top_pick', true)
             ->with('category.brand')
             ->orderByRaw('top_pick_order IS NULL, top_pick_order ASC')
+            ->limit(6)
             ->get();
 
         $brands = Brand::where('is_active', true)
@@ -42,18 +45,81 @@ class PublicController extends Controller
             ->orderBy('name')
             ->get();
 
+        $blogs = Insight::where('is_active', true)
+            ->where('type', 'blog')
+            ->where('is_featured', true)
+            ->latest()
+            ->limit(4)
+            ->get();
+
+        if ($blogs->isEmpty()) {
+            $blogs = Insight::where('is_active', true)
+                ->where('type', 'blog')
+                ->latest()
+                ->limit(4)
+                ->get();
+        }
+
+        $news = Insight::where('is_active', true)
+            ->where('type', 'news')
+            ->where('is_featured', true)
+            ->latest()
+            ->limit(3)
+            ->get();
+
+        if ($news->isEmpty()) {
+            $news = Insight::where('is_active', true)
+                ->where('type', 'news')
+                ->latest()
+                ->limit(3)
+                ->get();
+        }
+
+        $featuredClients = Client::where('is_active', true)
+            ->where('is_featured', true)
+            ->orderBy('sort_order')
+            ->limit(10)
+            ->get();
+
+        if ($featuredClients->isEmpty()) {
+            $featuredClients = Client::where('is_active', true)->orderBy('sort_order')->limit(10)->get();
+        }
+
+        $reviews = Review::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
+
+        $mapCountries = Country::whereHas('brands', fn ($q) => $q->where('is_active', true))
+            ->with(['brands' => fn ($q) => $q->where('is_active', true)->orderBy('name')])
+            ->orderBy('name')
+            ->get()
+            ->map(fn ($c) => [
+                'name' => $c->name,
+                'lat' => $c->latitude,
+                'lng' => $c->longitude,
+                'brands' => $c->brands->map(fn ($b) => [
+                    'name' => $b->name,
+                    'logo' => $b->logo ? asset('storage/' . $b->logo) : null,
+                    'url' => route('brand.show', $b->slug),
+                ])->values(),
+            ])->values();
+
         return view('public.home', compact(
             'verticals',
             'slides',
             'clients',
             'topPicks',
             'brands',
+            'blogs',
+            'news',
+            'mapCountries',
+            'featuredClients',
+            'reviews',
         ));
     }
 
     public function verticalsIndex()
     {
         $verticals = Vertical::where('is_active', true)
+            ->withCount('categories')
             ->orderBy('sort_order')
             ->get();
 
@@ -69,6 +135,22 @@ class PublicController extends Controller
         }, 'categories.brand']);
 
         return view('public.vertical', compact('vertical'));
+    }
+
+    public function brand(Brand $brand)
+    {
+        abort_unless($brand->is_active, 404);
+
+        $brand->load(['country', 'categories' => fn ($q) => $q->withCount([
+            'products' => fn ($p) => $p->where('is_active', true),
+        ])]);
+
+        $products = Product::where('is_active', true)
+            ->whereHas('category', fn ($q) => $q->where('brand_id', $brand->id))
+            ->with('category')
+            ->get();
+
+        return view('public.brand', compact('brand', 'products'));
     }
 
     public function category(Brand $brand, Category $category)

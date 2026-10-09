@@ -5,8 +5,9 @@ namespace App\Filament\Resources\Clients\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
 
 class ClientsTable
@@ -15,29 +16,23 @@ class ClientsTable
     {
         return $table
             ->columns([
+                ImageColumn::make('logo')
+                    ->disk('public')
+                    ->height(36)
+                    ->extraImgAttributes(['class' => 'object-contain']),
                 TextColumn::make('name')
-                    ->searchable(),
-                TextColumn::make('logo')
-                    ->searchable(),
-                TextColumn::make('testimonial')
-                    ->searchable(),
-                TextColumn::make('sort_order')
-                    ->numeric()
-                    ->sortable(),
-                IconColumn::make('is_active')
-                    ->boolean(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->searchable()
+                    ->weight('medium')
+                    ->description(fn ($record) => $record->testimonial),
+                ToggleColumn::make('is_featured')
+                    ->label('Top client'),
+                ToggleColumn::make('is_active')
+                    ->label('Active'),
             ])
-            ->filters([
-                //
-            ])
+            ->reorderable('sort_order')
+            ->defaultSort('sort_order')
+            ->emptyStateHeading('No clients yet')
+            ->emptyStateDescription('Mark clients as "Top client" to show them in the homepage carousel. Drag rows to set the order.')
             ->recordActions([
                 EditAction::make(),
             ])

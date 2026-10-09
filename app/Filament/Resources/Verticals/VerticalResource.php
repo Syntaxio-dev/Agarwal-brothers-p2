@@ -18,7 +18,13 @@ class VerticalResource extends Resource
 {
     protected static ?string $model = Vertical::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedSquares2x2;
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Catalogue';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $navigationLabel = 'Verticals';
 
     protected static ?string $recordTitleAttribute = 'name';
 

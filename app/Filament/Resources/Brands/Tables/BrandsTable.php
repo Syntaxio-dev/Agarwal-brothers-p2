@@ -5,8 +5,10 @@ namespace App\Filament\Resources\Brands\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\IconColumn;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 
 class BrandsTable
@@ -15,25 +17,32 @@ class BrandsTable
     {
         return $table
             ->columns([
+                ImageColumn::make('logo')
+                    ->disk('public')
+                    ->height(36)
+                    ->extraImgAttributes(['class' => 'object-contain']),
                 TextColumn::make('name')
-                    ->searchable(),
-                TextColumn::make('slug')
-                    ->searchable(),
-                TextColumn::make('logo')
-                    ->searchable(),
-                IconColumn::make('is_active')
-                    ->boolean(),
-                TextColumn::make('created_at')
-                    ->dateTime()
+                    ->searchable()
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->weight('medium'),
+                TextColumn::make('country.name')
+                    ->label('Country')
                     ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->badge()
+                    ->placeholder('Not set')
+                    ->color(fn ($state) => $state ? 'info' : 'warning'),
+                TextColumn::make('categories_count')
+                    ->counts('categories')
+                    ->label('Categories')
+                    ->sortable(),
+                ToggleColumn::make('is_active')
+                    ->label('Active'),
             ])
+            ->defaultSort('name')
             ->filters([
-                //
+                SelectFilter::make('country_id')
+                    ->label('Country')
+                    ->relationship('country', 'name'),
             ])
             ->recordActions([
                 EditAction::make(),

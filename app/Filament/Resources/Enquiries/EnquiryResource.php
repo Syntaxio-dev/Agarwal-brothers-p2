@@ -18,7 +18,13 @@ class EnquiryResource extends Resource
 {
     protected static ?string $model = Enquiry::class;
 
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
+    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedInboxArrowDown;
+
+    protected static string|\UnitEnum|null $navigationGroup = 'Leads';
+
+    protected static ?int $navigationSort = 1;
+
+    protected static ?string $navigationLabel = 'Enquiries';
 
     protected static ?string $recordTitleAttribute = 'name';
 
@@ -46,5 +52,17 @@ class EnquiryResource extends Resource
             'create' => CreateEnquiry::route('/create'),
             'edit' => EditEnquiry::route('/{record}/edit'),
         ];
+    }
+
+    public static function getNavigationBadge(): ?string
+    {
+        $count = Enquiry::where('status', 'new')->count();
+
+        return $count ? (string) $count : null;
+    }
+
+    public static function getNavigationBadgeColor(): ?string
+    {
+        return 'warning';
     }
 }

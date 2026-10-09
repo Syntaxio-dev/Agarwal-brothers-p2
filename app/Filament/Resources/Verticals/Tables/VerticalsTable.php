@@ -5,9 +5,9 @@ namespace App\Filament\Resources\Verticals\Tables;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Table;
 
 class VerticalsTable
@@ -16,28 +16,18 @@ class VerticalsTable
     {
         return $table
             ->columns([
+                ImageColumn::make('image')
+                    ->disk('public')
+                    ->square(),
                 TextColumn::make('name')
-                    ->searchable(),
-                TextColumn::make('slug')
-                    ->searchable(),
-                ImageColumn::make('image'),
-                TextColumn::make('sort_order')
-                    ->numeric()
-                    ->sortable(),
-                IconColumn::make('is_active')
-                    ->boolean(),
-                TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->searchable()
+                    ->weight('medium')
+                    ->description(fn ($record) => str($record->description)->limit(70)),
+                ToggleColumn::make('is_active')
+                    ->label('Active'),
             ])
-            ->filters([
-                //
-            ])
+            ->reorderable('sort_order')
+            ->defaultSort('sort_order')
             ->recordActions([
                 EditAction::make(),
             ])
