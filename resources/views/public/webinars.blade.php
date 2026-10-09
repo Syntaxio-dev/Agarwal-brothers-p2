@@ -39,7 +39,7 @@
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 items-center">
                 <div class="lg:col-span-3">
                     <div class="flex flex-wrap items-center gap-2">
-                        <span class="inline-flex items-center gap-2 rounded-full border border-alert/30 bg-alert/10 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-alert">
+                        <span class="inline-flex items-center gap-2 rounded-full border border-cyan/40 bg-cyan/10 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-link">
                             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                             </svg>
@@ -57,7 +57,7 @@
                     @endif
 
                     <p class="mt-5 inline-flex items-center gap-2 text-sm font-bold text-navy">
-                        <svg class="h-4 w-4 text-alert" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <svg class="h-4 w-4 text-link" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                         </svg>
                         {{ $nextStart->format('F j') }} |
@@ -103,10 +103,10 @@
                         }
                      }"
                      x-init="tick(); setInterval(() => tick(), 1000)">
-                    <div class="rounded-3xl bg-white/90 backdrop-blur border border-gray-100 shadow-xl p-6 sm:p-7">
+                    <div class="rounded-3xl bg-white/90 border border-gray-100 shadow-xl p-6 sm:p-7">
                         <div class="flex items-start justify-between gap-4">
                             <div>
-                                <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-alert" x-text="over ? 'Happening now' : 'Starts in'"></p>
+                                <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-link" x-text="over ? 'Happening now' : 'Starts in'"></p>
                                 <p class="mt-1 text-lg font-semibold text-navy">Webinar countdown</p>
                             </div>
                             <div class="h-14 w-24 shrink-0 rounded-xl border border-gray-100 bg-white flex items-center justify-center p-2">
@@ -122,7 +122,7 @@
 
                         <div class="mt-5 grid grid-cols-4 gap-2.5 sm:gap-3">
                             @foreach ([['d', 'Days'], ['h', 'Hours'], ['m', 'Minutes'], ['s', 'Seconds']] as [$key, $label])
-                                <div class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-navy to-[#0E3C69] px-1 py-3.5 text-center shadow-lg shadow-navy/20">
+                                <div class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-navy to-link px-1 py-3.5 text-center shadow-lg shadow-navy/20">
                                     <div class="absolute inset-x-0 top-1/2 h-px bg-white/10"></div>
                                     <p class="text-2xl sm:text-3xl font-bold text-white tabular-nums leading-none"
                                        x-text="{{ $key === 'd' ? 'pad(d)' : "tbd ? '--' : pad($key)" }}"></p>
@@ -140,7 +140,7 @@
                 @if ($hero)
                     <img src="{{ $hero }}" alt="Webinars" class="block w-full aspect-[16/7] sm:aspect-[3/1] object-cover">
                 @else
-                    <div class="relative w-full aspect-[16/8] sm:aspect-[3/1] bg-gradient-to-br from-navy via-[#0F3460] to-link flex items-center">
+                    <div class="relative w-full aspect-[16/8] sm:aspect-[3/1] bg-gradient-to-br from-navy to-link flex items-center">
                         <div class="pointer-events-none absolute inset-0
                                     bg-[radial-gradient(600px_300px_at_85%_20%,rgba(0,180,216,0.35),transparent_70%),radial-gradient(500px_260px_at_10%_100%,rgba(0,180,216,0.2),transparent_70%)]"></div>
                         <div class="relative px-6 sm:px-12 lg:px-16">

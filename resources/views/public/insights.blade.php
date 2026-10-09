@@ -94,7 +94,7 @@
                     <img src="{{ $hero }}" alt="{{ $title }}"
                          class="block w-full aspect-[16/7] sm:aspect-[3/1] object-cover">
                 @else
-                    <div class="relative w-full aspect-[16/8] sm:aspect-[3/1] bg-gradient-to-br from-navy via-[#0F3460] to-link flex items-center">
+                    <div class="relative w-full aspect-[16/8] sm:aspect-[3/1] bg-gradient-to-br from-navy to-link flex items-center">
                         <div class="pointer-events-none absolute inset-0
                                     bg-[radial-gradient(600px_300px_at_85%_20%,rgba(0,180,216,0.35),transparent_70%),radial-gradient(500px_260px_at_10%_100%,rgba(0,180,216,0.2),transparent_70%)]"></div>
                         <div class="pointer-events-none absolute -right-10 -bottom-16 h-64 w-64 rounded-full border-[28px] border-white/5"></div>
@@ -178,7 +178,7 @@
                             @endif
 
                             @if ($insight->pdf)
-                                <span class="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold uppercase text-alert shadow">
+                                <span class="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold uppercase text-link shadow">
                                     <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
                                     </svg>

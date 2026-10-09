@@ -57,7 +57,7 @@
                         <div class="flex-1 p-5">
                             <div class="flex flex-wrap items-center gap-2 mb-2">
                                 @if ($product->category?->brand)
-                                    <span class="inline-block rounded-full bg-cyan/10 px-2.5 py-0.5 text-[11px] font-bold text-link">
+                                    <span class="inline-block rounded bg-cyan/10 px-2.5 py-0.5 font-mono text-[11px] font-medium uppercase tracking-wide text-link">
                                         {{ $product->category->brand->name }}
                                     </span>
                                 @endif

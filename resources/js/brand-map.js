@@ -24,8 +24,8 @@ window.brandMap = function (countries) {
                 zoomOnScroll: false,
                 showTooltip: false,
                 regionStyle: {
-                    initial: { fill: '#C3D4E2', stroke: '#F4F9FB', strokeWidth: 0.5 },
-                    hover: { fill: '#BBD0E0' },
+                    initial: { fill: '#CDEFF7', stroke: '#F4F9FB', strokeWidth: 0.5 },
+                    hover: { fill: '#A9E2F0' },
                 },
                 markers: this.countries.map(c => ({ name: c.name, coords: [c.lat, c.lng] })),
                 markerStyle: {

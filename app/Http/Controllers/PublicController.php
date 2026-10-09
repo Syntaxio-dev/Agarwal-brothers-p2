@@ -12,6 +12,8 @@ use App\Models\Enquiry;
 use App\Models\Insight;
 use App\Models\Product;
 use App\Models\Review;
+use App\Models\SiteSetting;
+use App\Models\TeamMember;
 use App\Models\Slide;
 use App\Models\Vertical;
 use Illuminate\Http\Request;
@@ -265,6 +267,19 @@ class PublicController extends Controller
             'upcoming' => $upcoming,
             'past' => $past,
             'hero' => $heroPath ? asset('storage/' . $heroPath) : null,
+        ]);
+    }
+
+    public function ourStory()
+    {
+        $settings = SiteSetting::current();
+
+        return view('public.our-story', [
+            's' => $settings,
+            'years' => max(1, now()->year - ($settings?->founded_year ?: 1981)),
+            'leaders' => TeamMember::where('is_active', true)->where('is_leader', true)->orderBy('sort_order')->orderBy('id')->get(),
+            'team' => TeamMember::where('is_active', true)->where('is_leader', false)->orderBy('sort_order')->orderBy('id')->get(),
+            'reviews' => Review::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get(),
         ]);
     }
 

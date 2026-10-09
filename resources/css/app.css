@@ -6,8 +6,9 @@
 @source '../**/*.js';
 
 @theme {
-    --font-sans: 'Roboto', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'IBM Plex Sans', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SFMono-Regular', 'Menlo', monospace;
 
     --color-navy: #0B2545;
     --color-link: #0077B6;
@@ -22,60 +23,83 @@ html {
     scroll-behavior: smooth;
 }
 
+body {
+    font-weight: 400;
+    letter-spacing: -0.003em;
+}
+
+/* Clear type hierarchy: headings are semibold with tight tracking */
+h1, h2, h3, h4 {
+    font-weight: 600;
+    letter-spacing: -0.021em;
+}
+h1 { letter-spacing: -0.028em; }
+
+/* Mono utility for model numbers, specs and catalogue codes */
+.font-mono,
+.spec-value,
+.code {
+    font-family: var(--font-mono);
+    font-feature-settings: 'ss01' on;
+}
+
 :focus-visible {
     outline: 2px solid #00B4D8;
     outline-offset: 2px;
 }
 
 /* ------------------------------------------------------------------
-   Signature components (buttons, capsules)
+   Signature components — technical / instrument-panel language
 ------------------------------------------------------------------- */
 @layer components {
-    /* Primary button: navy to blue sweep with a light shine on hover */
+    /* Primary button: solid navy with a cyan status edge */
     .btn-primary {
         position: relative;
-        overflow: hidden;
-        isolation: isolate;
-        background-image: linear-gradient(110deg, #0B2545 0%, #0E3C69 45%, #0077B6 100%);
-        background-size: 220% 100%;
-        background-position: 0% 0;
-        border: 1px solid rgb(255 255 255 / 0.14);
-        box-shadow: 0 8px 18px -8px rgb(0 119 182 / 0.6), inset 0 1px 0 rgb(255 255 255 / 0.2);
-        letter-spacing: 0.01em;
-        transition: background-position 0.55s ease, box-shadow 0.3s ease, transform 0.3s ease;
-    }
-    .btn-primary::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        pointer-events: none;
-        background: linear-gradient(100deg, transparent 30%, rgb(255 255 255 / 0.3) 50%, transparent 70%);
-        transform: translateX(-130%);
-        transition: transform 0.75s ease;
+        background-color: #0B2545;
+        box-shadow: inset 0 -2px 0 rgb(0 180 216 / 0.85), 0 6px 16px -9px rgb(11 37 69 / 0.55);
+        transition: background-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
     }
     .btn-primary:hover,
     .group:hover .btn-primary {
-        background-position: 100% 0;
-        box-shadow: 0 12px 24px -10px rgb(0 180 216 / 0.7), inset 0 1px 0 rgb(255 255 255 / 0.3);
-    }
-    .btn-primary:hover::after,
-    .group:hover .btn-primary::after {
-        transform: translateX(130%);
+        background-color: #0077B6;
+        box-shadow: inset 0 -2px 0 #00B4D8, 0 11px 22px -11px rgb(0 119 182 / 0.7);
+        transform: translateY(-1px);
     }
     .btn-primary:active {
-        transform: translateY(1px) scale(0.99);
+        transform: translateY(0);
+        box-shadow: inset 0 -2px 0 #00B4D8, 0 4px 10px -8px rgb(0 119 182 / 0.7);
     }
 
-    /* Secondary button: outlined with a cyan underline that grows in */
-    .btn-ghost {
-        position: relative;
+    /* Button for dark / photo backgrounds (hero, CTA banners): solid cyan */
+    .btn-glass {
         display: inline-flex;
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
         border-radius: 9999px;
-        border: 1.5px solid rgb(11 37 69 / 0.18);
-        background: rgb(255 255 255 / 0.85);
+        background-color: #00B4D8;
+        box-shadow: inset 0 -2px 0 rgb(11 37 69 / 0.35), 0 10px 22px -12px rgb(0 0 0 / 0.5);
+        color: #0B2545;
+        font-size: 0.875rem;
+        font-weight: 600;
+        padding: 0.75rem 1.75rem;
+        transition: background-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+    }
+    .btn-glass:hover {
+        background-color: #ffffff;
+        box-shadow: inset 0 -2px 0 #00B4D8, 0 14px 26px -14px rgb(0 0 0 / 0.55);
+        transform: translateY(-1px);
+    }
+
+    /* Secondary / ghost button */
+    .btn-ghost {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        border-radius: 0.5rem;
+        border: 1.5px solid rgb(11 37 69 / 0.16);
+        background-color: rgb(255 255 255 / 0.92);
         padding: 0.6rem 1.35rem;
         font-size: 0.875rem;
         font-weight: 600;
@@ -85,60 +109,87 @@ html {
     .btn-ghost:hover {
         border-color: #00B4D8;
         color: #0077B6;
-        box-shadow: 0 8px 18px -10px rgb(0 180 216 / 0.7);
+        box-shadow: inset 0 -2px 0 rgb(0 180 216 / 0.6);
         transform: translateY(-1px);
     }
 
-    /* Section capsule: glowing dot + soft gradient */
+    /* Floating action buttons */
+    .fab-navy,
+    .fab-green,
+    .fab-light {
+        box-shadow: 0 10px 22px -8px rgb(11 37 69 / 0.5);
+        transition: transform 0.25s ease, background-color 0.25s ease;
+    }
+    .fab-navy  { background-color: #0B2545; color: #fff; }
+    .fab-green { background-color: #25D366; color: #fff; }
+    .fab-light { background-color: #00B4D8; color: #0B2545; }
+    .fab-navy:hover  { background-color: #0077B6; }
+    .fab-light:hover { background-color: #ffffff; }
+
+    /* Round icon buttons (carousel arrows) */
+    .glass-icon {
+        background-color: #ffffff;
+        border: 1px solid rgb(11 37 69 / 0.12);
+        box-shadow: 0 6px 14px -8px rgb(11 37 69 / 0.4);
+        color: #0B2545;
+        transition: background-color 0.25s ease, color 0.25s ease, transform 0.25s ease;
+    }
+    .glass-icon:hover {
+        background-color: #0B2545;
+        color: #ffffff;
+    }
+
+    /* Section eyebrow: monospace label with a short rule + node marker.
+       Replaces the generic rounded "pill with glowing dot". */
     .section-badge {
         display: inline-flex;
         align-items: center;
-        gap: 0.55rem;
-        padding: 0.4rem 1.1rem 0.4rem 0.8rem;
-        border-radius: 9999px;
-        border: 1px solid rgb(0 180 216 / 0.35);
-        background: linear-gradient(180deg, #ffffff, #F4F9FB);
-        box-shadow: 0 4px 12px -6px rgb(0 119 182 / 0.45);
+        gap: 0.6rem;
+        padding: 0;
+        border: 0;
+        background: none;
+        box-shadow: none;
         color: #0077B6;
-        font-size: 0.72rem;
-        font-weight: 700;
-        letter-spacing: 0.16em;
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        font-weight: 500;
+        letter-spacing: 0.24em;
         text-transform: uppercase;
         line-height: 1;
     }
     .section-badge::before {
         content: '';
-        width: 0.5rem;
-        height: 0.5rem;
-        border-radius: 9999px;
+        width: 1.5rem;
+        height: 2px;
         background: #00B4D8;
-        box-shadow: 0 0 0 3px rgb(0 180 216 / 0.22);
+        box-shadow: 3px 0 0 #0B2545;
     }
 
-    /* Filter chip (principal / category pickers) */
+    /* Filter chip (principal / category pickers): squared tag with mono label */
     .chip {
         display: inline-flex;
         align-items: center;
         gap: 0.5rem;
-        border-radius: 9999px;
-        border: 1px solid rgb(11 37 69 / 0.12);
-        background: rgb(255 255 255 / 0.9);
-        padding: 0.4rem 0.9rem 0.4rem 0.5rem;
-        font-size: 0.8rem;
-        font-weight: 600;
+        border-radius: 0.45rem;
+        border: 1px solid rgb(11 37 69 / 0.14);
+        background-color: rgb(255 255 255 / 0.92);
+        padding: 0.4rem 0.85rem 0.4rem 0.5rem;
+        font-family: var(--font-mono);
+        font-size: 0.74rem;
+        font-weight: 500;
+        letter-spacing: 0.01em;
         color: #0B2545;
-        transition: all 0.25s ease;
+        transition: all 0.2s ease;
     }
     .chip:hover {
         border-color: #00B4D8;
-        box-shadow: 0 8px 16px -10px rgb(0 180 216 / 0.7);
-        transform: translateY(-1px);
+        box-shadow: inset 0 -2px 0 rgb(0 180 216 / 0.5);
     }
     .chip-active,
     .chip-active:hover {
         border-color: transparent;
         color: #ffffff;
-        background-image: linear-gradient(110deg, #0B2545, #0077B6);
-        box-shadow: 0 10px 20px -10px rgb(0 119 182 / 0.8);
+        background-color: #0B2545;
+        box-shadow: inset 0 -2px 0 #00B4D8;
     }
 }

@@ -28,6 +28,12 @@ class SiteSettingResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'catalogue_file';
 
+    // Only one settings row is used by the site, so don't allow creating more.
+    public static function canCreate(): bool
+    {
+        return ! SiteSetting::exists();
+    }
+
     public static function form(Schema $schema): Schema
     {
         return SiteSettingForm::configure($schema);

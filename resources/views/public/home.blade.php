@@ -74,9 +74,7 @@
                                     @endif
                                     @if ($slide->link_url)
                                         <a href="{{ $slide->link_url }}"
-                                            class="mt-6 inline-flex items-center gap-2 rounded-full bg-cyan px-7 py-3
-                                                   text-sm font-bold text-navy shadow-lg
-                                                   hover:bg-white hover:scale-105 transition-all duration-300">
+                                            class="btn-glass mt-6 px-7 py-3">
                                             Explore
                                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 9h6V5l7 7-7 7v-4H6V9z"/>
@@ -99,9 +97,9 @@
         <div class="absolute top-3 right-16 sm:right-20 z-20">
             <a href="{{ route('search') }}"
                 class="relative h-10 sm:h-12 px-4 sm:px-6 min-w-[160px] sm:min-w-[220px]
-                       rounded-xl text-sm backdrop-blur-md border-2 border-cyan shadow-md
+                       rounded-xl text-sm border-2 border-cyan shadow-md
                        text-navy flex items-center gap-2 transition-all duration-300
-                       hover:ring-2 hover:ring-cyan hover:bg-white/30 group bg-white/80">
+                       hover:ring-2 hover:ring-cyan hover:bg-white group bg-white/90">
                 <span class="absolute -top-2 -right-2 bg-cyan text-navy text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-pulse shadow-lg">NEW</span>
                 <svg class="h-4 w-4 text-navy group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                     <circle cx="11" cy="11" r="8"/>
@@ -115,13 +113,13 @@
 
         {{-- Carousel arrows --}}
         @if ($slides->count() > 1)
-            <div class="bg-ice p-2 sm:p-3 absolute rounded-l-xl right-0 top-1/2 -translate-y-1/2 flex flex-col items-center gap-2 sm:gap-3 z-20">
-                <button @click="prev(); reset()" class="bg-gray-200/70 text-navy p-1.5 sm:p-2 rounded-full hover:bg-cyan/20 shadow-md transition">
+            <div class="absolute right-0 top-1/2 z-20 flex -translate-y-1/2 flex-col items-center gap-2 rounded-l-xl bg-ice p-2 shadow-md sm:gap-3 sm:p-3">
+                <button @click="prev(); reset()" class="glass-icon rounded-full p-1.5 sm:p-2">
                     <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/>
                     </svg>
                 </button>
-                <button @click="next(); reset()" class="bg-gray-200/70 text-navy p-1.5 sm:p-2 rounded-full hover:bg-cyan/20 shadow-md transition">
+                <button @click="next(); reset()" class="glass-icon rounded-full p-1.5 sm:p-2">
                     <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/>
                     </svg>
@@ -219,10 +217,10 @@
             <div class="flex flex-col gap-5 w-full md:w-[42%]">
 
                 {{-- Customers --}}
-                <div class="relative flex items-center bg-white/90 backdrop-blur rounded-full p-1.5 pr-5
+                <div class="relative flex items-center bg-white/90 rounded-full p-1.5 pr-5
                             hover:scale-[1.02] transition-all duration-300 group border border-gray-100 shadow-sm hover:shadow-md">
                     <div class="w-14 h-14 flex items-center justify-center rounded-full text-white ml-1 mr-4 shadow-md
-                                bg-cyan group-hover:bg-link transition-colors shrink-0">
+                                bg-gradient-to-br from-navy to-link group-hover:from-link group-hover:to-cyan transition-all shrink-0">
                         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/>
                         </svg>
@@ -238,10 +236,10 @@
                 </div>
 
                 {{-- Brands --}}
-                <div class="relative flex items-center bg-white/90 backdrop-blur rounded-full p-1.5 pr-5
+                <div class="relative flex items-center bg-white/90 rounded-full p-1.5 pr-5
                             hover:scale-[1.02] transition-all duration-300 group border border-gray-100 shadow-sm hover:shadow-md">
                     <div class="w-14 h-14 flex items-center justify-center rounded-full text-white ml-1 mr-4 shadow-md
-                                bg-link group-hover:bg-cyan transition-colors shrink-0">
+                                bg-gradient-to-br from-navy to-link group-hover:from-link group-hover:to-cyan transition-all shrink-0">
                         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12.75 3.03v.568c0 .334.148.65.405.864l1.068.89c.442.369.535 1.01.216 1.49l-.51.766a2.25 2.25 0 0 1-1.161.886l-.143.048a1.107 1.107 0 0 0-.57 1.664c.369.555.169 1.307-.427 1.605L9 13.125l.423 1.059a.956.956 0 0 1-1.652.928l-.679-.906a1.125 1.125 0 0 0-1.906.172L4.5 15.75l-.612.153M12.75 3.031a9 9 0 0 1 6.69 14.036m0 0-.177-.529A2.25 2.25 0 0 0 17.128 15H16.5l-.324-.324a1.453 1.453 0 0 0-2.328.377l-.036.073a1.586 1.586 0 0 1-.982.816l-.99.282c-.55.157-.894.702-.8 1.267l.073.438c.08.474.49.821.97.821.846 0 1.598.542 1.865 1.345l.215.643m-3.414 1.768A9.004 9.004 0 0 1 3.75 12c0-1.26.26-2.46.727-3.55"/>
                         </svg>
@@ -257,10 +255,10 @@
                 </div>
 
                 {{-- Awards --}}
-                <div class="relative flex items-center bg-white/90 backdrop-blur rounded-full p-1.5 pr-5
+                <div class="relative flex items-center bg-white/90 rounded-full p-1.5 pr-5
                             hover:scale-[1.02] transition-all duration-300 group border border-gray-100 shadow-sm hover:shadow-md">
                     <div class="w-14 h-14 flex items-center justify-center rounded-full text-white ml-1 mr-4 shadow-md
-                                bg-amber-500 group-hover:bg-link transition-colors shrink-0">
+                                bg-gradient-to-br from-navy to-link group-hover:from-link group-hover:to-cyan transition-all shrink-0">
                         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .982-3.172M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"/>
                         </svg>
@@ -276,10 +274,10 @@
                 </div>
 
                 {{-- Branches --}}
-                <div class="relative flex items-center bg-white/90 backdrop-blur rounded-full p-1.5 pr-5
+                <div class="relative flex items-center bg-white/90 rounded-full p-1.5 pr-5
                             hover:scale-[1.02] transition-all duration-300 group border border-gray-100 shadow-sm hover:shadow-md">
                     <div class="w-14 h-14 flex items-center justify-center rounded-full text-white ml-1 mr-4 shadow-md
-                                bg-success group-hover:bg-link transition-colors shrink-0">
+                                bg-gradient-to-br from-navy to-link group-hover:from-link group-hover:to-cyan transition-all shrink-0">
                         <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
                             <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/>
@@ -524,7 +522,7 @@
                         <div :class="active === {{ $i }} ? 'opacity-100' : 'opacity-0 pointer-events-none'"
                              class="[grid-area:1/1] transition-opacity duration-300">
                             @if ($product->category?->brand)
-                                <p class="text-xs font-bold uppercase tracking-wider text-link">{{ $product->category->brand->name }}</p>
+                                <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-link">{{ $product->category->brand->name }}</p>
                             @endif
                             <h3 class="mt-2 text-lg font-bold text-navy leading-snug">{{ $product->name }}</h3>
                             @if ($product->category)
@@ -812,15 +810,15 @@
                 {{-- Prev / Next --}}
                 @if ($featuredClients->count() > 1)
                     <button type="button" @click="go(i - 1)" aria-label="Previous client"
-                        class="absolute left-2 lg:-left-14 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white border border-gray-200
-                               shadow-md flex items-center justify-center text-navy hover:bg-navy hover:text-white transition-colors">
+                        class="absolute left-2 lg:-left-14 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full glass-icon
+                               flex items-center justify-center">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/>
                         </svg>
                     </button>
                     <button type="button" @click="go(i + 1)" aria-label="Next client"
-                        class="absolute right-2 lg:-right-14 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full bg-white border border-gray-200
-                               shadow-md flex items-center justify-center text-navy hover:bg-navy hover:text-white transition-colors">
+                        class="absolute right-2 lg:-right-14 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full glass-icon
+                               flex items-center justify-center">
                         <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/>
                         </svg>
@@ -883,70 +881,6 @@
     @endif
 
 
-    {{-- ===== 10. CUSTOMER REVIEWS — auto-stepping carousel ===== --}}
-    @if ($reviews->count())
-    <section class="py-12 sm:py-14">
-        <div class="w-[98%] mx-auto md:px-5 lg:px-20">
-
-            <div class="text-center flex flex-col items-center gap-3 mb-10">
-                <span class="section-badge">
-                    Reviews
-                </span>
-                <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
-                    What Our Customers <span class="text-cyan">Say About Us</span>
-                </h2>
-            </div>
-
-            <div x-data="reviewCarousel(@js($reviews->map(fn ($r) => [
-                    'id' => $r->id,
-                    'name' => $r->name,
-                    'designation' => $r->designation,
-                    'organization' => $r->organization,
-                    'content' => $r->content,
-                    'rating' => $r->rating,
-                ])->values()))"
-                 @mouseenter="paused = true" @mouseleave="paused = false"
-                 class="overflow-hidden -mx-3">
-
-                <div x-ref="track" class="flex"
-                     :class="moving ? 'transition-transform duration-700 ease-in-out' : ''"
-                     :style="moving ? `transform: translateX(-${step}px)` : ''">
-                    <template x-for="review in list" :key="review.id">
-                        <div class="basis-full md:basis-1/2 lg:basis-1/3 shrink-0 px-3">
-                            <div class="h-full flex flex-col rounded-2xl bg-white border border-gray-100 shadow-sm p-6
-                                        hover:shadow-lg hover:border-cyan/20 transition-shadow duration-300">
-                                <svg class="h-8 w-8 text-cyan/20 mb-3" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10H0z"/>
-                                </svg>
-
-                                <p class="text-sm text-navy/80 leading-relaxed flex-1" x-text="review.content"></p>
-
-                                <div class="flex gap-0.5 mt-4 mb-4">
-                                    <template x-for="s in review.rating" :key="s">
-                                        <svg class="h-4 w-4 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/>
-                                        </svg>
-                                    </template>
-                                </div>
-
-                                <div class="pt-4 border-t border-gray-100 flex items-center gap-3">
-                                    <div class="h-10 w-10 rounded-full bg-navy flex items-center justify-center shrink-0">
-                                        <span class="text-sm font-bold text-white" x-text="review.name.charAt(0)"></span>
-                                    </div>
-                                    <div class="min-w-0">
-                                        <h4 class="text-sm font-bold text-navy truncate" x-text="review.name"></h4>
-                                        <p class="text-xs text-slate truncate"
-                                           x-text="[review.designation, review.organization].filter(Boolean).join(' · ')"></p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </template>
-                </div>
-            </div>
-
-        </div>
-    </section>
-    @endif
+    @include('public.partials.reviews-carousel')
 
 </x-layouts.app>

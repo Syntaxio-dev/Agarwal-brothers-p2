@@ -6,7 +6,7 @@ use App\Http\Controllers\ContactController;
 use App\Http\Controllers\PublicController;
 
 Route::get('/', [PublicController::class, 'home'])->name('home');
-Route::view('/our-story', 'public.our-story');
+Route::get('/our-story', [PublicController::class, 'ourStory'])->name('our-story');
 Route::get('/application-resources', [PublicController::class, 'applicationResources'])->name('application-resources');
 Route::get('/careers', [CareerController::class, 'index'])->name('careers');
 Route::post('/careers/apply', [CareerController::class, 'applyGeneral'])->name('careers.apply.general')->middleware('throttle:5,1');

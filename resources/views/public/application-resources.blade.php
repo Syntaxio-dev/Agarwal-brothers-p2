@@ -2,9 +2,9 @@
     $categories = \App\Models\ApplicationResource::CATEGORIES;
     $style = [
         'appnote' => ['chip' => 'text-link', 'bar' => 'from-navy to-link'],
-        'guide' => ['chip' => 'text-navy', 'bar' => 'from-cyan to-link'],
-        'video' => ['chip' => 'text-alert', 'bar' => 'from-alert to-orange-400'],
-        'brochure' => ['chip' => 'text-success', 'bar' => 'from-success to-teal-400'],
+        'guide' => ['chip' => 'text-link', 'bar' => 'from-link to-cyan'],
+        'video' => ['chip' => 'text-link', 'bar' => 'from-navy to-cyan'],
+        'brochure' => ['chip' => 'text-link', 'bar' => 'from-cyan to-link'],
     ];
     $icons = [
         'appnote' => 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z',

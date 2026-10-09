@@ -28,7 +28,7 @@
             {{-- Product Details --}}
             <div>
                 @if ($product->category?->brand)
-                    <p class="text-sm font-bold uppercase tracking-wide text-cyan">
+                    <p class="font-mono text-xs font-medium uppercase tracking-[0.18em] text-link">
                         {{ $product->category->brand->name }}
                     </p>
                 @endif
@@ -47,8 +47,8 @@
                         <table class="w-full text-sm">
                             @foreach ($product->specs as $key => $value)
                                 <tr class="border-b border-gray-100 last:border-0">
-                                    <td class="py-3 px-4 font-semibold text-navy w-2/5 bg-white/50">{{ $key }}</td>
-                                    <td class="py-3 px-4 text-slate">{{ $value }}</td>
+                                    <td class="py-3 px-4 text-xs font-semibold uppercase tracking-wide text-slate w-2/5 bg-white/50">{{ $key }}</td>
+                                    <td class="py-3 px-4 spec-value text-sm text-navy">{{ $value }}</td>
                                 </tr>
                             @endforeach
                         </table>
@@ -57,9 +57,7 @@
 
                 {{-- Send Enquiry Button --}}
                 <button onclick="document.getElementById('enquiry-form').classList.remove('hidden')"
-                    class="mt-8 inline-flex items-center gap-2 rounded-full bg-cyan px-8 py-3
-                           text-sm font-bold text-navy shadow-md
-                           hover:bg-navy hover:text-white transition-all duration-300">
+                    class="btn-primary mt-8 inline-flex items-center gap-2 rounded-full px-8 py-3 text-sm font-semibold text-white">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0-8.4 5.25a1.5 1.5 0 0 1-1.6 0L2.25 6.75" />
                     </svg>

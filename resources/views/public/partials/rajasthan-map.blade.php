@@ -2,8 +2,8 @@
 <svg viewBox="0 0 1000 908" class="h-full w-full" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Map of Rajasthan">
     <defs>
         <linearGradient id="rjFill" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#E3F3F9"/>
-            <stop offset="1" stop-color="#C9E4F1"/>
+            <stop offset="0" stop-color="#F4F9FB"/>
+            <stop offset="1" stop-color="#CDEFF7"/>
         </linearGradient>
         <filter id="rjShadow" x="-10%" y="-10%" width="120%" height="125%">
             <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#0B2545" flood-opacity="0.18"/>
