@@ -58,6 +58,12 @@
                         Home
                     </a>
 
+                    <a href="/our-story"
+                        class="block px-3 py-2.5 rounded-md transition-all duration-200
+                        {{ request()->is('our-story') ? 'bg-navy text-white shadow' : 'text-navy hover:bg-gray-100' }}">
+                        Our Story
+                    </a>
+
                     <a href="/verticals"
                         class="block px-3 py-2.5 rounded-md transition-all duration-200
                         {{ request()->is('verticals*') ? 'bg-navy text-white shadow' : 'text-navy hover:bg-gray-100' }}">
@@ -180,6 +186,7 @@
                                 <h4 class="text-sm font-bold uppercase tracking-wider text-white mb-5">Quick Links</h4>
                                 <ul class="space-y-3">
                                     <li><a href="/" class="text-sm text-white/70 hover:text-cyan transition">Home</a></li>
+                                    <li><a href="/our-story" class="text-sm text-white/70 hover:text-cyan transition">Our Story</a></li>
                                     <li><a href="/verticals" class="text-sm text-white/70 hover:text-cyan transition">Verticals</a></li>
                                     <li><a href="{{ route('insights.blogs') }}" class="text-sm text-white/70 hover:text-cyan transition">Blogs</a></li>
                                     <li><a href="{{ route('insights.news') }}" class="text-sm text-white/70 hover:text-cyan transition">News & Events</a></li>

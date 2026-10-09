@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PublicController;
 
 Route::get('/', [PublicController::class, 'home'])->name('home');
+Route::view('/our-story', 'public.our-story');
 Route::view('/application-resources', 'public.placeholder', ['title' => 'Application Resources']);
 Route::view('/careers', 'public.careers');
 Route::view('/contact-us', 'public.contact-us');
