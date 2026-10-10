@@ -23,6 +23,14 @@ class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
     {
+        // Filament remembers which pages/resources/widgets exist in bootstrap/cache/filament (composer and
+        // `php artisan optimize` write it). On a development machine that list goes stale as soon as a new page is
+        // added and the page then "does not exist" in the browser, so it is never used while developing.
+        // On the live server run `php artisan filament:cache-components` after every deploy instead.
+        if (app()->environment('local')) {
+            @unlink(base_path('bootstrap/cache/filament/panels/admin.php'));
+        }
+
         return $panel
             ->default()
             ->id('admin')
