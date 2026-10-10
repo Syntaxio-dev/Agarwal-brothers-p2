@@ -67,4 +67,30 @@ class ScrollRevealTest extends TestCase
         $this->assertStringNotContainsString("'is-paused': paused", $html);
         $this->assertDoesNotMatchRegularExpression('/data-reveal="fade" x-data="\{ paused/', $html);
     }
+
+    public function test_our_story_reveals_its_sections_and_draws_the_journey_timeline(): void
+    {
+        $html = $this->get('/our-story')->assertOk()->getContent();
+
+        $this->assertGreaterThanOrEqual(25, substr_count($html, 'data-reveal'));
+        $this->assertStringContainsString('data-reveal="draw"', $html);
+        $this->assertSame(4, substr_count($html, 'class="tl-node'));       // one pop-in dot per year
+        $this->assertStringContainsString('tl-line', $html);
+        $this->assertStringContainsString('story-hero-title', $html);      // banner intro hooks
+        // tabs: a sliding pill sits behind the active chip and the panels slide a little as they fade
+        $this->assertStringContainsString('x-ref="mission"', $html);
+        $this->assertStringContainsString('translate-y-2', $html);
+        // the banner itself is never hidden by scroll reveal (first screen shows at once)
+        $banner = strstr(strstr($html, 'story-hero-img'), 'story-hero-crumb', true);
+        $this->assertStringNotContainsString('data-reveal', $banner);
+
+        $css = file_get_contents(resource_path('css/app.css'));
+        foreach (['tl-wipe', 'tl-pop', 'tl-stem', 'icon-pop', 'hero-zoom', 'hero-rise'] as $keyframes) {
+            $this->assertStringContainsString("@keyframes {$keyframes}", $css);
+        }
+        // all of it lives in the "motion allowed" block, so reduced-motion visitors see the plain page
+        $motion = substr($css, strpos($css, '@media (prefers-reduced-motion: no-preference) {'));
+        $this->assertStringContainsString('.story-hero-title', $motion);
+        $this->assertStringContainsString('[data-reveal="draw"].is-revealed .tl-line', $motion);
+    }
 }

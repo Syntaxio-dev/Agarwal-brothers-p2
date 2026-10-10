@@ -52,11 +52,11 @@
         {{-- ===== 1. Banner ===== --}}
         <div class="relative flex h-[250px] items-end overflow-hidden rounded-3xl shadow-lg ring-1 ring-black/5 sm:h-[430px]">
             <img src="{{ $banner ?: asset('building-image.webp') }}" alt="Agarwal Brothers office, Jaipur"
-                 class="img-load absolute inset-0 h-full w-full object-cover object-[50%_22%]" decoding="async" onload="this.classList.add('is-loaded')">
+                 class="img-load story-hero-img absolute inset-0 h-full w-full object-cover object-[50%_22%]" decoding="async" onload="this.classList.add('is-loaded')">
             <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-navy/25 to-transparent"></div>
             <div class="relative px-6 pb-6 text-left sm:px-10 sm:pb-9">
-                <h1 class="text-3xl sm:text-5xl font-bold text-white leading-tight">Our Story</h1>
-                <p class="mt-3 text-sm text-white/80">
+                <h1 class="story-hero-title text-3xl sm:text-5xl font-bold text-white leading-tight">Our Story</h1>
+                <p class="story-hero-crumb mt-3 text-sm text-white/80">
                     <a href="/" class="hover:text-cyan transition">Home</a>
                     <span class="mx-1.5 text-cyan">&rsaquo;</span>
                     <span class="font-semibold text-white">Our Story</span>
@@ -68,7 +68,7 @@
         <div class="mt-16 sm:mt-20 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
 
             <div class="relative mx-auto w-full max-w-lg h-[360px] sm:h-[440px]">
-                <div class="absolute left-0 top-0 h-[72%] w-[68%] overflow-hidden rounded-3xl shadow-xl bg-gradient-to-br from-ice to-cyan/20 flex items-center justify-center">
+                <div data-reveal="left" class="absolute left-0 top-0 h-[72%] w-[68%] overflow-hidden rounded-3xl shadow-xl bg-gradient-to-br from-ice to-cyan/20 flex items-center justify-center">
                     @if ($img('story_image_1'))
                         <img src="{{ $img('story_image_1') }}" alt="" class="img-load h-full w-full object-cover" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
                     @else
@@ -76,7 +76,7 @@
                     @endif
                 </div>
 
-                <div class="absolute bottom-0 right-0 h-[56%] w-[58%] overflow-hidden rounded-3xl border-4 border-white shadow-2xl bg-gradient-to-br from-navy to-link flex items-center justify-center">
+                <div data-reveal="right" data-reveal-delay="120" class="absolute bottom-0 right-0 h-[56%] w-[58%] overflow-hidden rounded-3xl border-4 border-white shadow-2xl bg-gradient-to-br from-navy to-link flex items-center justify-center">
                     @if ($img('story_image_2'))
                         <img src="{{ $img('story_image_2') }}" alt="" class="img-load h-full w-full object-cover" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
                     @else
@@ -87,23 +87,25 @@
                     @endif
                 </div>
 
-                <div class="absolute right-0 top-4 sm:top-6 rounded-2xl bg-gradient-to-br from-navy to-link px-5 py-4 text-white shadow-xl ring-4 ring-white">
+                <div data-reveal="zoom" data-reveal-delay="250" class="absolute right-0 top-4 sm:top-6 rounded-2xl bg-gradient-to-br from-navy to-link px-5 py-4 text-white shadow-xl ring-4 ring-white">
                     <p class="text-3xl font-extrabold leading-none">{{ $years }}<span class="text-cyan">+</span></p>
                     <p class="mt-1 text-[10px] font-semibold uppercase tracking-wider text-white/85 leading-tight">Years of<br>Experience</p>
                 </div>
             </div>
 
             <div>
-                <span class="section-badge">Company About</span>
-                <h2 class="mt-4 text-2xl sm:text-4xl font-bold text-navy leading-tight">
-                    Four decades of powering <span class="text-cyan-ink">India's laboratories</span>
-                </h2>
-                <p class="mt-5 text-base text-slate leading-relaxed">{{ $intro }}</p>
+                <div data-reveal>
+                    <span class="section-badge">Company About</span>
+                    <h2 class="mt-4 text-2xl sm:text-4xl font-bold text-navy leading-tight">
+                        Four decades of powering <span class="text-cyan-ink">India's laboratories</span>
+                    </h2>
+                    <p class="mt-5 text-base text-slate leading-relaxed">{{ $intro }}</p>
+                </div>
 
-                <p class="mt-6 text-sm font-bold text-navy">What sets us apart</p>
+                <p data-reveal class="mt-6 text-sm font-bold text-navy">What sets us apart</p>
                 <ul class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
                     @foreach ($points as $point)
-                        <li class="flex items-start gap-2.5 text-sm text-slate">
+                        <li data-reveal class="flex items-start gap-2.5 text-sm text-slate">
                             <span class="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-navy to-link text-white">
                                 <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/>
@@ -114,10 +116,10 @@
                     @endforeach
                 </ul>
 
-                <a href="/contact-us"
+                <a data-reveal href="/contact-us"
                    class="mt-8 inline-flex items-center gap-2 rounded-full bg-navy px-7 py-3 text-sm font-semibold text-white hover:bg-link btn-primary">
                     Talk to our team
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <svg class="arrow-nudge h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
                     </svg>
                 </a>
@@ -127,18 +129,34 @@
         {{-- ===== 3. Mission / Vision / Goal ===== --}}
         <div class="mt-20 sm:mt-24 rounded-3xl bg-gradient-to-br from-ice to-cyan/10 border border-cyan/20 p-6 sm:p-10 lg:p-12
                     grid grid-cols-1 lg:grid-cols-2 gap-10 items-center"
-             x-data="{ tab: 'mission' }">
-            <div>
+             x-data="{
+                tab: 'mission', pill: { x: 0, y: 0, w: 0, h: 0 }, ready: false,
+                place() {
+                    const b = this.$refs[this.tab];
+                    if (!b) return;
+                    this.pill = { x: b.offsetLeft, y: b.offsetTop, w: b.offsetWidth, h: b.offsetHeight };
+                    this.ready = true;
+                },
+                pick(k) { this.tab = k; this.place(); }
+             }"
+             x-init="place(); $nextTick(() => place()); window.addEventListener('load', () => place()); if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => place());"
+             @resize.window="place()">
+            <div data-reveal="left">
                 <span class="section-badge">About Mission</span>
                 <h2 class="mt-4 text-2xl sm:text-3xl font-bold text-navy leading-tight">
                     Our main goal is <span class="text-cyan-ink">satisfied labs</span>, everywhere in India
                 </h2>
 
-                <div class="mt-6 flex flex-wrap gap-2.5">
+                <div class="relative mt-6 flex flex-wrap gap-2.5">
+                    <span class="pointer-events-none absolute left-0 top-0 rounded-[0.45rem] bg-navy shadow-[inset_0_-2px_0_#00B4D8]"
+                          :class="ready ? 'transition-all duration-300 ease-out' : ''"
+                          :style="`width:${pill.w}px;height:${pill.h}px;transform:translate(${pill.x}px,${pill.y}px)`"
+                          aria-hidden="true"></span>
                     @foreach ($tabs as $key => $tab)
-                        <button type="button" @click="tab = '{{ $key }}'"
-                                :class="tab === '{{ $key }}' ? 'chip-active' : ''"
-                                class="chip !pl-4">
+                        <button type="button" x-ref="{{ $key }}" @click="pick('{{ $key }}')"
+                                :class="tab === '{{ $key }}' ? '!border-transparent !bg-transparent !text-white !shadow-none' : ''"
+                                :aria-pressed="(tab === '{{ $key }}').toString()"
+                                class="chip relative !pl-4">
                             {{ $tab['label'] }}
                         </button>
                     @endforeach
@@ -146,8 +164,9 @@
 
                 <div class="mt-6 grid">
                     @foreach ($tabs as $key => $tab)
-                        <div :class="tab === '{{ $key }}' ? 'opacity-100' : 'opacity-0 pointer-events-none'"
-                             class="[grid-area:1/1] transition-opacity duration-300">
+                        <div :class="tab === '{{ $key }}' ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-2 pointer-events-none'"
+                             :aria-hidden="(tab !== '{{ $key }}').toString()"
+                             class="[grid-area:1/1] transition duration-300 ease-out">
                             <h3 class="text-lg font-bold text-navy">{{ $tab['title'] }}</h3>
                             <p class="mt-2 text-sm sm:text-base text-slate leading-relaxed">{{ $tab['text'] }}</p>
                         </div>
@@ -155,7 +174,7 @@
                 </div>
             </div>
 
-            <div class="relative aspect-[4/3] w-full overflow-hidden rounded-3xl shadow-xl ring-4 ring-white bg-gradient-to-br from-navy to-link flex items-center justify-center">
+            <div data-reveal="right" class="relative aspect-[4/3] w-full overflow-hidden rounded-3xl shadow-xl ring-4 ring-white bg-gradient-to-br from-navy to-link flex items-center justify-center">
                 @if ($img('story_mission_image'))
                     <img src="{{ $img('story_mission_image') }}" alt="" class="img-load absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
                 @else
@@ -173,7 +192,7 @@
 
         {{-- ===== 4. Journey ===== --}}
         <div class="mt-20 sm:mt-24">
-            <div class="text-center flex flex-col items-center gap-3 mb-10">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-10">
                 <span class="section-badge">Our Journey</span>
                 <h2 class="text-2xl sm:text-3xl font-bold text-navy leading-tight">From one office to <span class="text-cyan-ink">50+ global brands</span></h2>
             </div>
@@ -195,26 +214,27 @@
             @endphp
 
             {{-- Desktop: dotted wave with nodes, cards below --}}
-            <div class="hidden sm:block">
+            <div data-reveal="draw" class="hidden sm:block">
                 <div class="relative h-[120px]">
-                    <svg viewBox="0 0 1000 120" preserveAspectRatio="none" class="absolute inset-0 h-full w-full overflow-visible" aria-hidden="true">
+                    <svg viewBox="0 0 1000 120" preserveAspectRatio="none" class="tl-line absolute inset-0 h-full w-full overflow-visible" aria-hidden="true">
                         <path d="{{ $d }}" fill="none" stroke="#00B4D8" stroke-width="3.5" stroke-linecap="round"
                               stroke-dasharray="1 10" vector-effect="non-scaling-stroke"/>
                     </svg>
 
                     @foreach ($timeline as $i => $item)
-                        @php $x = ($i + 0.5) / $n * 100; $top = $pts[$i][1] / 120 * 100; @endphp
-                        <span class="absolute border-l-2 border-dotted border-cyan/60"
-                              style="left: {{ $x }}%; top: {{ $top }}%; height: {{ 100 - $top }}%"></span>
-                        <span class="absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-white shadow-md
+                        @php $x = ($i + 0.5) / $n * 100; $top = $pts[$i][1] / 120 * 100; $arrive = (int) round($x / 100 * 1800); @endphp
+                        <span class="tl-stem absolute border-l-2 border-dotted border-cyan/60"
+                              style="left: {{ $x }}%; top: {{ $top }}%; height: {{ 100 - $top }}%; --tl-delay: {{ $arrive + 100 }}ms"></span>
+                        <span class="tl-node absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-4 border-white shadow-md
                                      {{ $loop->last ? 'h-6 w-6 bg-link ring-4 ring-cyan/30' : 'h-5 w-5 bg-cyan' }}"
-                              style="left: {{ $x }}%; top: {{ $top }}%"></span>
+                              style="left: {{ $x }}%; top: {{ $top }}%; --tl-delay: {{ $arrive }}ms"></span>
                     @endforeach
                 </div>
 
                 <div class="grid gap-4" style="grid-template-columns: repeat({{ $n }}, minmax(0, 1fr))">
-                    @foreach ($timeline as [$when, $title, $text])
-                        <div class="rounded-2xl bg-white border border-gray-100 shadow-sm p-5 text-center
+                    @foreach ($timeline as $ci => [$when, $title, $text])
+                        <div style="--tl-delay: {{ (int) round(($ci + 0.5) / $n * 1800) + 250 }}ms"
+                             class="tl-card rounded-2xl bg-white border border-gray-100 shadow-sm p-5 text-center
                                     hover:shadow-lg hover:border-cyan/40 hover:-translate-y-1 transition-all duration-300">
                             <span class="inline-block rounded-md bg-cyan/10 px-2.5 py-1 font-mono text-xs font-medium uppercase tracking-widest text-link">{{ $when }}</span>
                             <h3 class="mt-3 text-base font-bold text-navy leading-snug">{{ $title }}</h3>
@@ -227,7 +247,7 @@
             {{-- Mobile: compact dashed list --}}
             <div class="sm:hidden ml-3 space-y-5 border-l-2 border-dashed border-cyan/50">
                 @foreach ($timeline as [$when, $title, $text])
-                    <div class="relative pl-6">
+                    <div data-reveal="left" class="relative pl-6">
                         <span class="absolute -left-[9px] top-5 h-4 w-4 rounded-full border-4 border-white shadow {{ $loop->last ? 'bg-link ring-2 ring-cyan/30' : 'bg-cyan' }}"></span>
                         <div class="rounded-2xl bg-white border border-gray-100 shadow-sm p-4">
                             <span class="inline-block rounded-md bg-cyan/10 px-2 py-0.5 font-mono text-xs font-medium uppercase tracking-widest text-link">{{ $when }}</span>
@@ -241,16 +261,16 @@
 
         {{-- ===== 5. Values ===== --}}
         <div class="mt-20 sm:mt-24">
-            <div class="text-center flex flex-col items-center gap-3 mb-10">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-10">
                 <span class="section-badge">Our Values</span>
                 <h2 class="text-2xl sm:text-3xl font-bold text-navy leading-tight">What <span class="text-cyan-ink">drives us</span></h2>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach ($values as [$title, $text, $icon])
-                    <div class="group rounded-2xl bg-white border border-gray-100 shadow-sm p-6 hover:shadow-xl hover:border-cyan/40 hover:-translate-y-1 transition-all duration-300">
-                        <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-navy to-link text-white shadow-md
-                                    group-hover:from-link group-hover:to-cyan transition-all duration-300">
+                    <div data-reveal class="value-card group relative overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm p-6 hover:shadow-xl hover:border-cyan/40 hover:-translate-y-1 transition-all duration-300">
+                        <div class="value-icon flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-navy to-link text-white shadow-md
+                                    group-hover:from-link group-hover:to-cyan group-hover:-rotate-6 group-hover:scale-110 transition-all duration-300">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="{{ $icon }}"/>
                             </svg>
@@ -266,7 +286,7 @@
         @if ($leaders->count())
             @php $leadBg = $img('leadership_bg'); @endphp
             <div class="mt-20 sm:mt-24">
-                <div class="text-center flex flex-col items-center gap-3 mb-10">
+                <div data-reveal class="text-center flex flex-col items-center gap-3 mb-10">
                     <span class="section-badge">Meet our leadership</span>
                     <h2 class="text-2xl sm:text-3xl font-bold text-navy leading-tight">The people <span class="text-cyan-ink">behind the company</span></h2>
                 </div>
@@ -285,7 +305,7 @@
 
                             <div class="relative grid grid-cols-1 md:grid-cols-2 items-center gap-2 md:gap-6 px-5 pt-8 pb-6 md:py-0 md:px-12">
                                 {{-- Portrait --}}
-                                <div class="{{ $flip ? 'md:order-2' : '' }} flex h-[260px] items-end justify-center md:h-[400px] lg:h-[430px]">
+                                <div data-reveal="{{ $flip ? 'right' : 'left' }}" class="{{ $flip ? 'md:order-2' : '' }} flex h-[260px] items-end justify-center md:h-[400px] lg:h-[430px]">
                                     @if ($leader->photo)
                                         <img src="{{ asset('storage/' . $leader->photo) }}" alt="{{ $leader->name }}"
                                              class="img-load h-full w-auto max-w-full object-contain object-bottom drop-shadow-2xl" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($leader->photo) !!} onload="this.classList.add('is-loaded')">
@@ -298,9 +318,9 @@
                                 </div>
 
                                 {{-- Quote card (glass) --}}
-                                <div class="{{ $flip ? 'md:order-1' : '' }} md:py-12">
+                                <div data-reveal="{{ $flip ? 'left' : 'right' }}" data-reveal-delay="150" class="{{ $flip ? 'md:order-1' : '' }} md:py-12">
                                     <div class="rounded-2xl border border-gray-100 bg-white/95 p-6 shadow-lg sm:p-8">
-                                        <svg class="h-7 w-7 text-cyan/60" fill="currentColor" viewBox="0 0 24 24">
+                                        <svg class="quote-pop h-7 w-7 text-cyan/60" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10H0z"/>
                                         </svg>
                                         <p class="mt-2 text-base leading-relaxed text-navy sm:text-lg">
@@ -311,7 +331,7 @@
                                         </p>
                                         @if ($leader->linkedin_url)
                                             <a href="{{ $leader->linkedin_url }}" target="_blank" rel="noopener" aria-label="{{ $leader->name }} on LinkedIn"
-                                               class="mt-4 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-navy text-white transition-colors hover:bg-link">
+                                               class="mt-4 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-navy text-white transition duration-200 hover:scale-110 hover:bg-link">
                                                 <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
                                                     <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
                                                 </svg>
@@ -329,14 +349,14 @@
         {{-- ===== 6b. Team grid ===== --}}
         @if ($team->count())
             <div class="mt-20 sm:mt-24">
-                <div class="text-center flex flex-col items-center gap-3 mb-10">
+                <div data-reveal class="text-center flex flex-col items-center gap-3 mb-10">
                     <span class="section-badge">Our people</span>
                     <h2 class="text-2xl sm:text-3xl font-bold text-navy leading-tight">Meet the <span class="text-cyan-ink">team</span></h2>
                 </div>
 
                 <div class="flex flex-wrap justify-center gap-6">
                     @foreach ($team as $member)
-                        <div class="group w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-1.15rem)] overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm
+                        <div data-reveal class="group w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-1.15rem)] overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm
                                     hover:shadow-xl hover:border-cyan/40 hover:-translate-y-1 transition-all duration-300">
                             <div class="aspect-[4/5] w-full overflow-hidden bg-gradient-to-br from-ice to-cyan/20 flex items-center justify-center">
                                 @if ($member->photo)
@@ -349,7 +369,7 @@
                                 @endif
                             </div>
                             <div class="p-5 text-center">
-                                <h3 class="text-base font-bold text-navy">{{ $member->name }}</h3>
+                                <h3 class="name-underline text-base font-bold text-navy">{{ $member->name }}</h3>
                                 @if ($member->designation)
                                     <p class="mt-1 text-xs font-semibold uppercase tracking-wider text-link">{{ $member->designation }}</p>
                                 @endif
@@ -366,7 +386,7 @@
 
     {{-- ===== 8. CTA ===== --}}
     <div class="relative w-[98%] mx-auto px-4 md:px-10 lg:px-20 pb-14 sm:pb-16">
-        <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-navy to-link px-8 py-10 sm:px-12 sm:py-12
+        <div data-reveal="zoom" class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-navy to-link px-8 py-10 sm:px-12 sm:py-12
                     flex flex-col sm:flex-row items-center justify-between gap-6">
             <div class="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full border-[26px] border-white/5"></div>
             <div class="relative">
@@ -376,7 +396,7 @@
             <a href="/contact-us"
                class="btn-glass relative shrink-0 px-7 py-3">
                 Get in Touch
-                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                <svg class="arrow-nudge h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
                 </svg>
             </a>
