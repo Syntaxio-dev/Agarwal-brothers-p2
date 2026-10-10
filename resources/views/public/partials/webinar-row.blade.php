@@ -19,7 +19,7 @@
     }
 @endphp
 
-<div class="group flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 rounded-2xl bg-white border border-gray-200 shadow-sm px-5 py-5
+<div data-reveal class="edge-left group relative overflow-hidden flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 rounded-2xl bg-white border border-gray-200 shadow-sm px-5 py-5
             hover:shadow-lg hover:border-cyan/50 transition-all duration-300">
 
     <div class="h-20 w-full sm:w-32 shrink-0 rounded-xl bg-white border border-gray-100 flex items-center justify-center p-3">
@@ -45,16 +45,16 @@
     </div>
 
     <div class="flex-1 min-w-0">
-        <a href="{{ $detail }}" class="text-base font-bold text-navy leading-snug hover:text-link transition-colors line-clamp-2">{{ $w->title }}</a>
+        <a href="{{ $detail }}" class="text-base font-bold text-navy leading-snug hover:text-link group-hover:text-link transition-colors line-clamp-2">{{ $w->title }}</a>
         @if ($w->excerpt)
             <p class="mt-1 text-sm text-slate leading-relaxed line-clamp-2">{{ $w->excerpt }}</p>
         @endif
     </div>
 
     <a href="{{ $href }}" @if ($external) target="_blank" rel="noopener" @endif
-       class="btn-primary shrink-0 inline-flex items-center justify-center gap-2 rounded-full bg-navy px-5 py-2.5 text-sm font-semibold text-white hover:bg-link">
+       class="btn-primary shrink-0 inline-flex items-center justify-center gap-2 rounded-full bg-navy px-5 py-2.5 text-sm font-semibold text-white hover:bg-link group-hover:bg-link">
         {{ $cta }}
-        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+        <svg class="arrow-nudge h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
         </svg>
     </a>

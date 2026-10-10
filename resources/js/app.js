@@ -10,9 +10,27 @@ import './form-guard';
 import './catalogue-filter';
 import './privacy';
 import './reveal';
-import './reveal';
+import './page-fade';
 
 // Ghost search — animated placeholder that cycles through search suggestions
+// Recent searches: kept only in this visitor's browser (30 days, removed by "Clear saved data" on the privacy page)
+window.abSearches = {
+    key: 'ab_recent_searches',
+    read() {
+        return abStore.read(this.key, 30);
+    },
+    add(q) {
+        q = String(q || '').trim().slice(0, 80);
+        if (q.length < 2) return;
+        const list = this.read().filter((x) => x.toLowerCase() !== q.toLowerCase());
+        list.unshift(q);
+        abStore.write(this.key, list.slice(0, 6));
+    },
+    clear() {
+        abStore.write(this.key, []);
+    },
+};
+
 window.ghostSearch = function () {
     return {
         ghost: '',
@@ -40,6 +58,9 @@ window.ghostSearch = function () {
         loading: false,
         active: -1,
         lastQuery: '',
+        corrected: null,
+        recents: [],
+        showRecent: false,
         suggestTimer: null,
         controller: null,
 
@@ -49,10 +70,14 @@ window.ghostSearch = function () {
             clearTimeout(this.suggestTimer);
             if (q.length < 2) {
                 this.rows = [];
-                this.open = false;
+                this.corrected = null;
                 this.lastQuery = q;
+                this.recents = abSearches.read();
+                this.showRecent = this.recents.length > 0 && q.length === 0;
+                this.open = this.showRecent;
                 return;
             }
+            this.showRecent = false;
             this.suggestTimer = setTimeout(() => this.fetchSuggestions(q), 180);
         },
 
@@ -68,6 +93,7 @@ window.ghostSearch = function () {
                 if (!res.ok) throw new Error('bad response');
                 const data = await res.json();
                 this.rows = data.rows || [];
+                this.corrected = data.corrected || null;
                 this.lastQuery = q;
                 this.open = true;
             } catch (e) {
@@ -82,7 +108,7 @@ window.ghostSearch = function () {
 
         // Split a label around the typed text so the match can be highlighted.
         parts(label) {
-            const q = this.lastQuery;
+            const q = this.corrected || this.lastQuery;
             const at = q ? label.toLowerCase().indexOf(q.toLowerCase()) : -1;
             if (at < 0) return [{ t: label, hit: false }];
             return [
@@ -111,7 +137,15 @@ window.ghostSearch = function () {
 
         close() {
             this.open = false;
+            this.showRecent = false;
             this.active = -1;
+        },
+
+        clearRecents() {
+            abSearches.clear();
+            this.recents = [];
+            this.showRecent = false;
+            this.open = false;
         },
 
         startGhost() {
@@ -129,6 +163,15 @@ window.ghostSearch = function () {
             this.running = false;
             clearTimeout(this.timer);
             this.ghost = 'Search products, brands, categories...';
+
+            // an empty box that is clicked shows the visitor's recent searches
+            if (!this.rows.length && !(this.$refs.input && this.$refs.input.value)) {
+                this.recents = abSearches.read();
+                if (this.recents.length) {
+                    this.showRecent = true;
+                    this.open = true;
+                }
+            }
         },
 
         tick() {

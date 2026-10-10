@@ -20,6 +20,8 @@ use App\Models\Vertical;
 use App\Support\AutoReply;
 use App\Support\FormRules;
 use App\Support\Preview;
+use App\Support\SearchAssist;
+use App\Support\SimilarProducts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -203,15 +205,22 @@ class PublicController extends Controller
 
         abort_unless(Preview::active() || ($product->is_active && $product->category?->brand?->is_active), 404);
 
-        $related = Product::where('category_id', $product->category_id)
-            ->where('id', '!=', $product->id)
-            ->where('is_active', true)
-            ->limit(4)
-            ->get();
+        $similar = SimilarProducts::for($product, 4);
+        $alsoCompared = SimilarProducts::alsoCompared($product, 4);
 
         $vertical = $this->contextVertical($request, $product->category);
 
-        return view('public.product', compact('product', 'related', 'vertical'));
+        return view('public.product', compact('product', 'similar', 'alsoCompared', 'vertical'));
+    }
+
+    /** Print-ready specification sheet of one product (browser "Save as PDF" gives a real text PDF). */
+    public function specSheet(Product $product)
+    {
+        $product->load('category.brand');
+
+        abort_unless(Preview::active() || ($product->is_active && $product->category?->brand?->is_active), 404);
+
+        return view('public.spec-sheet', compact('product'));
     }
 
     /** The vertical the visitor came through (?v=slug), if it really contains this category. */
@@ -381,6 +390,17 @@ class PublicController extends Controller
 
         $products = $slugs->map(fn ($s) => $found->get($s))->filter()->values();
 
+        // remember which products visitors compare together (counts only; once per visitor session)
+        if ($products->count() >= 2) {
+            $seen = (array) $request->session()->get('compared_pairs', []);
+            try {
+                SimilarProducts::recordComparison($products, $seen);
+                $request->session()->put('compared_pairs', $seen);
+            } catch (\Throwable $e) {
+                report($e);
+            }
+        }
+
         // One row per specification name (matched ignoring case and spaces), in order of first appearance.
         $rows = [];
         foreach ($products as $i => $product) {
@@ -460,14 +480,38 @@ class PublicController extends Controller
         return [$products, $brands, $lines, $verticals];
     }
 
+    /**
+     * The normal search; when it finds nothing, the same search with misspelt words fixed ("centrifuze" -> "centrifuges").
+     * The fifth item is the corrected text, or null when nothing was corrected.
+     */
+    private function searchWithFallback(string $query, int $limitProducts, int $limitBrands, int $limitLines, int $limitVerticals, bool $allowFix = true): array
+    {
+        [$products, $brands, $lines, $verticals] = $this->catalogueSearch($query, $limitProducts, $limitBrands, $limitLines, $limitVerticals);
+
+        if ($allowFix && $products->isEmpty() && $brands->isEmpty() && $lines->isEmpty() && $verticals->isEmpty()) {
+            $fixed = SearchAssist::correct($query);
+
+            if ($fixed !== null && $fixed !== mb_strtolower($query)) {
+                $again = $this->catalogueSearch($fixed, $limitProducts, $limitBrands, $limitLines, $limitVerticals);
+
+                if (collect($again)->contains(fn ($found) => $found->isNotEmpty())) {
+                    return [...$again, $fixed];
+                }
+            }
+        }
+
+        return [$products, $brands, $lines, $verticals, null];
+    }
+
     /** Live search suggestions for the search boxes (JSON). */
     public function suggest(Request $request)
     {
         $query = mb_substr(trim((string) $request->query('q', '')), 0, 80);
         $rows = [];
+        $corrected = null;
 
         if (mb_strlen($query) >= 2) {
-            [$products, $brands, $lines, $verticals] = $this->catalogueSearch($query, 5, 3, 3, 2);
+            [$products, $brands, $lines, $verticals, $corrected] = $this->searchWithFallback($query, 5, 3, 3, 2);
 
             foreach ($products as $p) {
                 $rows[] = ['type' => 'Products', 'label' => $p->name, 'sub' => collect([$p->category?->brand?->name, $p->category?->name])->filter()->implode(' · '),
@@ -487,7 +531,7 @@ class PublicController extends Controller
             }
         }
 
-        return response()->json(['q' => $query, 'rows' => $rows]);
+        return response()->json(['q' => $query, 'corrected' => $corrected, 'rows' => $rows]);
     }
 
     public function search(Request $request)
@@ -500,17 +544,48 @@ class PublicController extends Controller
         $lines = collect();
         $verticals = collect();
 
+        $corrected = null;
+        $exact = $request->boolean('exact');
+
         if ($query !== '') {
-            [$products, $brands, $lines, $verticals] = $this->catalogueSearch($query, 60, 8, 10, 6);
+            [$products, $brands, $lines, $verticals, $corrected] = $this->searchWithFallback($query, 60, 8, 10, 6, ! $exact);
         }
 
         // Shown when there is no query or nothing matched.
         $suggestVerticals = Vertical::where('is_active', true)->orderBy('sort_order')->limit(8)->get();
-        $suggestBrands = Brand::where('is_active', true)->orderBy('name')->limit(10)->get();
+        $suggestBrands = Brand::where('is_active', true)->withCount('categories')->orderByDesc('categories_count')->orderBy('name')->limit(10)->get();
+        $popular = $products->isEmpty() ? $this->popularProducts(8) : collect();
 
         return view('public.search', compact(
-            'products', 'brands', 'lines', 'verticals', 'query', 'suggestVerticals', 'suggestBrands'
+            'products', 'brands', 'lines', 'verticals', 'query', 'corrected', 'suggestVerticals', 'suggestBrands', 'popular'
         ));
+    }
+
+    /** Products people ask about most (from enquiries of the last 6 months), topped up with the newest ones. */
+    private function popularProducts(int $limit)
+    {
+        $visible = fn ($q) => $q->where('products.is_active', true)
+            ->whereHas('category.brand', fn ($b) => $b->where('brands.is_active', true))
+            ->with('category.brand');
+
+        $ids = \App\Models\EnquiryItem::whereNotNull('product_id')
+            ->where('created_at', '>=', now()->subMonths(6))
+            ->selectRaw('product_id, COUNT(*) as asked')
+            ->groupBy('product_id')
+            ->orderByDesc('asked')
+            ->limit($limit)
+            ->pluck('product_id');
+
+        $top = $visible(Product::query())->whereIn('products.id', $ids)->get()
+            ->sortBy(fn ($p) => $ids->search($p->id))->values();
+
+        if ($top->count() < $limit) {
+            $top = $top->concat(
+                $visible(Product::query())->whereNotIn('products.id', $top->pluck('id'))->orderByDesc('products.id')->limit($limit - $top->count())->get()
+            );
+        }
+
+        return $top;
     }
 
     /** The visitor's enquiry list (items live in their browser; this page just renders the form). */

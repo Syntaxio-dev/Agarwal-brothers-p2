@@ -7,6 +7,28 @@
     <div class="h-0.5 w-full bg-ice"><div x-show="loading" class="h-full w-1/3 animate-pulse bg-cyan"></div></div>
 
     <div class="max-h-[60vh] overflow-y-auto p-2">
+        {{-- Spelling fixed for the visitor --}}
+        <p x-show="corrected && rows.length" class="px-3 pb-1 pt-2 text-xs text-slate">
+            Showing results for &ldquo;<span class="font-semibold text-navy" x-text="corrected"></span>&rdquo;
+        </p>
+
+        {{-- Recent searches (empty box) --}}
+        <div x-show="showRecent && !rows.length" class="pb-1">
+            <div class="flex items-center justify-between gap-3 px-3 pb-1.5 pt-1.5">
+                <p class="flex items-center gap-2 font-mono text-[10px] font-medium uppercase tracking-[0.22em] text-link">
+                    <span class="h-0.5 w-4 bg-cyan" style="box-shadow: 2px 0 0 #0B2545;"></span> Recent searches
+                </p>
+                <button type="button" @click="clearRecents()" class="font-mono text-[10px] font-medium uppercase tracking-wider text-slate transition-colors hover:text-alert">Clear</button>
+            </div>
+            <template x-for="q in recents" :key="q">
+                <a :href="'{{ route('search') }}?q=' + encodeURIComponent(q)"
+                   class="flex items-center gap-3 rounded-lg px-3 py-2 text-sm text-navy transition-colors hover:bg-ice hover:text-link">
+                    <svg class="h-4 w-4 shrink-0 text-slate/60" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                    <span class="truncate" x-text="q"></span>
+                </a>
+            </template>
+        </div>
+
         <template x-for="(r, i) in rows" :key="r.type + r.url">
             <div>
                 <p x-show="showHeading(i)" :class="i === 0 ? 'pt-1.5' : 'pt-4'"
@@ -38,7 +60,7 @@
             </div>
         </template>
 
-        <div x-show="!rows.length && !loading" class="px-3 py-6 text-center">
+        <div x-show="!rows.length && !loading && !showRecent" class="px-3 py-6 text-center">
             <p class="text-sm font-semibold text-navy">No quick matches</p>
             <p class="mt-1 text-xs text-slate">Nothing found for “<span x-text="lastQuery"></span>”. Press Enter to search everything.</p>
         </div>
@@ -46,9 +68,9 @@
 
     {{-- Footer --}}
     <div class="flex items-center justify-between gap-3 border-t border-gray-200 bg-ice px-4 py-2.5">
-        <a :href="'{{ route('search') }}?q=' + encodeURIComponent(lastQuery)" class="min-w-0 truncate text-xs font-semibold text-link hover:text-navy">
+        <a x-show="lastQuery" :href="'{{ route('search') }}?q=' + encodeURIComponent(lastQuery)" class="min-w-0 truncate text-xs font-semibold text-link hover:text-navy">
             See all results for “<span x-text="lastQuery"></span>” &rarr;
         </a>
-        <span class="hidden shrink-0 font-mono text-[10px] uppercase tracking-wider text-slate sm:block">&uarr; &darr; to move &middot; Enter to open</span>
+        <span class="ml-auto hidden shrink-0 font-mono text-[10px] uppercase tracking-wider text-slate sm:block">&uarr; &darr; to move &middot; Enter to open</span>
     </div>
 </div>

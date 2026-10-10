@@ -253,6 +253,8 @@ main:focus {
     .btn-glass:hover .arrow-nudge,
     .btn-ghost:hover .arrow-nudge { translate: 3px 0; }
     .arrow-nudge-down { transition: translate 0.25s ease; }
+    .group:hover .btn-primary .arrow-nudge { translate: 3px 0; }
+    .group:hover .btn-primary .arrow-nudge-down { translate: 0 3px; }
     .btn-primary:hover .arrow-nudge-down,
     .btn-glass:hover .arrow-nudge-down,
     .btn-ghost:hover .arrow-nudge-down { translate: 0 3px; }
@@ -270,8 +272,26 @@ main:focus {
     }
     .edge-left:hover::before { transform: scaleY(1); }
 
+    /* Sidebar link: a short cyan edge grows on hover and stays on the page you are on */
+    .nav-link { position: relative; }
+    .nav-link::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 22%;
+        bottom: 22%;
+        width: 3px;
+        border-radius: 2px;
+        background: #00B4D8;
+        transform: scaleY(0);
+        transition: transform 0.25s ease;
+    }
+    .nav-link:hover::before,
+    .nav-link.bg-navy::before { transform: scaleY(1); }
+
     /* Value card: a cyan edge grows along the top on hover */
-    .value-card::before {
+    .value-card::before,
+    .edge-top::before {
         content: '';
         position: absolute;
         inset: 0 0 auto 0;
@@ -281,7 +301,8 @@ main:focus {
         transform-origin: left;
         transition: transform 0.4s ease;
     }
-    .value-card:hover::before { transform: scaleX(1); }
+    .value-card:hover::before,
+    .edge-top:hover::before { transform: scaleX(1); }
 
     /* Team name: a short cyan line grows under it on hover */
     .name-underline { position: relative; display: inline-block; padding-bottom: 0.3rem; }
@@ -491,6 +512,8 @@ select[aria-invalid="true"] {
 @keyframes tl-pop  { 0% { opacity: 0; transform: scale(0); } 60% { opacity: 1; transform: scale(1.25); } 100% { opacity: 1; transform: scale(1); } }
 @keyframes tl-stem { from { transform: scaleY(0); } }
 @keyframes icon-pop { 0% { opacity: 0; transform: scale(0.6); } 65% { opacity: 1; transform: scale(1.08); } 100% { transform: scale(1); } }
+@keyframes bar-grow { from { transform: scaleX(0); } }
+@keyframes pin-drop { from { opacity: 0; transform: translate3d(0, -24px, 0); } }
 @keyframes hero-zoom { from { transform: scale(1.07); } }
 @keyframes hero-rise { from { opacity: 0; transform: translate3d(0, 18px, 0); } }
 
@@ -523,6 +546,27 @@ select[aria-invalid="true"] {
         animation: reveal-up 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94) calc(var(--reveal-delay, 0ms) + var(--tl-delay, 0ms)) backwards;
     }
 
+    /* rows that Alpine builds on the page (enquiry list) cannot use data-reveal, so they simply rise in as they are created */
+    .row-in {
+        animation: reveal-up 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94) calc(var(--i, 0) * 70ms) backwards;
+    }
+
+    /* countdown tiles pop in one after another once their card has arrived */
+    [data-reveal].is-revealed .pop-tile {
+        animation: icon-pop 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94) calc(var(--reveal-delay, 0ms) + 250ms + var(--pop-delay, 0ms)) backwards;
+    }
+
+    /* coloured top bar of a card grows from the left as the card arrives */
+    [data-reveal].is-revealed .bar-grow {
+        transform-origin: left;
+        animation: bar-grow 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94) calc(var(--reveal-delay, 0ms) + 200ms) backwards;
+    }
+
+    /* map pins drop onto the map just after it appears */
+    [data-reveal].is-revealed .map-pin {
+        animation: pin-drop 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94) calc(var(--reveal-delay, 0ms) + var(--pin-delay, 0ms)) backwards;
+    }
+
     /* icons pop in just after their card arrives */
     [data-reveal].is-revealed .value-icon,
     [data-reveal].is-revealed .pop-icon {
@@ -533,7 +577,41 @@ select[aria-invalid="true"] {
     }
 
     /* Our Story banner: one calm intro when the page opens */
-    .story-hero-img   { animation: hero-zoom 1600ms cubic-bezier(0.25, 0.46, 0.45, 0.94) backwards; }
-    .story-hero-title { animation: hero-rise 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 150ms backwards; }
-    .story-hero-crumb { animation: reveal-fade 600ms ease-out 350ms backwards; }
+    .story-hero-img,
+    .intro-zoom   { animation: hero-zoom 1600ms cubic-bezier(0.25, 0.46, 0.45, 0.94) backwards; }
+    .story-hero-title,
+    .intro-rise   { animation: hero-rise 700ms cubic-bezier(0.25, 0.46, 0.45, 0.94) 150ms backwards; }
+    .story-hero-crumb,
+    .intro-fade   { animation: reveal-fade 600ms ease-out 350ms backwards; }
+}
+
+/* ------------------------------------------------------------------
+   Page-to-page transition (see resources/js/page-fade.js): the content fades out when a link is followed.
+   The sidebar and floating buttons are outside .page-fade, so they stay put.
+------------------------------------------------------------------- */
+@media (prefers-reduced-motion: no-preference) {
+    .page-fade { transition: opacity 160ms ease-in; }
+    html.page-leaving .page-fade { opacity: 0; }
+}
+
+/* Home page: brand logo marquee (kept here, not in the page, so no late <style> block disturbs page transitions) */
+@keyframes brand-marquee-left {
+    0%   { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+@keyframes brand-marquee-right {
+    0%   { transform: translateX(-50%); }
+    100% { transform: translateX(0); }
+}
+.brand-marquee-track {
+    animation-duration: var(--dur, 40s);
+    animation-timing-function: linear;
+    animation-iteration-count: infinite;
+}
+.brand-marquee-left  { animation-name: brand-marquee-left; }
+.brand-marquee-right { animation-name: brand-marquee-right; }
+/* Each row stops by itself while the mouse (or keyboard focus) is on it; the other row keeps moving. */
+.brand-marquee-track:hover,
+.brand-marquee-track:focus-within {
+    animation-play-state: paused;
 }

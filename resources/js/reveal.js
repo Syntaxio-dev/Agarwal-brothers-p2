@@ -47,14 +47,15 @@ if (reduce) {
             const r = el.getBoundingClientRect();
             const visible = Math.min(r.bottom, vh) - Math.max(r.top, 0);
             const passedAbove = r.bottom <= 0;          // already scrolled past (page opened part-way down)
+            const startedAbove = r.top < 0 && visible > 0; // its start is already above the screen (jumped down with End / a link): show it at once
             const enough = visible >= Math.min(MIN_VISIBLE_PX, r.height * 0.6) && r.top < vh;
 
-            if (passedAbove || enough) {
+            if (passedAbove || startedAbove || enough) {
                 const extra = parseInt(el.dataset.revealDelay || '0', 10) || 0;
                 const plainSlideUp = el.dataset.reveal === '' || el.dataset.reveal === 'up';
                 if (plainSlideUp && r.height > TALL_PX) el.classList.add('reveal-lg');
 
-                show(el, passedAbove ? 0 : Math.min(step++, 5) * 70 + extra);
+                show(el, passedAbove || startedAbove ? 0 : Math.min(step++, 5) * 70 + extra);
                 pending.splice(i, 1);
             } else {
                 i++;

@@ -23,29 +23,6 @@
 
     <h1 class="sr-only">Laboratory equipment, scientific instruments and chemicals supplier in India</h1>
 
-    {{-- Marquee animation --}}
-    <style>
-        @keyframes brand-marquee-left {
-            0%   { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-        @keyframes brand-marquee-right {
-            0%   { transform: translateX(-50%); }
-            100% { transform: translateX(0); }
-        }
-        .brand-marquee-track {
-            animation-duration: var(--dur, 40s);
-            animation-timing-function: linear;
-            animation-iteration-count: infinite;
-        }
-        .brand-marquee-left  { animation-name: brand-marquee-left; }
-        .brand-marquee-right { animation-name: brand-marquee-right; }
-        /* Each row stops by itself while the mouse (or keyboard focus) is on it; the other row keeps moving. */
-        .brand-marquee-track:hover,
-        .brand-marquee-track:focus-within {
-            animation-play-state: paused;
-        }
-    </style>
 
 
     {{-- ===== 1. HERO CAROUSEL ===== --}}

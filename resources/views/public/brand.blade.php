@@ -42,10 +42,10 @@
         <h2 data-reveal class="mt-10 text-lg font-bold text-navy">Products</h2>
         <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             @foreach ($products as $product)
-                <div data-reveal class="relative flex">
+                <div data-reveal class="group transition-all duration-300 hover:-translate-y-1 relative flex">
                 <a href="{{ route('product.show', $product->slug) }}"
                     class="w-full group flex flex-col overflow-hidden rounded-xl bg-white border border-gray-100 shadow-sm
-                           hover:shadow-lg hover:border-cyan/40 hover:-translate-y-1 transition-all duration-300">
+                           group-hover:shadow-lg group-hover:border-cyan/40 transition-all duration-300">
                     <div class="h-40 bg-ice flex items-center justify-center p-4">
                         @if ($product->image)
                             <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"

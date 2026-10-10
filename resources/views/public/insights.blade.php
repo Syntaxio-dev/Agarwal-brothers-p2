@@ -47,37 +47,33 @@
     <div class="relative w-[98%] mx-auto px-4 md:px-10 lg:px-20 py-10 sm:py-14">
 
         {{-- Breadcrumb --}}
-        <div class="text-sm text-slate mb-6">
-            <a href="/" class="hover:text-link transition">Home</a>
-            <span class="mx-1.5">/</span>
-            <span class="text-navy font-medium">{{ $title }}</span>
-        </div>
+        @include('public.partials.breadcrumb', ['items' => [['Home', '/'], [$title, null]]])
 
         {{-- ===== Hero ===== --}}
         @if ($type === 'news' && ! $hero)
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
                 <div>
-                    <span class="section-badge">
+                    <span data-reveal class="section-badge">
                         <svg class="h-3.5 w-3.5 text-cyan-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5m4.75-11.396c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3"/>
                         </svg>
                         Agarwal Brothers Events
                     </span>
-                    <h1 class="mt-5 text-3xl sm:text-4xl lg:text-5xl font-bold text-navy leading-tight">
+                    <h1 data-reveal class="mt-5 text-3xl sm:text-4xl lg:text-5xl font-bold text-navy leading-tight">
                         Events, Exhibitions &amp; <span class="text-cyan-ink">Scientific Updates</span>
                     </h1>
-                    <div class="mt-5 flex flex-wrap gap-2">
+                    <div data-reveal class="mt-5 flex flex-wrap gap-2">
                         <span class="rounded-full bg-navy px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white">At the center of lab innovation</span>
                         <span class="rounded-full bg-white border border-gray-200 px-4 py-1.5 text-xs font-medium text-navy">Latest updates</span>
                         <span class="rounded-full bg-white border border-gray-200 px-4 py-1.5 text-xs font-medium text-navy">Across India</span>
                     </div>
-                    <p class="mt-5 max-w-xl text-base text-slate leading-relaxed">
+                    <p data-reveal class="mt-5 max-w-xl text-base text-slate leading-relaxed">
                         Meet our specialists, explore application-led product demonstrations, and follow
                         Agarwal Brothers' presence across India's leading scientific exhibitions.
                     </p>
                 </div>
 
-                <div class="rounded-2xl bg-white border border-gray-100 shadow-lg p-6">
+                <div data-reveal="right" class="rounded-2xl bg-white border border-gray-100 shadow-lg p-6">
                     <div class="flex items-start justify-between gap-4">
                         <div>
                             <p class="text-xs font-bold uppercase tracking-widest text-cyan-ink">Discover</p>
@@ -96,7 +92,7 @@
             <div class="relative w-full overflow-hidden rounded-3xl shadow-lg ring-1 ring-black/5">
                 @if ($hero)
                     <img src="{{ $hero }}" alt="{{ $title }}"
-                         class="img-load block w-full aspect-[16/7] sm:aspect-[3/1] object-cover" decoding="async" onload="this.classList.add('is-loaded')">
+                         class="img-load intro-zoom block w-full aspect-[16/7] sm:aspect-[3/1] object-cover" decoding="async" onload="this.classList.add('is-loaded')">
                 @else
                     <div class="relative w-full aspect-[16/8] sm:aspect-[3/1] bg-gradient-to-br from-navy to-link flex items-center">
                         <div class="pointer-events-none absolute inset-0
@@ -105,8 +101,8 @@
                         <div class="pointer-events-none absolute right-24 top-6 h-24 w-24 rounded-full border-[10px] border-cyan/20"></div>
 
                         <div class="relative px-6 sm:px-12 lg:px-16">
-                            <h2 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight">{{ $meta['banner_title'] }}</h2>
-                            <p class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-lg font-semibold text-white/90">
+                            <h2 class="intro-rise text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight">{{ $meta['banner_title'] }}</h2>
+                            <p class="intro-fade mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-lg font-semibold text-white/90">
                                 @foreach ($meta['banner_tags'] as $tag)
                                     <span>{{ $tag }}</span>
                                     @unless ($loop->last)<span class="h-1.5 w-1.5 rounded-full bg-cyan"></span>@endunless
@@ -119,7 +115,7 @@
         @endif
 
         {{-- ===== Filters ===== --}}
-        <form method="GET" action="{{ url()->current() }}"
+        <form data-reveal method="GET" action="{{ url()->current() }}"
               class="mt-12 flex flex-wrap items-center gap-x-12 gap-y-5 rounded-2xl bg-white border border-gray-100 shadow-sm px-6 py-6 sm:px-10 sm:py-8">
             <label class="flex items-center gap-4 text-sm font-semibold text-navy">
                 Month
@@ -158,19 +154,19 @@
         </form>
 
         {{-- ===== Heading ===== --}}
-        <div class="mt-14 mb-8">
+        <div data-reveal class="mt-14 mb-8">
             <{{ ($type === 'news' && ! $hero) ? 'h2' : 'h1' }} class="text-2xl sm:text-3xl font-bold text-navy leading-tight">
                 {{ $meta['heading'] }} <span class="text-cyan-ink">{{ $meta['accent'] }}</span>
             </{{ ($type === 'news' && ! $hero) ? 'h2' : 'h1' }}>
-            <div class="mt-3 h-1 w-16 rounded-full bg-cyan"></div>
+            <div class="bar-grow mt-3 h-1 w-16 rounded-full bg-cyan"></div>
         </div>
 
         {{-- ===== Cards ===== --}}
         @if ($insights->count())
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 @foreach ($insights as $insight)
-                    <a href="{{ route('insights.show', $insight->slug) }}"
-                        class="group flex flex-col overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm
+                    <a data-reveal href="{{ route('insights.show', $insight->slug) }}"
+                        class="edge-top group relative flex flex-col overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm
                                hover:shadow-xl hover:border-cyan/50 hover:-translate-y-1 transition-all duration-300">
 
                         <div class="relative {{ $meta['ratio'] }} w-full overflow-hidden bg-gradient-to-br from-ice to-cyan/10 flex items-center justify-center">
@@ -216,7 +212,7 @@
                 @endforeach
             </div>
         @else
-            <div class="rounded-2xl bg-white border border-gray-100 text-center py-16">
+            <div data-reveal="fade" class="rounded-2xl bg-white border border-gray-100 text-center py-16">
                 <p class="text-lg font-semibold text-navy">{{ $hasFilters ? $meta['empty'] : 'Nothing here yet' }}</p>
                 <p class="mt-2 text-sm text-slate">
                     {{ $hasFilters ? 'Try a different month or year, or reset the filters.' : 'Check back later for updates.' }}

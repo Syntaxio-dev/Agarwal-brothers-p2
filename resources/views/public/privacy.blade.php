@@ -13,6 +13,7 @@
         ['ab_compare', 'Saved data', 'Feature you asked for', 'Your compare list.', '7 days since last change'],
         ['ab_enquiry_list', 'Saved data', 'Feature you asked for', 'Your enquiry list (products and quantities).', '30 days since last change'],
         ['ab_recent', 'Saved data', 'Feature you asked for', 'Products you recently viewed.', '30 days since last change'],
+        ['ab_recent_searches', 'Saved data', 'Feature you asked for', 'Your last few searches.', '30 days since last change'],
         ['ab_consent', 'Saved data', 'Essential', 'Remembers your cookie choice.', '180 days'],
     ];
     if ($analytics) {
@@ -31,11 +32,11 @@
     <div class="relative mx-auto w-[98%] max-w-4xl px-4 py-10 sm:py-14 md:px-10">
         @include('public.partials.breadcrumb', ['items' => $crumbs])
 
-        <span class="section-badge">Privacy</span>
-        <h1 class="mt-3 text-3xl font-bold leading-tight text-navy sm:text-4xl">Privacy <span class="text-cyan-ink">policy</span></h1>
-        <p class="mt-3 text-sm text-slate">Last updated {{ config('privacy.updated') }}</p>
+        <span data-reveal class="section-badge">Privacy</span>
+        <h1 data-reveal class="mt-3 text-3xl font-bold leading-tight text-navy sm:text-4xl">Privacy <span class="text-cyan-ink">policy</span></h1>
+        <p data-reveal class="mt-3 text-sm text-slate">Last updated {{ config('privacy.updated') }}</p>
 
-        <div class="rich-text mt-6">
+        <div data-reveal class="rich-text mt-6">
             <p>
                 {{ $company }} (&ldquo;we&rdquo;) supplies laboratory equipment and chemicals from {{ $address }}.
                 This page explains what information this website collects, why, how long it is kept, and how you can control it.
@@ -61,12 +62,12 @@
         </div>
 
         {{-- Cookies and saved data --}}
-        <h2 class="{{ $h2 }}">Cookies and data saved on your device</h2>
-        <p class="mt-2 text-sm leading-relaxed text-slate">
+        <h2 data-reveal class="{{ $h2 }}">Cookies and data saved on your device</h2>
+        <p data-reveal class="mt-2 text-sm leading-relaxed text-slate">
             The items below stay on your own device. They are not sent to us except the two cookies needed to run the site, and they remove themselves after the time shown.
         </p>
 
-        <div class="mt-5 overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
+        <div data-reveal class="mt-5 overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
             <table class="w-full min-w-[640px] border-collapse text-left text-sm">
                 <thead>
                     <tr class="bg-ice">
@@ -77,7 +78,7 @@
                 </thead>
                 <tbody>
                     @foreach ($storage as [$name, $type, $category, $purpose, $lasts])
-                        <tr class="border-b border-gray-100 align-top last:border-0">
+                        <tr class="border-b border-gray-100 align-top transition-colors last:border-0 hover:bg-ice/70">
                             <td class="px-4 py-3 font-mono text-xs font-medium text-navy">{{ $name }}</td>
                             <td class="px-4 py-3 text-slate">{{ $type }}<br><span class="text-xs">{{ $category }}</span></td>
                             <td class="px-4 py-3 text-slate">{{ $purpose }}</td>
@@ -89,15 +90,15 @@
         </div>
 
         {{-- Your choices --}}
-        <h2 class="{{ $h2 }}">Your choices</h2>
+        <h2 data-reveal class="{{ $h2 }}">Your choices</h2>
         <div class="mt-5 grid gap-4 sm:grid-cols-2" x-data="{ cleared: false }">
-            <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div data-reveal class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300 hover:border-cyan/40 hover:shadow-md">
                 <p class="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-link">Saved on this device</p>
                 <p class="mt-2 text-sm leading-relaxed text-slate">Delete your compare list, enquiry list, recently viewed products and cookie choice from this browser.</p>
                 <button type="button" @click="abClearSavedData(); cleared = true" class="btn-ghost mt-4">Clear saved data</button>
                 <p x-cloak x-show="cleared" role="status" class="mt-3 text-sm font-medium text-success">Done. Everything this site saved on your device has been removed.</p>
             </div>
-            <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm">
+            <div data-reveal class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300 hover:border-cyan/40 hover:shadow-md">
                 <p class="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-link">Cookie settings</p>
                 <p class="mt-2 text-sm leading-relaxed text-slate">
                     @if ($analytics)
@@ -110,7 +111,7 @@
             </div>
         </div>
 
-        <div class="rich-text mt-6">
+        <div data-reveal class="rich-text mt-6">
             <h2 class="{{ $h2 }}">How long we keep your information</h2>
             <ul>
                 <li>Enquiries and contact messages: up to {{ $retention['enquiries'] }} months after we last hear from you, unless a longer period is needed for an order or a legal requirement.</li>
@@ -131,7 +132,7 @@
             <p>If we change this policy we will update the date at the top of this page.</p>
         </div>
 
-        <div class="mt-12 flex flex-col items-center justify-between gap-5 rounded-3xl bg-gradient-to-br from-navy to-link px-8 py-9 sm:flex-row sm:px-12">
+        <div data-reveal="zoom" class="mt-12 flex flex-col items-center justify-between gap-5 rounded-3xl bg-gradient-to-br from-navy to-link px-8 py-9 sm:flex-row sm:px-12">
             <div class="text-center sm:text-left">
                 <h3 class="text-xl font-bold text-white sm:text-2xl">Questions about your data?</h3>
                 <p class="mt-1.5 text-sm text-white/75">Our team will be glad to help.</p>

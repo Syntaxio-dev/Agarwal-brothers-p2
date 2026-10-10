@@ -14,32 +14,39 @@
 
         {{-- Heading --}}
         <div class="max-w-3xl">
-            <span class="section-badge">Search</span>
+            <span data-reveal class="section-badge">Search</span>
             @if ($query !== '')
-                <h1 class="mt-4 text-3xl sm:text-4xl font-bold leading-tight text-navy">
+                <h1 data-reveal class="mt-4 text-3xl sm:text-4xl font-bold leading-tight text-navy">
                     Results for <span class="text-cyan-ink">&ldquo;{{ $query }}&rdquo;</span>
                 </h1>
-                <p class="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate">
-                    <span class="rounded-md border border-gray-200 bg-white px-3 py-1.5 font-mono text-xs text-navy">
+                <p data-reveal class="mt-3 flex flex-wrap items-center gap-2 text-sm text-slate">
+                    <span class="pop-tile rounded-md border border-gray-200 bg-white px-3 py-1.5 font-mono text-xs text-navy">
                         {{ $total }} {{ \Illuminate\Support\Str::plural('product', $total) }}
                     </span>
                     @if ($brands->count())
-                        <span class="rounded-md border border-gray-200 bg-white px-3 py-1.5 font-mono text-xs text-navy">{{ $brands->count() }} {{ \Illuminate\Support\Str::plural('brand', $brands->count()) }}</span>
+                        <span style="--pop-delay: 90ms" class="pop-tile rounded-md border border-gray-200 bg-white px-3 py-1.5 font-mono text-xs text-navy">{{ $brands->count() }} {{ \Illuminate\Support\Str::plural('brand', $brands->count()) }}</span>
                     @endif
                     @if ($lines->count())
-                        <span class="rounded-md border border-gray-200 bg-white px-3 py-1.5 font-mono text-xs text-navy">{{ $lines->count() }} product {{ \Illuminate\Support\Str::plural('line', $lines->count()) }}</span>
+                        <span style="--pop-delay: 180ms" class="pop-tile rounded-md border border-gray-200 bg-white px-3 py-1.5 font-mono text-xs text-navy">{{ $lines->count() }} product {{ \Illuminate\Support\Str::plural('line', $lines->count()) }}</span>
                     @endif
                 </p>
             @else
-                <h1 class="mt-4 text-3xl sm:text-4xl font-bold leading-tight text-navy">
+                <h1 data-reveal class="mt-4 text-3xl sm:text-4xl font-bold leading-tight text-navy">
                     Find <span class="text-cyan-ink">instruments, brands</span> and product lines
                 </h1>
-                <p class="mt-3 text-base text-slate leading-relaxed">Search by product name, brand or category, or browse by vertical below.</p>
+                <p data-reveal class="mt-3 text-base text-slate leading-relaxed">Search by product name, brand or category, or browse by vertical below.</p>
             @endif
         </div>
 
+        @if ($corrected)
+            <p data-reveal class="mt-4 text-sm text-slate">
+                Showing results for <a href="{{ route('search', ['q' => $corrected]) }}" class="font-semibold text-link hover:text-navy">&ldquo;{{ $corrected }}&rdquo;</a>.
+                Search instead for <a href="{{ route('search', ['q' => $query, 'exact' => 1]) }}" class="font-semibold text-link hover:text-navy">&ldquo;{{ $query }}&rdquo;</a>
+            </p>
+        @endif
+
         {{-- Search bar --}}
-        <form action="{{ route('search') }}" method="GET" role="search"
+        <form data-reveal action="{{ route('search') }}" method="GET" role="search"
               x-data="ghostSearch()" x-init="startGhost()" @click.outside="close()"
               class="relative mt-7 flex max-w-2xl items-center gap-2 rounded-xl border border-gray-200 bg-white p-1.5 shadow-sm transition focus-within:border-cyan focus-within:ring-2 focus-within:ring-cyan/20">
             <svg class="ml-3 h-5 w-5 shrink-0 text-slate" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -60,18 +67,19 @@
 </form>
 
         @if ($query !== '' && $hasAny)
+            <span class="hidden" x-data x-init="abSearches.add(@js($corrected ?: $query))"></span>
 
             {{-- Matching brands --}}
             @if ($brands->count())
                 <section class="mt-12">
-                    <div class="flex items-center gap-4">
+                    <div data-reveal class="flex items-center gap-4">
                         <h2 class="text-lg font-bold text-navy sm:text-xl">Brands</h2>
                         <div class="h-px flex-1 bg-gradient-to-r from-cyan/50 to-transparent"></div>
                     </div>
                     <div class="mt-5 flex flex-wrap gap-3">
                         @foreach ($brands as $brand)
                             <a href="{{ route('brand.show', $brand->slug) }}"
-                               class="group flex items-center gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm transition-all duration-200 hover:border-cyan/60 hover:shadow-md">
+                               data-reveal class="edge-left group relative flex items-center gap-3 overflow-hidden rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm transition-all duration-200 hover:border-cyan/60 hover:shadow-md">
                                 <span class="flex h-10 w-14 items-center justify-center overflow-hidden rounded-lg bg-ice p-1">
                                     @if ($brand->logo)
                                         <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }} logo" class="img-load max-h-full max-w-full object-contain" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($brand->logo) !!} onload="this.classList.add('is-loaded')">
@@ -92,14 +100,14 @@
             {{-- Matching product lines --}}
             @if ($lines->count())
                 <section class="mt-10">
-                    <div class="flex items-center gap-4">
+                    <div data-reveal class="flex items-center gap-4">
                         <h2 class="text-lg font-bold text-navy sm:text-xl">Product lines</h2>
                         <div class="h-px flex-1 bg-gradient-to-r from-cyan/50 to-transparent"></div>
                     </div>
                     <div class="mt-5 flex flex-wrap gap-2.5">
                         @foreach ($lines as $line)
                             <a href="{{ route('category.show', [$line->brand->slug, $line->slug]) }}"
-                               class="chip !pl-3.5 hover:text-link">
+                               data-reveal="zoom" class="chip !pl-3.5 hover:text-link">
                                 {{ $line->name }}
                                 <span class="text-slate">&middot; {{ $line->brand->name }}</span>
                             </a>
@@ -111,13 +119,13 @@
             {{-- Matching verticals --}}
             @if ($verticals->count())
                 <section class="mt-10">
-                    <div class="flex items-center gap-4">
+                    <div data-reveal class="flex items-center gap-4">
                         <h2 class="text-lg font-bold text-navy sm:text-xl">Verticals</h2>
                         <div class="h-px flex-1 bg-gradient-to-r from-cyan/50 to-transparent"></div>
                     </div>
                     <div class="mt-5 flex flex-wrap gap-2.5">
                         @foreach ($verticals as $vertical)
-                            <a href="{{ route('vertical.show', $vertical->slug) }}" class="chip !pl-3.5 hover:text-link">{{ $vertical->name }}</a>
+                            <a data-reveal="zoom" href="{{ route('vertical.show', $vertical->slug) }}" class="chip !pl-3.5 hover:text-link">{{ $vertical->name }}</a>
                         @endforeach
                     </div>
                 </section>
@@ -126,49 +134,19 @@
             {{-- Products --}}
             @if ($total)
                 <section class="mt-12">
-                    <div class="flex items-center gap-4">
+                    <div data-reveal class="flex items-center gap-4">
                         <h2 class="text-lg font-bold text-navy sm:text-xl">Products</h2>
                         <div class="h-px flex-1 bg-gradient-to-r from-cyan/50 to-transparent"></div>
                     </div>
 
                     <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         @foreach ($products as $product)
-                            <div class="relative flex">
-                            <a href="{{ route('product.show', $product->slug) }}"
-                               class="w-full group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-cyan/50 hover:shadow-xl">
-                                <div class="flex h-48 items-center justify-center bg-ice p-5">
-                                    @if ($product->image)
-                                        <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
-                                             class="img-load max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($product->image) !!} onload="this.classList.add('is-loaded')">
-                                    @else
-                                        <svg class="h-12 w-12 text-slate/25" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1" aria-hidden="true">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5A2.25 2.25 0 0 0 22.5 18.75V5.25A2.25 2.25 0 0 0 20.25 3H3.75A2.25 2.25 0 0 0 1.5 5.25v13.5A2.25 2.25 0 0 0 3.75 21Z"/>
-                                        </svg>
-                                    @endif
-                                </div>
-
-                                <div class="flex flex-1 flex-col p-5">
-                                    @if ($product->category?->brand)
-                                        <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-link">{{ $product->category->brand->name }}</p>
-                                    @endif
-                                    <h3 class="mt-1.5 text-base font-bold leading-snug text-navy transition-colors group-hover:text-link">{{ $product->name }}</h3>
-                                    @if ($product->category)
-                                        <p class="mt-1 text-xs text-slate">{{ $product->category->name }}</p>
-                                    @endif
-                                    @if ($product->short_description)
-                                        <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-slate">{{ $product->short_description }}</p>
-                                    @endif
-                                    <span class="mt-auto pt-4 text-xs font-semibold text-link">View details &rarr;</span>
-                                </div>
-                            </a>
-                                @include('public.partials.compare-toggle', ['product' => $product])
-                                @include('public.partials.enquiry-list-toggle', ['product' => $product])
-                            </div>
+                            @include('public.partials.product-card', ['product' => $product])
                         @endforeach
                     </div>
 
                     @if ($total >= 60)
-                        <p class="mt-6 text-center text-sm text-slate">Showing the first 60 matches. Refine your search to narrow it down.</p>
+                        <p data-reveal="fade" class="mt-6 text-center text-sm text-slate">Showing the first 60 matches. Refine your search to narrow it down.</p>
                     @endif
                 </section>
             @endif
@@ -176,8 +154,8 @@
         @else
             {{-- Nothing searched yet, or nothing matched --}}
             @if ($query !== '')
-                <div class="mt-12 rounded-2xl border border-gray-200 bg-white px-6 py-12 text-center shadow-sm">
-                    <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-ice text-link">
+                <div data-reveal class="mt-12 rounded-2xl border border-gray-200 bg-white px-6 py-12 text-center shadow-sm">
+                    <div class="pop-icon mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-xl bg-ice text-link">
                         <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35"/></svg>
                     </div>
                     <p class="text-lg font-semibold text-navy">No matches for &ldquo;{{ $query }}&rdquo;</p>
@@ -193,15 +171,46 @@
                 </div>
             @endif
 
+            {{-- Recent searches (kept only in this browser) --}}
+            <section x-data="{ items: abSearches.read(), clear() { abSearches.clear(); this.items = [] } }" x-cloak x-show="items.length" class="mt-12">
+                <div class="flex items-center gap-4">
+                    <h2 class="text-lg font-bold text-navy sm:text-xl">Your recent searches</h2>
+                    <div class="h-px flex-1 bg-gradient-to-r from-cyan/50 to-transparent"></div>
+                    <button type="button" @click="clear()" class="shrink-0 font-mono text-[11px] font-medium uppercase tracking-wider text-slate transition-colors hover:text-alert">Clear</button>
+                </div>
+                <div class="mt-5 flex flex-wrap gap-2.5">
+                    <template x-for="q in items" :key="q">
+                        <a :href="'{{ route('search') }}?q=' + encodeURIComponent(q)" class="chip !pl-3.5 hover:text-link">
+                            <svg class="h-3.5 w-3.5 text-slate" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg>
+                            <span x-text="q"></span>
+                        </a>
+                    </template>
+                </div>
+            </section>
+
             @if ($suggestVerticals->count())
                 <section class="mt-12">
-                    <div class="flex items-center gap-4">
+                    <div data-reveal class="flex items-center gap-4">
                         <h2 class="text-lg font-bold text-navy sm:text-xl">Browse by vertical</h2>
                         <div class="h-px flex-1 bg-gradient-to-r from-cyan/50 to-transparent"></div>
                     </div>
                     <div class="mt-5 flex flex-wrap gap-2.5">
                         @foreach ($suggestVerticals as $v)
-                            <a href="{{ route('vertical.show', $v->slug) }}" class="chip !pl-3.5 hover:text-link">{{ $v->name }}</a>
+                            <a data-reveal="zoom" href="{{ route('vertical.show', $v->slug) }}" class="chip !pl-3.5 hover:text-link">{{ $v->name }}</a>
+                        @endforeach
+                    </div>
+                </section>
+            @endif
+
+            @if ($popular->count())
+                <section class="mt-12">
+                    <div data-reveal class="flex items-center gap-4">
+                        <h2 class="text-lg font-bold text-navy sm:text-xl">Popular instruments</h2>
+                        <div class="h-px flex-1 bg-gradient-to-r from-cyan/50 to-transparent"></div>
+                    </div>
+                    <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        @foreach ($popular as $product)
+                            @include('public.partials.product-card', ['product' => $product])
                         @endforeach
                     </div>
                 </section>
@@ -209,13 +218,13 @@
 
             @if ($suggestBrands->count())
                 <section class="mt-10">
-                    <div class="flex items-center gap-4">
+                    <div data-reveal class="flex items-center gap-4">
                         <h2 class="text-lg font-bold text-navy sm:text-xl">Popular brands</h2>
                         <div class="h-px flex-1 bg-gradient-to-r from-cyan/50 to-transparent"></div>
                     </div>
-                    <div class="mt-5 flex flex-wrap gap-2.5">
+                    <div class="mt-5 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                         @foreach ($suggestBrands as $b)
-                            <a href="{{ route('search', ['q' => $b->name]) }}" class="chip !pl-3.5 hover:text-link">{{ $b->name }}</a>
+                            @include('public.partials.brand-tile', ['brand' => $b])
                         @endforeach
                     </div>
                 </section>

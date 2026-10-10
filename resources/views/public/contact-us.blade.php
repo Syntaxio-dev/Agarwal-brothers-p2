@@ -1,8 +1,8 @@
 @php
     $c = config('contact');
     $input = 'h-11 w-full rounded-full border border-gray-200 bg-white px-5 text-sm text-navy placeholder:text-slate outline-none focus:border-cyan focus:ring-2 focus:ring-cyan/20 transition';
-    $card = 'w-full sm:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.84rem)] rounded-2xl bg-white border border-gray-100 shadow-sm p-6 text-center hover:shadow-lg hover:border-cyan/40 hover:-translate-y-1 transition-all duration-300';
-    $icon = 'mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-navy text-white shadow-md';
+    $card = 'edge-top group relative overflow-hidden w-full sm:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.84rem)] rounded-2xl bg-white border border-gray-100 shadow-sm p-6 text-center hover:shadow-lg hover:border-cyan/40 hover:-translate-y-1 transition-all duration-300';
+    $icon = 'pop-icon mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-navy text-white shadow-md transition-all duration-300 group-hover:bg-link group-hover:scale-110';
 @endphp
 
 <x-layouts.app title="Contact Us" description="Contact Agarwal Brothers in Jaipur and Jodhpur for laboratory equipment quotes, service and technical support. Send an enquiry and our team will respond.">
@@ -12,36 +12,38 @@
 
     <div class="relative w-[98%] mx-auto px-4 md:px-10 lg:px-20 py-10 sm:py-14">
 
-        <div class="text-sm text-slate mb-8">
-            <a href="/" class="hover:text-link transition">Home</a>
-            <span class="mx-1.5">/</span>
-            <span class="text-navy font-medium">Contact Us</span>
-        </div>
+        @include('public.partials.breadcrumb', ['items' => [['Home', '/'], ['Contact Us', null]]])
 
         {{-- ===== Header ===== --}}
         <div class="text-center flex flex-col items-center gap-3 mb-10">
-            <span class="section-badge">
+            <span data-reveal class="section-badge">
                 Contact Us
             </span>
-            <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-navy leading-tight">
+            <h1 data-reveal class="text-2xl sm:text-3xl lg:text-4xl font-bold text-navy leading-tight">
                 Get in <span class="text-cyan-ink">Touch</span>
             </h1>
-            <p class="max-w-2xl text-sm sm:text-base text-slate leading-relaxed">
+            <p data-reveal class="max-w-2xl text-sm sm:text-base text-slate leading-relaxed">
                 Have questions about our products or need a custom solution? We would love to hear from you.
             </p>
+            <a data-reveal href="#contact-form" class="btn-primary mt-2 inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-semibold text-white">
+                Send us a message
+                <svg class="arrow-nudge-down h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"/>
+                </svg>
+            </a>
         </div>
 
         {{-- ===== Map ===== --}}
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
 
-            <div class="order-2 lg:order-1 text-center lg:text-left">
+            <div data-reveal="left" class="order-2 lg:order-1 text-center lg:text-left">
                 <h2 class="text-2xl sm:text-3xl font-bold text-cyan-ink leading-tight">Headquartered in {{ $c['head_office']['city'] }}</h2>
                 <p class="mt-3 text-base sm:text-lg text-navy leading-relaxed">
                     Wherever you are in Rajasthan, we are nearby, ready to support and serve your scientific journey.
                 </p>
             </div>
 
-            <div class="order-1 lg:order-2 relative mx-auto w-full max-w-[440px] aspect-[1000/908]">
+            <div data-reveal="zoom" class="order-1 lg:order-2 relative mx-auto w-full max-w-[440px] aspect-[1000/908]">
                 @include('public.partials.rajasthan-map')
 
                 @php
@@ -52,7 +54,7 @@
                 @endphp
 
                 @foreach ($pins as $pin)
-                    <div class="absolute" style="left: {{ $pin['x'] }}%; top: {{ $pin['y'] }}%;">
+                    <div class="map-pin absolute" style="left: {{ $pin['x'] }}%; top: {{ $pin['y'] }}%; --pin-delay: {{ $loop->index * 250 + 450 }}ms">
                         @if ($pin['main'])
                             <span class="absolute -left-4 -top-4 h-8 w-8 rounded-full bg-cyan/40 animate-ping"></span>
                         @endif
@@ -68,7 +70,7 @@
                 @endforeach
             </div>
 
-            <div class="order-3 text-center lg:text-right">
+            <div data-reveal="right" class="order-3 text-center lg:text-right">
                 <h2 class="text-2xl sm:text-3xl font-bold text-cyan-ink leading-tight">Closer Than You Think</h2>
                 <p class="mt-3 text-base sm:text-lg text-navy leading-relaxed">
                     Tap into our local teams in {{ $c['head_office']['city'] }} and Jodhpur for expert consultation and service tailored to your region.
@@ -78,7 +80,7 @@
 
         {{-- ===== Contact cards (5) ===== --}}
         <div class="mt-20">
-            <div class="text-center flex flex-col items-center gap-3 mb-8">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-8">
                 <span class="section-badge">
                     Contact Us
                 </span>
@@ -94,7 +96,7 @@
 
                 {{-- Departments --}}
                 @foreach ($c['departments'] as $dept)
-                    <div class="{{ $card }}">
+                    <div data-reveal class="{{ $card }}">
                         <div class="{{ $icon }}">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="{{ $dept['icon'] }}"/>
@@ -113,7 +115,7 @@
                 @endforeach
 
                 {{-- Head office --}}
-                <div class="{{ $card }}">
+                <div data-reveal class="{{ $card }}">
                     <div class="{{ $icon }}">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
@@ -126,7 +128,7 @@
 
                 {{-- Branch --}}
                 @foreach ($c['branches'] as $branch)
-                    <div class="{{ $card }}">
+                    <div data-reveal class="{{ $card }}">
                         <div class="{{ $icon }}">
                             <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21m-3.75 3.75h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Zm0 3h.008v.008h-.008v-.008Z"/>
@@ -138,7 +140,7 @@
                 @endforeach
 
                 {{-- Reach us --}}
-                <div class="{{ $card }}">
+                <div data-reveal class="{{ $card }}">
                     <div class="{{ $icon }}">
                         <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/>
@@ -158,7 +160,7 @@
 
         {{-- ===== Quick response form ===== --}}
         <div id="contact-form" class="mt-20 scroll-mt-6 max-w-4xl mx-auto">
-            <div class="rounded-3xl bg-gradient-to-br from-ice to-cyan/10 border border-cyan/20 p-3 sm:p-4">
+            <div data-reveal class="rounded-3xl bg-gradient-to-br from-ice to-cyan/10 border border-cyan/20 p-3 sm:p-4">
                 <div class="rounded-2xl bg-white border border-gray-100 shadow-sm p-5 sm:p-9">
 
                     <div class="text-center">
@@ -171,11 +173,11 @@
                     </div>
 
                     @if (session('success'))
-                        <div class="mt-6"><x-form.alert>{{ session('success') }}</x-form.alert></div>
+                        <div data-reveal="fade" class="mt-6"><x-form.alert>{{ session('success') }}</x-form.alert></div>
                     @endif
 
                     @if ($errors->any())
-                        <div class="mt-6"><x-form.alert type="error">Please fix the highlighted fields and try again.</x-form.alert></div>
+                        <div data-reveal="fade" class="mt-6"><x-form.alert type="error">Please fix the highlighted fields and try again.</x-form.alert></div>
                     @endif
 
                     <form action="{{ route('contact.store') }}" method="POST" class="mt-6" x-data="formGuard(@js(collect($errors->messages())->map(fn ($m) => $m[0])->all()))" @submit="submit($event)" novalidate>

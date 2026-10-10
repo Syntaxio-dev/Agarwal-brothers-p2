@@ -14,16 +14,16 @@
     <div class="relative w-[98%] mx-auto px-4 md:px-10 lg:px-16 py-10 sm:py-14">
         @include('public.partials.breadcrumb', ['items' => $crumbs])
 
-        <span class="section-badge">Group enquiry</span>
-        <h1 class="mt-3 text-3xl font-bold leading-tight text-navy sm:text-4xl">Your enquiry list</h1>
-        <p class="mt-2 max-w-2xl text-sm leading-relaxed text-slate">
+        <span data-reveal class="section-badge">Group enquiry</span>
+        <h1 data-reveal class="mt-3 text-3xl font-bold leading-tight text-navy sm:text-4xl">Your enquiry list</h1>
+        <p data-reveal class="mt-2 max-w-2xl text-sm leading-relaxed text-slate">
             Need more than one instrument? Add them all, set the quantities and send a single enquiry. Our team will reply with one combined quotation.
         </p>
 
         @if ($sent)
             {{-- Sent --}}
-            <div class="mt-10 rounded-2xl border border-success/30 bg-white px-6 py-14 text-center shadow-sm">
-                <span class="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-success/15 text-success">
+            <div data-reveal="zoom" class="mt-10 rounded-2xl border border-success/30 bg-white px-6 py-14 text-center shadow-sm">
+                <span class="pop-icon mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-success/15 text-success">
                     <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4"><path stroke-linecap="round" stroke-linejoin="round" d="m4.5 12.75 6 6 9-13.5"/></svg>
                 </span>
                 <h2 class="mt-5 text-2xl font-bold text-navy">Enquiry sent</h2>
@@ -37,7 +37,7 @@
             </div>
         @else
             {{-- Empty --}}
-            <div x-cloak x-show="! $store.enquiryList.count" class="mt-10 rounded-2xl border border-gray-200 bg-white px-6 py-16 text-center">
+            <div data-reveal x-cloak x-show="! $store.enquiryList.count" class="mt-10 rounded-2xl border border-gray-200 bg-white px-6 py-16 text-center">
                 <p class="text-lg font-semibold text-navy">Your enquiry list is empty.</p>
                 <p class="mx-auto mt-2 max-w-md text-sm text-slate">
                     Use <span class="font-mono font-semibold text-link">Add to list</span> on any product to collect it here.
@@ -53,7 +53,7 @@
 
                 {{-- Products --}}
                 <div class="lg:col-span-3">
-                    <div class="flex items-center gap-4">
+                    <div data-reveal class="flex items-center gap-4">
                         <h2 class="text-lg font-bold text-navy sm:text-xl">
                             Products <span class="font-mono text-sm font-medium text-link" x-text="'(' + $store.enquiryList.count + ')'"></span>
                         </h2>
@@ -62,15 +62,16 @@
 
                     <div class="mt-5 space-y-3">
                         <template x-for="(p, n) in $store.enquiryList.items" :key="p.slug">
-                            <div class="flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4">
+                            <div :style="'--i:' + Math.min(n, 6)"
+                                 class="row-in group flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-3 shadow-sm transition-all duration-300 hover:border-cyan/40 hover:shadow-md sm:p-4">
                                 <span class="hidden w-6 shrink-0 text-center font-mono text-xs text-slate sm:block" x-text="n + 1"></span>
                                 <a :href="'/products/' + p.slug" class="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-ice p-2">
-                                    <img x-show="p.image" :src="p.image" :alt="p.name" class="max-h-full max-w-full object-contain">
+                                    <img x-show="p.image" :src="p.image" :alt="p.name" class="max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105">
                                     <span x-show="! p.image" class="font-mono text-xs text-slate">No image</span>
                                 </a>
                                 <div class="min-w-0 flex-1">
                                     <p x-show="p.brand" x-text="p.brand" class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-link"></p>
-                                    <a :href="'/products/' + p.slug" class="block text-sm font-bold leading-snug text-navy hover:text-link sm:text-base" x-text="p.name"></a>
+                                    <a :href="'/products/' + p.slug" class="block text-sm font-bold leading-snug text-navy transition-colors hover:text-link group-hover:text-link sm:text-base" x-text="p.name"></a>
                                     <p x-show="p.category" x-text="p.category" class="mt-0.5 text-xs text-slate"></p>
                                 </div>
 
@@ -86,13 +87,13 @@
                                                 class="flex h-9 w-9 items-center justify-center text-navy hover:bg-ice">+</button>
                                     </div>
                                     <button type="button" @click="$store.enquiryList.remove(p.slug)"
-                                            class="font-mono text-[11px] font-medium uppercase tracking-wider text-slate hover:text-navy">Remove &times;</button>
+                                            class="font-mono text-[11px] font-medium uppercase tracking-wider text-slate transition-colors hover:text-alert">Remove &times;</button>
                                 </div>
                             </div>
                         </template>
                     </div>
 
-                    <div class="mt-4 flex flex-wrap items-center justify-between gap-3">
+                    <div data-reveal class="mt-4 flex flex-wrap items-center justify-between gap-3">
                         <a href="{{ route('verticals.index') }}" class="btn-ghost">+ Add more products</a>
                         <button type="button" @click="$store.enquiryList.clear()" class="text-xs font-semibold text-slate hover:text-navy">Clear list</button>
                     </div>
@@ -100,7 +101,7 @@
 
                 {{-- Form --}}
                 <div class="lg:col-span-2">
-                    <div id="enquiry-details" class="scroll-mt-6 rounded-3xl border border-cyan/20 bg-gradient-to-br from-ice to-cyan/10 p-3 sm:p-4 lg:sticky lg:top-6">
+                    <div data-reveal="right" id="enquiry-details" class="scroll-mt-6 rounded-3xl border border-cyan/20 bg-gradient-to-br from-ice to-cyan/10 p-3 sm:p-4 lg:sticky lg:top-6">
                         <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm">
                             <span class="section-badge">Your details</span>
                             <p class="mt-2 text-sm text-slate">

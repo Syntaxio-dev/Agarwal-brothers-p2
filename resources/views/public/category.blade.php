@@ -113,9 +113,9 @@
 
                         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             @foreach ($items as $product)
-                                <div data-reveal class="relative flex" @if ($filterable) x-show="matches({{ $product->id }})" :style="{ order: order({{ $product->id }}) }" @endif>
+                                <div data-reveal class="group transition-all duration-300 hover:-translate-y-1 relative flex" @if ($filterable) x-show="matches({{ $product->id }})" :style="{ order: order({{ $product->id }}) }" @endif>
                                 <a href="{{ route('product.show', [$product->slug] + $q) }}"
-                                   class="w-full group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-cyan/50 hover:shadow-xl">
+                                   class="w-full group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 group-hover:border-cyan/50 group-hover:shadow-xl">
                                     <div class="flex h-48 items-center justify-center bg-ice p-5">
                                         @if ($product->image)
                                             <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
@@ -131,7 +131,7 @@
                                         @if ($product->short_description)
                                             <p class="mt-1.5 line-clamp-2 text-sm leading-relaxed text-slate">{{ $product->short_description }}</p>
                                         @endif
-                                        <span class="mt-auto pt-4 text-xs font-semibold text-link">View details &rarr;</span>
+                                        <span class="mt-auto pt-4 text-xs font-semibold text-link">View details <span class="inline-block transition-transform duration-200 group-hover:translate-x-1">&rarr;</span></span>
                                     </div>
                                 </a>
                                     @include('public.partials.compare-toggle', ['product' => $product])

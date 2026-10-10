@@ -26,30 +26,30 @@
 
         <main class="relative flex flex-1 items-center justify-center px-5 py-10">
             <div class="w-full max-w-3xl text-center">
-                <span class="section-badge">@yield('eyebrow')</span>
+                <span class="intro-fade section-badge" style="animation-delay: 0ms">@yield('eyebrow')</span>
 
-                <p class="mt-6 select-none bg-gradient-to-br from-navy to-link bg-clip-text font-mono text-[7rem] font-normal leading-none tracking-tighter text-transparent sm:text-[10rem]">
+                <p style="animation-delay: 100ms" class="intro-rise mt-6 select-none bg-gradient-to-br from-navy to-link bg-clip-text font-mono text-[7rem] font-normal leading-none tracking-tighter text-transparent sm:text-[10rem]">
                     @yield('code')
                 </p>
 
-                <h1 class="mt-4 text-2xl font-bold text-navy sm:text-4xl">@yield('heading')</h1>
-                <p class="mx-auto mt-4 max-w-xl text-base leading-relaxed text-slate">@yield('message')</p>
+                <h1 style="animation-delay: 220ms" class="intro-rise mt-4 text-2xl font-bold text-navy sm:text-4xl">@yield('heading')</h1>
+                <p style="animation-delay: 320ms" class="intro-rise mx-auto mt-4 max-w-xl text-base leading-relaxed text-slate">@yield('message')</p>
 
                 @yield('extra')
 
-                <div class="mt-8 flex flex-wrap items-center justify-center gap-3">
+                <div style="animation-delay: 420ms" class="intro-rise mt-8 flex flex-wrap items-center justify-center gap-3">
                     @hasSection('actions')
                         @yield('actions')
                     @else
                         <a href="/" class="btn-primary inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-semibold text-white">
                             Back to home
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/></svg>
+                            <svg class="arrow-nudge h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/></svg>
                         </a>
                         <a href="/verticals" class="btn-ghost">Browse verticals</a>
                     @endif
                 </div>
 
-                <x-help-links />
+                <div style="animation-delay: 540ms" class="intro-fade"><x-help-links /></div>
             </div>
         </main>
 

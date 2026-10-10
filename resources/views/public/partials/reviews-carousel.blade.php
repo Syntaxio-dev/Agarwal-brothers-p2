@@ -1,6 +1,6 @@
     {{-- ===== 10. CUSTOMER REVIEWS — auto-stepping carousel ===== --}}
     @if ($reviews->count())
-    <section class="py-12 sm:py-14">
+    <section class="overflow-x-clip py-12 sm:py-14">
         <div class="w-[98%] mx-auto md:px-5 lg:px-20">
 
             <div data-reveal class="text-center flex flex-col items-center gap-3 mb-10">

@@ -111,6 +111,12 @@
                             Show Image{{ $images->count() > 1 ? 's' : '' }}
                         </button>
                     @endif
+                    @if ($specs->count() || $features->count() || $advantages->count() || $product->short_description)
+                        <a href="{{ route('product.spec-sheet', $product->slug) }}?print=1" target="_blank" rel="noopener" class="btn-ghost">
+                            <svg class="arrow-nudge-down h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3"/></svg>
+                            Spec sheet
+                        </a>
+                    @endif
                     <a href="{{ route('contact') }}#contact-form" class="btn-ghost">
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z"/></svg>
                         Meet Expert
@@ -308,26 +314,34 @@
             </div>
         </section>
 
-        {{-- ===== Related ===== --}}
-        @if ($related->count())
+        {{-- ===== Similar products (may be other brands) ===== --}}
+        @if ($similar->count())
             <section class="mt-16">
+                <div data-reveal class="flex flex-col gap-1">
+                    <div class="flex items-center gap-4">
+                        <h2 class="text-xl font-bold text-navy sm:text-2xl">Similar products</h2>
+                        <div class="h-px flex-1 bg-gradient-to-r from-cyan/50 to-transparent"></div>
+                    </div>
+                    <p class="text-sm text-slate">Alternatives with a similar purpose and specifications, including other brands.</p>
+                </div>
+                <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                    @foreach ($similar as $row)
+                        @include('public.partials.product-card', ['product' => $row['product'], 'reason' => $row['reason']])
+                    @endforeach
+                </div>
+            </section>
+        @endif
+
+        {{-- ===== Customers also compared (built from real comparisons; hidden until there are some) ===== --}}
+        @if ($alsoCompared->count())
+            <section class="mt-14">
                 <div data-reveal class="flex items-center gap-4">
-                    <h2 class="text-xl font-bold text-navy sm:text-2xl">More from {{ $category->name }}</h2>
+                    <h2 class="text-xl font-bold text-navy sm:text-2xl">Customers also compared</h2>
                     <div class="h-px flex-1 bg-gradient-to-r from-cyan/50 to-transparent"></div>
                 </div>
                 <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-                    @foreach ($related as $r)
-                        <a data-reveal href="{{ route('product.show', [$r->slug] + $q) }}"
-                           class="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-cyan/50 hover:shadow-xl">
-                            <div class="flex h-40 items-center justify-center bg-ice p-4">
-                                @if ($r->image)
-                                    <img src="{{ asset('storage/' . $r->image) }}" alt="{{ $r->name }}" class="img-load max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($r->image) !!} onload="this.classList.add('is-loaded')">
-                                @endif
-                            </div>
-                            <div class="p-4">
-                                <h3 class="text-sm font-bold text-navy transition-colors group-hover:text-link">{{ $r->name }}</h3>
-                            </div>
-                        </a>
+                    @foreach ($alsoCompared as $other)
+                        @include('public.partials.product-card', ['product' => $other])
                     @endforeach
                 </div>
             </section>

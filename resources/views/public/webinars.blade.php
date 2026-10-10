@@ -28,17 +28,13 @@
 
     <div class="relative w-[98%] mx-auto px-4 md:px-10 lg:px-20 py-10 sm:py-14">
 
-        <div class="text-sm text-slate mb-8">
-            <a href="/" class="hover:text-link transition">Home</a>
-            <span class="mx-1.5">/</span>
-            <span class="text-navy font-medium">Webinars</span>
-        </div>
+        @include('public.partials.breadcrumb', ['items' => [['Home', '/'], ['Webinars', null]]])
 
         {{-- ===== Hero: next webinar + countdown ===== --}}
         @if ($next)
             <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12 items-center">
                 <div class="lg:col-span-3">
-                    <div class="flex flex-wrap items-center gap-2">
+                    <div data-reveal class="flex flex-wrap items-center gap-2">
                         <span class="inline-flex items-center gap-2 rounded-full border border-cyan/40 bg-cyan/10 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-[0.16em] text-link">
                             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
@@ -50,13 +46,13 @@
                         @endif
                     </div>
 
-                    <h1 class="mt-5 text-3xl sm:text-4xl lg:text-5xl font-bold text-navy leading-tight">{{ $next->title }}</h1>
+                    <h1 data-reveal class="mt-5 text-3xl sm:text-4xl lg:text-5xl font-bold text-navy leading-tight">{{ $next->title }}</h1>
 
                     @if ($next->excerpt)
-                        <p class="mt-4 max-w-2xl text-base text-slate leading-relaxed">{{ $next->excerpt }}</p>
+                        <p data-reveal class="mt-4 max-w-2xl text-base text-slate leading-relaxed">{{ $next->excerpt }}</p>
                     @endif
 
-                    <p class="mt-5 inline-flex items-center gap-2 text-sm font-bold text-navy">
+                    <p data-reveal class="mt-5 inline-flex items-center gap-2 text-sm font-bold text-navy">
                         <svg class="h-4 w-4 text-link" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                         </svg>
@@ -65,12 +61,12 @@
                         &middot; {{ $next->venue ?: 'Online' }}
                     </p>
 
-                    <div class="mt-7 flex flex-wrap gap-3">
+                    <div data-reveal class="mt-7 flex flex-wrap gap-3">
                         <a href="{{ $next->registration_url ?: route('insights.show', $next->slug) }}"
                            @if ($next->registration_url) target="_blank" rel="noopener" @endif
                            class="btn-primary inline-flex items-center gap-2 rounded-full bg-navy px-7 py-3 text-sm font-semibold text-white hover:bg-link">
                             {{ $next->registration_url ? 'Register now' : 'View details' }}
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <svg class="arrow-nudge h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
                             </svg>
                         </a>
@@ -87,7 +83,7 @@
                 </div>
 
                 {{-- Countdown card --}}
-                <div class="lg:col-span-2"
+                <div data-reveal="right" class="lg:col-span-2"
                      x-data="{
                         target: new Date('{{ $nextStart->toIso8601String() }}').getTime(),
                         tbd: {{ $next->time_tbd ? 'true' : 'false' }},
@@ -122,7 +118,7 @@
 
                         <div class="mt-5 grid grid-cols-4 gap-2.5 sm:gap-3">
                             @foreach ([['d', 'Days'], ['h', 'Hours'], ['m', 'Minutes'], ['s', 'Seconds']] as [$key, $label])
-                                <div class="relative overflow-hidden rounded-2xl bg-gradient-to-b from-navy to-link px-1 py-3.5 text-center shadow-lg shadow-navy/20">
+                                <div style="--pop-delay: {{ $loop->index * 90 }}ms" class="pop-tile relative overflow-hidden rounded-2xl bg-gradient-to-b from-navy to-link px-1 py-3.5 text-center shadow-lg shadow-navy/20">
                                     <div class="absolute inset-x-0 top-1/2 h-px bg-white/10"></div>
                                     <p class="text-2xl sm:text-3xl font-bold text-white tabular-nums leading-none"
                                        x-text="{{ $key === 'd' ? 'pad(d)' : "tbd ? '--' : pad($key)" }}"></p>
@@ -138,14 +134,14 @@
         @else
             <div class="relative w-full overflow-hidden rounded-3xl shadow-lg ring-1 ring-black/5">
                 @if ($hero)
-                    <img src="{{ $hero }}" alt="Webinars" class="img-load block w-full aspect-[16/7] sm:aspect-[3/1] object-cover" decoding="async" onload="this.classList.add('is-loaded')">
+                    <img src="{{ $hero }}" alt="Webinars" class="img-load intro-zoom block w-full aspect-[16/7] sm:aspect-[3/1] object-cover" decoding="async" onload="this.classList.add('is-loaded')">
                 @else
                     <div class="relative w-full aspect-[16/8] sm:aspect-[3/1] bg-gradient-to-br from-navy to-link flex items-center">
                         <div class="pointer-events-none absolute inset-0
                                     bg-[radial-gradient(600px_300px_at_85%_20%,rgba(0,180,216,0.35),transparent_70%),radial-gradient(500px_260px_at_10%_100%,rgba(0,180,216,0.2),transparent_70%)]"></div>
                         <div class="relative px-6 sm:px-12 lg:px-16">
-                            <h1 class="text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight">Webinars</h1>
-                            <p class="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-lg font-semibold text-white/90">
+                            <h1 class="intro-rise text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight">Webinars</h1>
+                            <p class="intro-fade mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-lg font-semibold text-white/90">
                                 <span>Learn</span><span class="h-1.5 w-1.5 rounded-full bg-cyan"></span>
                                 <span>Connect</span><span class="h-1.5 w-1.5 rounded-full bg-cyan"></span>
                                 <span>Explore</span><span class="h-1.5 w-1.5 rounded-full bg-cyan"></span>
@@ -155,12 +151,12 @@
                     </div>
                 @endif
             </div>
-            <p class="mt-5 text-center text-sm text-slate">No upcoming webinars are scheduled right now. Browse past sessions below.</p>
+            <p data-reveal="fade" class="mt-5 text-center text-sm text-slate">No upcoming webinars are scheduled right now. Browse past sessions below.</p>
         @endif
 
         {{-- ===== Principal filter ===== --}}
         @if ($principals->count())
-            <div class="mt-14">
+            <div data-reveal class="mt-14">
                 <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate">Filter by principal</p>
                 <div class="mt-3 flex flex-wrap gap-3">
                     <a href="{{ route('insights.webinars') }}" class="chip {{ $selectedSlug ? '' : 'chip-active' }} !pl-4">
@@ -183,7 +179,7 @@
 
         {{-- ===== Upcoming ===== --}}
         <div class="mt-12">
-            <div class="flex items-center gap-4">
+            <div data-reveal class="flex items-center gap-4">
                 <h2 class="text-xl sm:text-2xl font-bold text-navy">Upcoming</h2>
                 <div class="h-px flex-1 bg-gradient-to-r from-cyan/40 to-transparent"></div>
             </div>
@@ -192,7 +188,7 @@
                 @forelse ($upcoming as $w)
                     @include('public.partials.webinar-row', ['w' => $w, 'past' => false])
                 @empty
-                    <div class="rounded-2xl bg-white border border-gray-100 text-center py-12">
+                    <div data-reveal="fade" class="rounded-2xl bg-white border border-gray-100 text-center py-12">
                         <p class="font-semibold text-navy">No upcoming webinars{{ $selectedSlug ? ' for this principal' : '' }}.</p>
                         <p class="mt-1 text-sm text-slate">Check back soon, or explore past sessions below.</p>
                     </div>
@@ -203,7 +199,7 @@
         {{-- ===== Past ===== --}}
         @if ($past->count())
             <div class="mt-14">
-                <div class="flex items-center gap-4">
+                <div data-reveal class="flex items-center gap-4">
                     <h2 class="text-xl sm:text-2xl font-bold text-navy">Past webinars &amp; recordings</h2>
                     <div class="h-px flex-1 bg-gradient-to-r from-cyan/40 to-transparent"></div>
                 </div>

@@ -16,15 +16,15 @@
 
         <div class="flex flex-col items-start justify-between gap-5 sm:flex-row sm:items-end">
             <div>
-                <span class="section-badge">Side by side</span>
-                <h1 class="mt-3 text-3xl font-bold leading-tight text-navy sm:text-4xl">Compare products</h1>
-                <p class="mt-2 max-w-2xl text-sm leading-relaxed text-slate">
+                <span data-reveal class="section-badge">Side by side</span>
+                <h1 data-reveal class="mt-3 text-3xl font-bold leading-tight text-navy sm:text-4xl">Compare products</h1>
+                <p data-reveal class="mt-2 max-w-2xl text-sm leading-relaxed text-slate">
                     See the technical specifications of up to {{ $max }} instruments next to each other.
                 </p>
             </div>
 
             @if ($count > 1 && $diffCount)
-                <label class="chip cursor-pointer select-none" :class="{ 'chip-active': diff }">
+                <label data-reveal class="chip cursor-pointer select-none" :class="{ 'chip-active': diff }">
                     <input type="checkbox" x-model="diff" class="sr-only">
                     <span x-text="diff ? 'Showing differences only' : 'Show differences only'">Show differences only</span>
                 </label>
@@ -32,7 +32,7 @@
         </div>
 
         @if ($count < 2)
-            <div class="mt-12 rounded-2xl border border-gray-200 bg-white px-6 py-16 text-center">
+            <div data-reveal class="mt-12 rounded-2xl border border-gray-200 bg-white px-6 py-16 text-center">
                 <p class="text-lg font-semibold text-navy">Pick at least two products to compare.</p>
                 <p class="mx-auto mt-2 max-w-md text-sm text-slate">Use the <span class="font-mono font-semibold text-link">+ Compare</span> button on any product card, then press "Compare now".</p>
                 <div class="mt-6 flex flex-wrap justify-center gap-3">
@@ -42,7 +42,7 @@
                 <x-help-links :verticals="false" />
             </div>
         @else
-            <div class="mt-8 overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
+            <div data-reveal class="mt-8 overflow-x-auto rounded-2xl border border-gray-200 bg-white shadow-sm">
                 <table class="w-full min-w-[640px] border-collapse text-left">
                     <thead>
                         <tr class="align-top">
@@ -57,9 +57,9 @@
                                            @click="$store.compare.remove('{{ $p->slug }}')"
                                            class="font-mono text-[11px] font-medium uppercase tracking-wider text-slate hover:text-navy">Remove &times;</a>
                                     </div>
-                                    <a href="{{ route('product.show', $p->slug) }}" class="mt-1 flex h-32 items-center justify-center rounded-xl bg-ice p-3">
+                                    <a href="{{ route('product.show', $p->slug) }}" class="group mt-1 flex h-32 items-center justify-center overflow-hidden rounded-xl bg-ice p-3">
                                         @if ($p->image)
-                                            <img src="{{ asset('storage/' . $p->image) }}" alt="{{ $p->name }}" class="img-load max-h-full max-w-full object-contain" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($p->image) !!} onload="this.classList.add('is-loaded')">
+                                            <img src="{{ asset('storage/' . $p->image) }}" alt="{{ $p->name }}" class="img-load max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($p->image) !!} onload="this.classList.add('is-loaded')">
                                         @else
                                             <span class="font-mono text-xs text-slate">No image</span>
                                         @endif
@@ -69,7 +69,7 @@
                                     <p class="mt-0.5 text-xs text-slate">{{ $p->category->name }}</p>
                                     <div class="mt-3 flex flex-wrap gap-2">
                                         <a href="{{ route('product.show', $p->slug) }}#enquiry-form" class="btn-primary inline-flex items-center rounded-full px-4 py-2 text-xs font-semibold text-white">Enquire</a>
-                                        <a href="{{ route('product.show', $p->slug) }}" class="text-xs font-semibold text-link hover:underline self-center">Details &rarr;</a>
+                                        <a href="{{ route('product.show', $p->slug) }}" class="group/d self-center text-xs font-semibold text-link hover:underline">Details <span class="inline-block transition-transform duration-200 group-hover/d:translate-x-1">&rarr;</span></a>
                                     </div>
                                 </th>
                             @endforeach
@@ -77,7 +77,7 @@
                     </thead>
                     <tbody>
                         @forelse ($rows as $row)
-                            <tr x-show="! diff || {{ $row['differs'] ? 'true' : 'false' }}" class="border-b border-gray-100 last:border-0">
+                            <tr x-show="! diff || {{ $row['differs'] ? 'true' : 'false' }}" x-transition.opacity.duration.250ms class="border-b border-gray-100 transition-colors last:border-0 hover:bg-ice/70">
                                 <th scope="row" class="sticky left-0 z-10 border-r border-gray-200 bg-ice p-4 align-top text-sm font-semibold text-navy">
                                     <span class="flex items-start gap-2">
                                         @if ($row['differs'])
@@ -105,7 +105,7 @@
                 </table>
             </div>
 
-            <p class="mt-3 text-xs text-slate">
+            <p data-reveal="fade" class="mt-3 text-xs text-slate">
                 @if ($diffCount)
                     <span class="mr-1 inline-block h-2 w-2 rounded-sm bg-cyan align-middle"></span> marks a specification that differs between these products.
                 @else
@@ -115,13 +115,13 @@
             </p>
 
             @if ($count < $max)
-                <div class="mt-6">
+                <div data-reveal class="mt-6">
                     <a href="{{ route('verticals.index') }}" class="btn-ghost">+ Add another product</a>
                 </div>
             @endif
         @endif
 
-        <div class="mt-16 flex flex-col items-center justify-between gap-5 rounded-3xl bg-gradient-to-br from-navy to-link px-8 py-9 sm:flex-row sm:px-12">
+        <div data-reveal="zoom" class="mt-16 flex flex-col items-center justify-between gap-5 rounded-3xl bg-gradient-to-br from-navy to-link px-8 py-9 sm:flex-row sm:px-12">
             <div class="text-center sm:text-left">
                 <h3 class="text-xl font-bold text-white sm:text-2xl">Not sure which one fits your lab?</h3>
                 <p class="mt-1.5 text-sm text-white/75">Tell us your application and our specialists will recommend a model.</p>
