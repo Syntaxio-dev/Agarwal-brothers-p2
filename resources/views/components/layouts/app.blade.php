@@ -38,7 +38,7 @@
     @endif
 
     {{-- Lets CSS show image placeholders only when JS is available to remove them again --}}
-    <script>document.documentElement.classList.add('js')</script>
+    <script>document.documentElement.classList.add('js'); setTimeout(function () { if (!window.__revealOk) document.documentElement.classList.add('reveal-failsafe'); }, 3500);</script>
 
     {{-- Load the main fonts early so text does not shift when they swap in --}}
     @foreach (['ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2', 'ibm-plex-sans/files/ibm-plex-sans-latin-600-normal.woff2', 'ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2'] as $font)

@@ -9,6 +9,8 @@ import './review-carousel';
 import './form-guard';
 import './catalogue-filter';
 import './privacy';
+import './reveal';
+import './reveal';
 
 // Ghost search — animated placeholder that cycles through search suggestions
 window.ghostSearch = function () {

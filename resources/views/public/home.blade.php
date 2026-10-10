@@ -178,7 +178,7 @@
 
         <div class="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(1200px_600px_at_20%_-10%,rgba(0,180,216,0.06),transparent),radial-gradient(1200px_600px_at_80%_110%,rgba(0,180,216,0.06),transparent)]"></div>
 
-        <div class="text-center flex flex-col justify-center items-center gap-3 mb-10">
+        <div data-reveal class="text-center flex flex-col justify-center items-center gap-3 mb-10">
             <span class="section-badge">
                 Who We Are
             </span>
@@ -190,7 +190,7 @@
         <div class="flex flex-col md:flex-row items-center justify-center gap-8 lg:gap-12">
 
             {{-- Left: 43+ Years of Excellence --}}
-            <div class="flex flex-col items-center justify-center w-full md:w-[42%] text-center">
+            <div data-reveal="left" class="flex flex-col items-center justify-center w-full md:w-[42%] text-center">
                 <p class="text-xs sm:text-sm uppercase tracking-[0.25em] font-semibold text-slate mb-1">Celebrating</p>
 
                 <div class="relative my-2">
@@ -228,7 +228,7 @@
             </div>
 
             {{-- Vertical divider --}}
-            <div class="hidden md:flex flex-col items-center justify-between h-[400px] mx-2 relative">
+            <div data-reveal="fade" class="hidden md:flex flex-col items-center justify-between h-[400px] mx-2 relative">
                 <div class="absolute w-[3px] bg-gradient-to-b from-cyan via-link to-navy h-full left-1/2 -translate-x-1/2 rounded-full z-0"></div>
                 <div class="w-4 h-4 rounded-full border-[3px] border-white z-10 shadow-md bg-cyan"></div>
                 <div class="w-4 h-4 rounded-full border-[3px] border-white z-10 shadow-md bg-link"></div>
@@ -240,7 +240,7 @@
             <div class="flex flex-col gap-5 w-full md:w-[42%]">
 
                 {{-- Customers --}}
-                <div class="relative flex items-center bg-white/90 rounded-full p-1.5 pr-5
+                <div data-reveal="right" class="relative flex items-center bg-white/90 rounded-full p-1.5 pr-5
                             hover:scale-[1.02] transition-all duration-300 group border border-gray-100 shadow-sm hover:shadow-md">
                     <div class="w-14 h-14 flex items-center justify-center rounded-full text-white ml-1 mr-4 shadow-md
                                 bg-gradient-to-br from-navy to-link group-hover:from-link group-hover:to-cyan transition-all shrink-0">
@@ -259,7 +259,7 @@
                 </div>
 
                 {{-- Brands --}}
-                <div class="relative flex items-center bg-white/90 rounded-full p-1.5 pr-5
+                <div data-reveal="right" class="relative flex items-center bg-white/90 rounded-full p-1.5 pr-5
                             hover:scale-[1.02] transition-all duration-300 group border border-gray-100 shadow-sm hover:shadow-md">
                     <div class="w-14 h-14 flex items-center justify-center rounded-full text-white ml-1 mr-4 shadow-md
                                 bg-gradient-to-br from-navy to-link group-hover:from-link group-hover:to-cyan transition-all shrink-0">
@@ -278,7 +278,7 @@
                 </div>
 
                 {{-- Awards --}}
-                <div class="relative flex items-center bg-white/90 rounded-full p-1.5 pr-5
+                <div data-reveal="right" class="relative flex items-center bg-white/90 rounded-full p-1.5 pr-5
                             hover:scale-[1.02] transition-all duration-300 group border border-gray-100 shadow-sm hover:shadow-md">
                     <div class="w-14 h-14 flex items-center justify-center rounded-full text-white ml-1 mr-4 shadow-md
                                 bg-gradient-to-br from-navy to-link group-hover:from-link group-hover:to-cyan transition-all shrink-0">
@@ -297,7 +297,7 @@
                 </div>
 
                 {{-- Branches --}}
-                <div class="relative flex items-center bg-white/90 rounded-full p-1.5 pr-5
+                <div data-reveal="right" class="relative flex items-center bg-white/90 rounded-full p-1.5 pr-5
                             hover:scale-[1.02] transition-all duration-300 group border border-gray-100 shadow-sm hover:shadow-md">
                     <div class="w-14 h-14 flex items-center justify-center rounded-full text-white ml-1 mr-4 shadow-md
                                 bg-gradient-to-br from-navy to-link group-hover:from-link group-hover:to-cyan transition-all shrink-0">
@@ -326,7 +326,7 @@
     <section class="py-12 sm:py-16">
         <div class="w-[98%] mx-auto md:px-5 lg:px-20">
 
-            <div class="text-center flex flex-col items-center gap-3 mb-10">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-10">
                 <span class="section-badge">
                     Our Principals
                 </span>
@@ -346,7 +346,7 @@
                 ];
             @endphp
 
-            <div x-data="{ paused: false }"
+            <div data-reveal="fade" x-data="{ paused: false }"
                  @mouseenter="paused = true"
                  @mouseleave="paused = false"
                  class="relative overflow-hidden py-6 flex flex-col gap-6">
@@ -397,7 +397,7 @@
     <section class="bg-ice py-12 sm:py-14">
         <div class="w-[98%] mx-auto md:px-5 lg:px-20">
 
-            <div class="text-center flex flex-col items-center gap-3 mb-8">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-8">
                 <span class="section-badge">
                     Verticals
                 </span>
@@ -411,7 +411,7 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 @foreach ($verticals->take(8) as $vertical)
-                    <a href="{{ route('vertical.show', $vertical->slug) }}"
+                    <a data-reveal href="{{ route('vertical.show', $vertical->slug) }}"
                         class="group flex flex-col overflow-hidden rounded-xl bg-white
                                border border-gray-100 shadow-sm
                                hover:shadow-lg hover:border-cyan/40 hover:-translate-y-1
@@ -480,7 +480,7 @@
         }">
         <div class="w-[98%] mx-auto md:px-5 lg:px-20">
 
-            <div class="text-center flex flex-col items-center gap-3 mb-8">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-8">
                 <span class="section-badge">
                     Precision Picks
                 </span>
@@ -492,7 +492,7 @@
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-[260px_1fr_240px] lg:h-[420px] gap-5 items-stretch">
+            <div data-reveal class="grid grid-cols-1 lg:grid-cols-[260px_1fr_240px] lg:h-[420px] gap-5 items-stretch">
 
                 {{-- Product selector list --}}
                 <div class="order-2 lg:order-1 rounded-2xl bg-white border border-gray-100 shadow-sm p-3
@@ -582,7 +582,7 @@
     <section class="bg-ice py-12 sm:py-14">
         <div class="w-[98%] mx-auto md:px-5">
 
-            <div class="text-center flex flex-col items-center gap-3 mb-4">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-4">
                 <span class="section-badge">
                     Global Presence
                 </span>
@@ -594,7 +594,7 @@
                 </p>
             </div>
 
-            <div x-data="brandMap(@js($mapCountries))" x-ref="wrap"
+            <div data-reveal="fade" x-data="brandMap(@js($mapCountries))" x-ref="wrap"
                  @keydown.escape.window="close()"
                  class="relative w-full">
 
@@ -656,7 +656,7 @@
         }">
         <div class="w-[98%] mx-auto md:px-5 lg:px-20">
 
-            <div class="text-center flex flex-col items-center gap-3 mb-8">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-8">
                 <span class="section-badge">
                     Blogs
                 </span>
@@ -665,7 +665,7 @@
                 </h2>
             </div>
 
-            <div class="rounded-3xl border border-gray-100 bg-white/70 p-4 sm:p-6 shadow-sm
+            <div data-reveal class="rounded-3xl border border-gray-100 bg-white/70 p-4 sm:p-6 shadow-sm
                         grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
 
                 {{-- Blog list (click to select) --}}
@@ -737,7 +737,7 @@
     <section class="bg-ice py-12 sm:py-14">
         <div class="w-[98%] mx-auto md:px-5 lg:px-20">
 
-            <div class="text-center flex flex-col items-center gap-3 mb-8">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-8">
                 <span class="section-badge">
                     News & Events
                 </span>
@@ -748,7 +748,7 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
                 @foreach ($news as $item)
-                    <div class="group flex flex-col overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm
+                    <div data-reveal class="group flex flex-col overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm
                                 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                         <div class="h-1.5 bg-gradient-to-r from-navy via-link to-cyan"></div>
 
@@ -801,7 +801,7 @@
     <section class="py-12 sm:py-14">
         <div class="w-[98%] mx-auto md:px-5 lg:px-20">
 
-            <div class="text-center flex flex-col items-center gap-3 mb-8">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-8">
                 <span class="section-badge">
                     Our Clients
                 </span>
@@ -813,7 +813,7 @@
                 </p>
             </div>
 
-            <div x-data="{
+            <div data-reveal x-data="{
                     i: 0,
                     n: {{ $featuredClients->count() }},
                     elapsed: 0,

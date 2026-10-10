@@ -3,7 +3,7 @@
     <section class="py-12 sm:py-14">
         <div class="w-[98%] mx-auto md:px-5 lg:px-20">
 
-            <div class="text-center flex flex-col items-center gap-3 mb-10">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-10">
                 <span class="section-badge">
                     Reviews
                 </span>
@@ -12,7 +12,7 @@
                 </h2>
             </div>
 
-            <div x-data="reviewCarousel(@js($reviews->map(fn ($r) => [
+            <div data-reveal="fade" x-data="reviewCarousel(@js($reviews->map(fn ($r) => [
                     'id' => $r->id,
                     'name' => $r->name,
                     'designation' => $r->designation,
