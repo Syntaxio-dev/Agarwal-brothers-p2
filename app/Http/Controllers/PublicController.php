@@ -18,6 +18,7 @@ use App\Models\TeamMember;
 use App\Models\Slide;
 use App\Models\Vertical;
 use App\Support\FormRules;
+use App\Support\Preview;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
@@ -139,7 +140,7 @@ class PublicController extends Controller
 
     public function vertical(Vertical $vertical)
     {
-        abort_unless($vertical->is_active, 404);
+        abort_unless(Preview::active() || $vertical->is_active, 404);
 
         $categories = $vertical->categories()
             ->whereHas('brand', fn ($q) => $q->where('is_active', true))
@@ -160,7 +161,7 @@ class PublicController extends Controller
 
     public function brand(Brand $brand)
     {
-        abort_unless($brand->is_active, 404);
+        abort_unless(Preview::active() || $brand->is_active, 404);
 
         $brand->load(['country', 'categories' => fn ($q) => $q->withCount([
             'products' => fn ($p) => $p->where('is_active', true),
@@ -176,7 +177,7 @@ class PublicController extends Controller
 
     public function category(Request $request, Brand $brand, Category $category)
     {
-        abort_unless($brand->is_active && $category->brand_id === $brand->id, 404);
+        abort_unless((Preview::active() || $brand->is_active) && $category->brand_id === $brand->id, 404);
 
         $products = $category->products()
             ->where('is_active', true)
@@ -199,7 +200,7 @@ class PublicController extends Controller
     {
         $product->load('category.brand');
 
-        abort_unless($product->is_active && $product->category?->brand?->is_active, 404);
+        abort_unless(Preview::active() || ($product->is_active && $product->category?->brand?->is_active), 404);
 
         $related = Product::where('category_id', $product->category_id)
             ->where('id', '!=', $product->id)
@@ -344,7 +345,7 @@ class PublicController extends Controller
 
     public function insightShow(Insight $insight)
     {
-        abort_unless($insight->is_active, 404);
+        abort_unless(Preview::active() || $insight->is_active, 404);
 
         $insight->load('brand');
 

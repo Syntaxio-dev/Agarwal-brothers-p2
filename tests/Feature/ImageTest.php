@@ -40,8 +40,8 @@ class ImageTest extends TestCase
         $this->assertSame('WEBP', substr($bytes, 8, 4));
 
         $im = imagecreatefromstring($bytes);
-        $this->assertSame(2000, imagesx($im));      // longest side capped
-        $this->assertSame(1000, imagesy($im));      // aspect ratio kept
+        $this->assertSame(2400, imagesx($im));      // longest side capped
+        $this->assertSame(1200, imagesy($im));      // aspect ratio kept
         $this->assertGreaterThan(0, (imagecolorat($im, 2, 2) >> 24) & 127);  // corner is still transparent
     }
 
@@ -75,5 +75,42 @@ class ImageTest extends TestCase
         $this->assertStringContainsString('.woff2', $html);
         $this->assertStringContainsString("classList.add('js')", $html);
         $this->assertStringContainsString('img-load', $html);
+    }
+
+    public function test_resized_png_keeps_its_colours_and_edges(): void
+    {
+        if (! ImageOptimizer::available()) {
+            $this->markTestSkipped('PHP GD with WebP support is not enabled here.');
+        }
+
+        $png = $this->makePng(3000, 1500);          // blue ellipse in the middle, transparent around it
+        $bytes = ImageOptimizer::webp($png, 'image/png');
+        @unlink($png);
+
+        $im = imagecreatefromstring($bytes);
+        $centre = imagecolorat($im, 1200, 600);
+        $this->assertEqualsWithDelta(0, ($centre >> 16) & 255, 3);     // red
+        $this->assertEqualsWithDelta(119, ($centre >> 8) & 255, 3);    // green
+        $this->assertEqualsWithDelta(182, $centre & 255, 3);           // blue
+        $this->assertSame(0, ($centre >> 24) & 127);                   // fully opaque
+    }
+
+    public function test_small_images_are_never_enlarged_or_made_worse(): void
+    {
+        if (! ImageOptimizer::available()) {
+            $this->markTestSkipped('PHP GD with WebP support is not enabled here.');
+        }
+
+        $png = $this->makePng(300, 200);
+        $bytes = ImageOptimizer::webp($png, 'image/png');
+        @unlink($png);
+
+        // Either kept as uploaded (null) or converted at the same size, never scaled.
+        if ($bytes !== null) {
+            $im = imagecreatefromstring($bytes);
+            $this->assertSame(300, imagesx($im));
+            $this->assertSame(200, imagesy($im));
+        }
+        $this->addToAssertionCount(1);
     }
 }

@@ -34,6 +34,7 @@ class AdminPanelProvider extends PanelProvider
                 'info' => Color::hex('#00B4D8'),
                 'success' => Color::hex('#2A9D8F'),
                 'danger' => Color::hex('#E76F51'),
+                'warning' => Color::hex('#E76F51'),
             ])
             ->font('IBM Plex Sans', provider: \Filament\FontProviders\LocalFontProvider::class)
             ->viteTheme('resources/css/filament/admin/theme.css')
@@ -41,6 +42,8 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight('2.25rem')
             ->favicon(asset('favicon.png'))
             ->sidebarCollapsibleOnDesktop()
+            ->globalSearch(\App\Filament\Support\AdminSearchProvider::class)
+            ->globalSearchKeyBindings(['ctrl+k', 'command+k'])
             ->renderHook(PanelsRenderHook::CONTENT_START, function () {
                 $topic = \App\Support\HelpGuide::topicFor(request()->path());
                 if (! $topic || request()->is('admin/help') || ! auth()->check()) {

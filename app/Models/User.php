@@ -101,6 +101,12 @@ class User extends Authenticatable implements FilamentUser
     /** Only active users with a known role may sign in to the panel. */
     public function canAccessPanel(Panel $panel): bool
     {
+        return $this->isStaff();
+    }
+
+    /** Active user with a known role: may use the admin panel and preview unpublished pages. */
+    public function isStaff(): bool
+    {
         return $this->is_active && array_key_exists((string) $this->role, static::roles());
     }
 }

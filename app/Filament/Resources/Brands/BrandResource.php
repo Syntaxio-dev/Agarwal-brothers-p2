@@ -58,4 +58,25 @@ class BrandResource extends Resource
             'edit' => EditBrand::route('/{record}/edit'),
         ];
     }
+
+    // ---- Admin search box (top of every admin page)
+    protected static int $globalSearchResultsLimit = 6;
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'slug', 'country.name'];
+    }
+
+    public static function getGlobalSearchEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getGlobalSearchEloquentQuery()->with('country');
+    }
+
+    public static function getGlobalSearchResultDetails(\Illuminate\Database\Eloquent\Model $record): array
+    {
+        return array_filter([
+            'Country' => $record->country?->name ?? 'Not set',
+            'Status' => $record->is_active ? 'Active' : 'Hidden',
+        ]);
+    }
 }

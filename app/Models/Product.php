@@ -42,6 +42,25 @@ class Product extends Model
         'is_top_pick' => 'boolean',
     ];
 
+    /** Scopes behind the "to do" filters and the dashboard counts. */
+    public function scopeWithoutImage($query)
+    {
+        return $query->where(fn ($q) => $q->whereNull('image')->orWhere('image', ''));
+    }
+
+    public function scopeWithoutSpecs($query)
+    {
+        return $query->where(fn ($q) => $q->whereNull('specs')->orWhereRaw('JSON_LENGTH(specs) = 0'));
+    }
+
+    /** No custom Google title and description (the site then makes them automatically). */
+    public function scopeWithoutSeo($query)
+    {
+        return $query
+            ->where(fn ($q) => $q->whereNull('seo_title')->orWhere('seo_title', ''))
+            ->where(fn ($q) => $q->whereNull('seo_description')->orWhere('seo_description', ''));
+    }
+
     public function category()
     {
         return $this->belongsTo(Category::class);

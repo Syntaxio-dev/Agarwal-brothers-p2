@@ -7,6 +7,7 @@ use App\Models\JobOpening;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use App\Support\FormRules;
+use App\Support\Preview;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -25,7 +26,7 @@ class CareerController extends Controller
 
     public function show(JobOpening $opening)
     {
-        abort_unless($opening->is_active, 404);
+        abort_unless(Preview::active() || $opening->is_active, 404);
 
         return view('public.career', compact('opening'));
     }

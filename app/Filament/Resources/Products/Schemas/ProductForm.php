@@ -11,6 +11,7 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\View;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
 
@@ -20,6 +21,16 @@ class ProductForm
     {
         return $schema
             ->components([
+                // Edit page only: how the card looks on the site, plus a checklist
+                Section::make('Card preview')
+                    ->description('Saved version of this product card, as visitors see it on the category page.')
+                    ->columnSpanFull()
+                    ->collapsible()
+                    ->visible(fn ($record) => filled($record))
+                    ->schema([
+                        View::make('filament.products.card-preview'),
+                    ]),
+
                 Section::make('Product details')
                     ->columnSpanFull()
                     ->columns(2)
@@ -140,7 +151,9 @@ class ProductForm
                         KeyValue::make('specs')
                             ->keyLabel('Specification')
                             ->valueLabel('Value')
-                            ->reorderable(),
+                            ->addActionLabel('Add specification')
+                            ->reorderable()
+                            ->helperText('Add or remove rows freely: every product can have its own number of specifications. Use the same wording (for example "Capacity") on products you want to compare, so they line up on the compare page.'),
                     ]),
 
                 Section::make('Documents & research papers')

@@ -8,7 +8,9 @@ use Filament\Actions\EditAction;
 use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class BrandsTable
@@ -30,7 +32,7 @@ class BrandsTable
                     ->sortable()
                     ->badge()
                     ->placeholder('Not set')
-                    ->color(fn ($state) => $state ? 'info' : 'warning'),
+                    ->color(fn ($state) => $state ? 'info' : 'danger'),
                 TextColumn::make('categories_count')
                     ->counts('categories')
                     ->label('Categories')
@@ -43,6 +45,12 @@ class BrandsTable
                 SelectFilter::make('country_id')
                     ->label('Country')
                     ->relationship('country', 'name'),
+                TernaryFilter::make('is_active')->label('Active'),
+                // "To do" filters (the dashboard cards link here)
+                Filter::make('no_country')->label('Without a country')->toggle()
+                    ->query(fn ($query) => $query->withoutCountry()),
+                Filter::make('no_logo')->label('Without a logo')->toggle()
+                    ->query(fn ($query) => $query->withoutLogo()),
             ])
             ->recordActions([
                 EditAction::make(),

@@ -9,7 +9,7 @@
         $seoDescription = \App\Support\Seo::description($description ?? $metaDescription ?? null);
         $seoImage = \App\Support\Seo::image($image ?? null);
         $seoUrl = \App\Support\Seo::canonical();
-        $seoNoindex = ($noindex ?? false) || ! \App\Support\Seo::indexable();
+        $seoNoindex = ($noindex ?? false) || ! \App\Support\Seo::indexable() || \App\Support\Preview::active(request());
     @endphp
     <title>{{ $seoTitle }}</title>
     <meta name="description" content="{{ $seoDescription }}">
@@ -226,6 +226,18 @@
             <div class="relative flex flex-col min-h-screen">
 
                 <main id="main" tabindex="-1" class="flex-grow mt-14 lg:mt-0">
+                    @if (\App\Support\Preview::active(request()))
+                        {{-- Staff preview of a page that may not be live yet --}}
+                        <div class="sticky top-14 z-[55] flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-navy px-5 py-2.5 text-white lg:top-0"
+                             style="box-shadow: inset 0 -2px 0 #00B4D8;">
+                            <p class="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                <span class="font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-cyan">Preview mode</span>
+                                <span class="text-xs text-white/80">Only signed-in staff can see this view. Visitors see it only when it is Active.</span>
+                            </p>
+                            <a href="{{ url('/admin') }}" class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-white underline decoration-cyan underline-offset-4 hover:text-cyan">Back to admin</a>
+                        </div>
+                    @endif
+
                     {{ $slot }}
                 </main>
 

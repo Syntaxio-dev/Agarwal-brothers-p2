@@ -71,7 +71,7 @@
                     class="absolute inset-0">
 
                     @if ($slide->video)
-                        <video autoplay muted loop playsinline preload="auto" class="absolute inset-0 h-full w-full object-cover">
+                        <video autoplay muted loop playsinline preload="auto" @if ($slide->image) poster="{{ asset('storage/' . $slide->image) }}" @endif class="absolute inset-0 h-full w-full object-cover">
                             <source src="{{ asset('storage/' . $slide->video) }}" type="video/mp4">
                         </video>
                     @elseif ($slide->image)

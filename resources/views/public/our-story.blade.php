@@ -51,7 +51,7 @@
 
         {{-- ===== 1. Banner ===== --}}
         <div class="relative flex h-[250px] items-end overflow-hidden rounded-3xl shadow-lg ring-1 ring-black/5 sm:h-[430px]">
-            <img src="{{ $banner ?: asset('building-image.png') }}" alt="Agarwal Brothers office, Jaipur"
+            <img src="{{ $banner ?: asset('building-image.webp') }}" alt="Agarwal Brothers office, Jaipur"
                  class="img-load absolute inset-0 h-full w-full object-cover object-[50%_22%]" decoding="async" onload="this.classList.add('is-loaded')">
             <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-navy/25 to-transparent"></div>
             <div class="relative px-6 pb-6 text-left sm:px-10 sm:pb-9">

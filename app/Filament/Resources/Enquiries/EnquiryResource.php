@@ -70,4 +70,27 @@ class EnquiryResource extends Resource
     {
         return 'warning';
     }
+
+    // ---- Admin search box (top of every admin page)
+    protected static int $globalSearchResultsLimit = 6;
+
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'email', 'phone', 'company', 'message', 'product.name', 'items.product_name'];
+    }
+
+    public static function getGlobalSearchEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getGlobalSearchEloquentQuery()->with('product')->withCount('items');
+    }
+
+    public static function getGlobalSearchResultDetails(\Illuminate\Database\Eloquent\Model $record): array
+    {
+        return array_filter([
+            'Email' => $record->email,
+            'Phone' => $record->phone,
+            'About' => $record->items_count ? $record->items_count . ' products (group enquiry)' : $record->product?->name,
+            'Status' => ucfirst((string) $record->status),
+        ]);
+    }
 }

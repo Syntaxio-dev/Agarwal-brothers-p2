@@ -47,4 +47,14 @@ class Brand extends Model
     {
         return $this->logo;
     }
+
+    public function scopeWithoutCountry($query)
+    {
+        return $query->whereNull('country_id');
+    }
+
+    public function scopeWithoutLogo($query)
+    {
+        return $query->where(fn ($q) => $q->whereNull('logo')->orWhere('logo', ''));
+    }
 }

@@ -13,6 +13,7 @@ class EditSiteSetting extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            \App\Filament\Support\ViewOnSite::for($this->getRecord()),
             DeleteAction::make(),
         ];
     }

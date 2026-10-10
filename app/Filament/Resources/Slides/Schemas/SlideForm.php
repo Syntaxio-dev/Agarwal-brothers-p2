@@ -55,7 +55,8 @@ class SlideForm
                             ->visibility('public')
                             ->directory('slides')
                             ->acceptedFileTypes(['video/mp4', 'video/webm'])
-                            ->maxSize(51200),
+                            ->maxSize(51200)
+                            ->helperText('Videos are stored exactly as you upload them (no quality loss), so prepare them first: MP4 (H.264), 1920x1080 or smaller, about 8 Mbps, no sound needed. A free tool like HandBrake can do this. Shorter is better; 10 to 20 seconds loops well.'),
                         TextInput::make('video_url')
                             ->label('External video URL (optional)')
                             ->columnSpanFull(),

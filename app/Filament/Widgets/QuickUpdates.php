@@ -2,15 +2,28 @@
 
 namespace App\Filament\Widgets;
 
+use App\Filament\Pages\HelpGuide;
+use App\Filament\Pages\ImportProducts;
+use App\Filament\Resources\Brands\BrandResource;
+use App\Filament\Resources\ContactMessages\ContactMessageResource;
+use App\Filament\Resources\Enquiries\EnquiryResource;
+use App\Filament\Resources\Insights\InsightResource;
+use App\Filament\Resources\JobApplications\JobApplicationResource;
+use App\Filament\Resources\Products\ProductResource;
+use App\Filament\Resources\Slides\SlideResource;
 use App\Models\Brand;
 use App\Models\ContactMessage;
 use App\Models\Enquiry;
 use App\Models\Insight;
 use App\Models\JobApplication;
 use App\Models\Product;
+use App\Models\Slide;
 use Filament\Widgets\Widget;
 
-/** "Needs your attention" list: only shows what the signed-in role can act on. */
+/**
+ * Dashboard "Quick updates": shortcuts to add things, and cards that count what needs attention.
+ * Every card opens the matching list already filtered. Only what the signed-in role can act on is shown.
+ */
 class QuickUpdates extends Widget
 {
     protected static ?int $sort = 1;
@@ -24,47 +37,106 @@ class QuickUpdates extends Widget
         return auth()->check();
     }
 
-    /** @return array<int, array{area:string,label:string,hint:string,count:int,url:string,tone:string}> */
-    public function getItems(): array
+    /** Small "do something now" buttons. @return array<int, array{label:string,url:string}> */
+    public function getLinks(): array
+    {
+        $links = [];
+
+        foreach ([
+            ['Add product', ProductResource::class, 'create'],
+            ['Import products', null, null],
+            ['Add brand', BrandResource::class, 'create'],
+            ['New blog / news', InsightResource::class, 'create'],
+            ['Add slide', SlideResource::class, 'create'],
+        ] as [$label, $resource, $page]) {
+            if ($resource === null) {
+                if (ImportProducts::canAccess()) {
+                    $links[] = ['label' => $label, 'url' => ImportProducts::getUrl()];
+                }
+
+                continue;
+            }
+
+            if ($resource::canCreate()) {
+                $links[] = ['label' => $label, 'url' => $resource::getUrl($page)];
+            }
+        }
+
+        $links[] = ['label' => 'How-to guide', 'url' => HelpGuide::getUrl()];
+
+        return $links;
+    }
+
+    /**
+     * Cards, grouped. tone: warn (customers waiting), info (coming up), todo (tidy up).
+     *
+     * @return array<string, array<int, array{area:string,label:string,hint:string,count:int,url:string,tone:string}>>
+     */
+    public function getGroups(): array
     {
         $user = auth()->user();
+        $activeOnly = ['is_active' => ['value' => '1']];
 
         $all = [
-            ['enquiries', 'New product enquiries', 'Customers waiting for a reply', fn () => Enquiry::where('status', 'new')->count(),
-                route('filament.admin.resources.enquiries.index', ['filters' => ['status' => ['value' => 'new']]]), 'warn'],
-            ['contact-messages', 'New contact messages', 'Messages from the Contact Us form', fn () => ContactMessage::where('status', 'new')->count(),
-                route('filament.admin.resources.contact-messages.index', ['filters' => ['status' => ['value' => 'new']]]), 'warn'],
-            ['job-applications', 'New job applications', 'Candidates who applied and are not reviewed yet', fn () => JobApplication::where('status', 'new')->count(),
-                route('filament.admin.resources.job-applications.index', ['filters' => ['status' => ['value' => 'new']]]), 'warn'],
-            ['insights', 'Webinars in the next 7 days', 'Check the link, date and registration page', fn () => $this->upcomingWebinars(),
-                route('filament.admin.resources.insights.index', ['filters' => ['type' => ['value' => 'webinar']]]), 'info'],
-            ['products', 'Products without an image', 'Add a photo so they look good on the site', fn () => Product::where('is_active', true)->whereNull('image')->count(),
-                route('filament.admin.resources.products.index'), 'todo'],
-            ['brands', 'Brands without a country', 'These are missing from the world map', fn () => Brand::where('is_active', true)->whereNull('country_id')->count(),
-                route('filament.admin.resources.brands.index'), 'todo'],
+            ['Needs a reply', 'enquiries', 'New product enquiries', 'Customers waiting for a reply', 'warn',
+                fn () => Enquiry::where('status', 'new')->count(),
+                fn () => EnquiryResource::getUrl('index', ['filters' => ['status' => ['value' => 'new']]])],
+            ['Needs a reply', 'contact-messages', 'New contact messages', 'Messages from the Contact Us form', 'warn',
+                fn () => ContactMessage::where('status', 'new')->count(),
+                fn () => ContactMessageResource::getUrl('index', ['filters' => ['status' => ['value' => 'new']]])],
+            ['Needs a reply', 'job-applications', 'New job applications', 'Candidates who are not reviewed yet', 'warn',
+                fn () => JobApplication::where('status', 'new')->count(),
+                fn () => JobApplicationResource::getUrl('index', ['filters' => ['status' => ['value' => 'new']]])],
+
+            ['Coming up', 'insights', 'Webinars in the next 7 days', 'Check the link, date and registration page', 'info',
+                fn () => $this->upcomingWebinars(),
+                fn () => InsightResource::getUrl('index', ['filters' => ['type' => ['value' => 'webinar']]])],
+
+            ['Tidy up', 'products', 'Products without a photo', 'They look empty on the site', 'todo',
+                fn () => Product::where('is_active', true)->withoutImage()->count(),
+                fn () => ProductResource::getUrl('index', ['filters' => ['no_image' => ['isActive' => true]] + $activeOnly])],
+            ['Tidy up', 'products', 'Products without specifications', 'Needed for the compare page', 'todo',
+                fn () => Product::where('is_active', true)->withoutSpecs()->count(),
+                fn () => ProductResource::getUrl('index', ['filters' => ['no_specs' => ['isActive' => true]] + $activeOnly])],
+            ['Tidy up', 'products', 'Products without a Google title', 'Add one to show up better in search', 'todo',
+                fn () => Product::where('is_active', true)->withoutSeo()->count(),
+                fn () => ProductResource::getUrl('index', ['filters' => ['no_seo' => ['isActive' => true]] + $activeOnly])],
+            ['Tidy up', 'products', 'Draft products', 'Hidden until you switch them to Active', 'todo',
+                fn () => Product::where('is_active', false)->count(),
+                fn () => ProductResource::getUrl('index', ['filters' => ['is_active' => ['value' => '0']]])],
+            ['Tidy up', 'brands', 'Brands without a country', 'They are missing from the world map', 'todo',
+                fn () => Brand::where('is_active', true)->withoutCountry()->count(),
+                fn () => BrandResource::getUrl('index', ['filters' => ['no_country' => ['isActive' => true]] + $activeOnly])],
+            ['Tidy up', 'brands', 'Brands without a logo', 'Their cards show only the name', 'todo',
+                fn () => Brand::where('is_active', true)->withoutLogo()->count(),
+                fn () => BrandResource::getUrl('index', ['filters' => ['no_logo' => ['isActive' => true]] + $activeOnly])],
+            ['Tidy up', 'slides', 'Slides without a description', 'Add alt text for screen readers and Google', 'todo',
+                fn () => Slide::withoutAlt()->count(),
+                fn () => SlideResource::getUrl('index', ['filters' => ['no_alt' => ['isActive' => true]]])],
         ];
 
-        $items = [];
+        $groups = [];
 
-        foreach ($all as [$area, $label, $hint, $counter, $url, $tone]) {
+        foreach ($all as [$group, $area, $label, $hint, $tone, $counter, $url]) {
             if (! $user->canManage($area)) {
                 continue;
             }
 
-            $items[] = [
-                'area' => $area,
-                'label' => $label,
-                'hint' => $hint,
-                'count' => (int) $counter(),
-                'url' => $url,
-                'tone' => $tone,
-            ];
+            $groups[$group][] = ['area' => $area, 'label' => $label, 'hint' => $hint, 'count' => (int) $counter(), 'url' => $url(), 'tone' => $tone];
         }
 
-        // Things to do first, then the rest.
-        usort($items, fn ($a, $b) => [$a['count'] > 0 ? 0 : 1, $a['tone'] === 'warn' ? 0 : 1] <=> [$b['count'] > 0 ? 0 : 1, $b['tone'] === 'warn' ? 0 : 1]);
+        // Cards that need action first inside every group.
+        foreach ($groups as &$cards) {
+            usort($cards, fn ($a, $b) => ($a['count'] > 0 ? 0 : 1) <=> ($b['count'] > 0 ? 0 : 1));
+        }
 
-        return $items;
+        return $groups;
+    }
+
+    /** Flat list (used by tests and the "n things need attention" line). */
+    public function getItems(): array
+    {
+        return collect($this->getGroups())->flatten(1)->values()->all();
     }
 
     private function upcomingWebinars(): int

@@ -36,6 +36,10 @@ class SlidesTable
             ->defaultSort('sort_order')
             ->emptyStateHeading('No slides yet')
             ->emptyStateDescription('Add a slide to show it in the homepage hero carousel. Drag rows to change the order.')
+            ->filters([
+                \Filament\Tables\Filters\Filter::make('no_alt')->label('Image without description')->toggle()
+                    ->query(fn ($query) => $query->withoutAlt()),
+            ])
             ->recordActions([
                 EditAction::make(),
             ])

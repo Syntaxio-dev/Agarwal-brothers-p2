@@ -1,9 +1,9 @@
 @php
     $rows = $this->getRows();
     $pill = [
-        'warning' => 'bg-amber-100 text-amber-800',
-        'info' => 'bg-sky-100 text-sky-800',
-        'success' => 'bg-emerald-100 text-emerald-800',
+        'warning' => 'bg-danger-50 text-danger-700 dark:bg-danger-500/10 dark:text-danger-400',
+        'info' => 'bg-info-50 text-info-700 dark:bg-info-500/10 dark:text-info-400',
+        'success' => 'bg-success-50 text-success-700 dark:bg-success-500/10 dark:text-success-400',
     ];
 @endphp
 
@@ -24,7 +24,7 @@
                             <span class="block truncate text-xs text-gray-500">{{ $row['detail'] }}</span>
                         </span>
                         @if ($row['status'] === 'new')
-                            <span class="hidden rounded-full bg-amber-500 px-2 py-0.5 text-[11px] font-bold uppercase text-white sm:inline">New</span>
+                            <span class="hidden rounded-full bg-danger-500 px-2 py-0.5 text-[11px] font-bold uppercase text-white sm:inline">New</span>
                         @endif
                         <span class="shrink-0 text-xs text-gray-400">{{ $row['at']->diffForHumans() }}</span>
                     </a>
