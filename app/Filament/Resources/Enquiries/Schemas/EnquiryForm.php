@@ -52,13 +52,15 @@ class EnquiryForm
                     ->default(null)
                     ->columnSpanFull(),
                 Select::make('status')
-                    ->options([
-                        'new' => 'New',
-                        'contacted' => 'Contacted',
-                        'closed' => 'Closed',
-                    ])
+                    ->options(\App\Models\Enquiry::STATUSES)
                     ->required()
                     ->default('new'),
+                Select::make('assigned_to')
+                    ->label('Assigned to')
+                    ->options(fn () => \App\Models\User::assignable('enquiries'))
+                    ->placeholder('Unassigned')
+                    ->searchable()
+                    ->helperText('The team member who looks after this enquiry. They get an email when you assign it.'),
             ]);
     }
 }

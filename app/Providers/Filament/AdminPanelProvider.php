@@ -50,6 +50,8 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight('2.25rem')
             ->favicon(asset('favicon.png'))
             ->sidebarCollapsibleOnDesktop()
+            ->unsavedChangesAlerts()   // browser asks before leaving a form with unsaved changes
+            ->renderHook(PanelsRenderHook::BODY_END, fn () => view('filament.partials.admin-drafts'))
             ->globalSearch(\App\Filament\Support\AdminSearchProvider::class)
             ->globalSearchKeyBindings(['ctrl+k', 'command+k'])
             ->renderHook(PanelsRenderHook::CONTENT_START, function () {

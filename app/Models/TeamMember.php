@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class TeamMember extends Model
 {
+    use LogsActivity;
     protected $fillable = ['name', 'designation', 'photo', 'is_leader', 'quote', 'linkedin_url', 'sort_order', 'is_active'];
 
     protected $casts = [

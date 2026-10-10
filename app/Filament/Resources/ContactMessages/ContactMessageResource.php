@@ -66,4 +66,11 @@ class ContactMessageResource extends Resource
             'edit' => EditContactMessage::route('/{record}/edit'),
         ];
     }
+
+    public static function getRelations(): array
+    {
+        return [
+            \App\Filament\RelationManagers\TeamNotesRelationManager::class,
+        ];
+    }
 }

@@ -17,6 +17,7 @@ class EditJobApplication extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            \App\Filament\Support\ReplyByEmailAction::make()->record($this->getRecord()),
             Action::make('resume')
                 ->label('Download resume')
                 ->icon(Heroicon::OutlinedArrowDownTray)

@@ -8,6 +8,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
+use App\Support\AutoReply;
 use App\Support\FormRules;
 
 class ContactController extends Controller
@@ -47,6 +48,8 @@ class ContactController extends Controller
         } catch (\Throwable $e) {
             report($e);
         }
+
+        AutoReply::send('auto_contact', $contact);
 
         return back()
             ->with('success', 'Thank you! Your message has reached our team and we will get back to you shortly.')

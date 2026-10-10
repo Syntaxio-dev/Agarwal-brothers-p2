@@ -6,6 +6,7 @@ use App\Models\JobApplication;
 use App\Models\JobOpening;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Support\AutoReply;
 use App\Support\FormRules;
 use App\Support\Preview;
 use Illuminate\Support\Facades\Validator;
@@ -135,6 +136,8 @@ class CareerController extends Controller
     {
         $path = $request->file('resume')->store('resumes', 'local');
 
-        JobApplication::create($attributes + ['resume' => $path, 'status' => 'new']);
+        $application = JobApplication::create($attributes + ['resume' => $path, 'status' => 'new']);
+
+        AutoReply::send('auto_application', $application);
     }
 }

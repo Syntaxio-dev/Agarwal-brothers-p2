@@ -25,6 +25,8 @@ class HousekeepingRun extends Command
 
     private const LOG_ROTATE_MB = 20;
 
+    private const ACTIVITY_KEEP_DAYS = 180;
+
     private const TEMP_UPLOAD_HOURS = 24;
 
     private const FAILED_JOB_HOURS = 336;   // 14 days
@@ -38,6 +40,7 @@ class HousekeepingRun extends Command
             ['Old log files', $this->logs()],
             ['Abandoned upload temp files', $this->tempUploads()],
             ['Surplus backups', $this->backups()],
+            ['Old activity log lines', $this->activityLog()],
         ];
 
         $this->table(['Cleaned', 'Removed'], $rows);
@@ -136,6 +139,16 @@ class HousekeepingRun extends Command
         }
 
         return $removed;
+    }
+
+    /** The activity log keeps six months; older lines are removed. */
+    private function activityLog(): int
+    {
+        if (! Schema::hasTable('activity_logs')) {
+            return 0;
+        }
+
+        return DB::table('activity_logs')->where('created_at', '<', now()->subDays(self::ACTIVITY_KEEP_DAYS))->delete();
     }
 
     private function backups(): int

@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsActivity;
 use Database\Factories\UserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
@@ -12,6 +13,7 @@ use Illuminate\Notifications\Notifiable;
 
 class User extends Authenticatable implements FilamentUser
 {
+    use LogsActivity;
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
 
@@ -67,6 +69,19 @@ class User extends Authenticatable implements FilamentUser
         return static::query()->where('role', 'admin')->where('is_active', true);
     }
 
+    /**
+     * People an item of the given area can be handed to: active staff whose role can open that area.
+     *
+     * @return array<int, string> id => "Name (Role)"
+     */
+    public static function assignable(string $area): array
+    {
+        return static::where('is_active', true)->orderBy('name')->get()
+            ->filter(fn (User $u) => $u->isStaff() && $u->canManage($area))
+            ->mapWithKeys(fn (User $u) => [$u->id => $u->name . ' (' . $u->roleLabel() . ')'])
+            ->all();
+    }
+
     public function isAdmin(): bool
     {
         return $this->role === 'admin' && $this->is_active;
@@ -91,7 +106,7 @@ class User extends Authenticatable implements FilamentUser
         }
 
         // These areas are administrator-only no matter what a role lists.
-        if (in_array($area, ['users', 'site-settings', 'backups'], true)) {
+        if (in_array($area, ['users', 'site-settings', 'backups', 'email-templates', 'activity-log'], true)) {
             return false;
         }
 

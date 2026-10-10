@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Model;
 
 class SiteSetting extends Model
 {
+    use LogsActivity;
     protected $fillable = [
         'catalogue_file', 'whatsapp_number', 'blogs_hero', 'news_hero', 'webinars_hero',
         'story_banner', 'story_image_1', 'story_image_2', 'story_mission_image',

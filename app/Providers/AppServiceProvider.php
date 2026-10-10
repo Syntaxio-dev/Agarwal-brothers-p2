@@ -19,6 +19,9 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // Record who signs in to the admin panel.
+        \Illuminate\Support\Facades\Event::listen(\Illuminate\Auth\Events\Login::class, fn ($event) => \App\Support\ActivityLogger::record('login', null, [], $event->user));
+
         //
     }
 }

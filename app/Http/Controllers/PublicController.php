@@ -17,6 +17,7 @@ use App\Models\SiteSetting;
 use App\Models\TeamMember;
 use App\Models\Slide;
 use App\Models\Vertical;
+use App\Support\AutoReply;
 use App\Support\FormRules;
 use App\Support\Preview;
 use Illuminate\Http\Request;
@@ -565,6 +566,8 @@ class PublicController extends Controller
             report($e);
         }
 
+        AutoReply::send('auto_enquiry', $enquiry);
+
         return redirect()->route('enquiry-list')->with('enquiry_sent', $products->count());
     }
 
@@ -578,6 +581,8 @@ class PublicController extends Controller
         } catch (\Throwable $e) {
             report($e);
         }
+
+        AutoReply::send('auto_enquiry', $enquiry);
 
         return back()->with('success', 'Thank you! We have received your enquiry and will contact you soon.')->withFragment('enquiry-form');
     }

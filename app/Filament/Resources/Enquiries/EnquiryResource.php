@@ -46,7 +46,7 @@ class EnquiryResource extends Resource
     public static function getRelations(): array
     {
         return [
-            //
+            \App\Filament\RelationManagers\TeamNotesRelationManager::class,
         ];
     }
 

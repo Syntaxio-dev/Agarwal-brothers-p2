@@ -66,4 +66,11 @@ class JobApplicationResource extends Resource
             'edit' => EditJobApplication::route('/{record}/edit'),
         ];
     }
+
+    public static function getRelations(): array
+    {
+        return [
+            \App\Filament\RelationManagers\TeamNotesRelationManager::class,
+        ];
+    }
 }

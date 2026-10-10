@@ -2,11 +2,13 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Slide extends Model
 {
+    use LogsActivity;
     use HasFactory;
 
 protected $fillable = ['title', 'subtitle', 'image', 'alt_text', 'video_url', 'video', 'sort_order', 'is_active', 'link_url'];

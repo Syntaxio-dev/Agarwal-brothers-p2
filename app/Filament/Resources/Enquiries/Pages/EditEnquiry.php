@@ -13,6 +13,7 @@ class EditEnquiry extends EditRecord
     protected function getHeaderActions(): array
     {
         return [
+            \App\Filament\Support\ReplyByEmailAction::make()->record($this->getRecord()),
             DeleteAction::make(),
         ];
     }
