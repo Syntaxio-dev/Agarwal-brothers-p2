@@ -5,18 +5,12 @@
 
     <div class="relative w-[98%] mx-auto px-4 md:px-10 lg:px-20 py-10 sm:py-14">
 
-        <div class="text-sm text-slate mb-8">
-            <a href="/" class="hover:text-link transition">Home</a>
-            <span class="mx-1.5">/</span>
-            <a href="{{ route('careers') }}" class="hover:text-link transition">Careers</a>
-            <span class="mx-1.5">/</span>
-            <span class="text-navy font-medium">{{ $opening->title }}</span>
-        </div>
+        @include('public.partials.breadcrumb', ['items' => [['Home', '/'], ['Careers', route('careers')], [$opening->title, null]]])
 
         <div class="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-10 items-start">
 
             {{-- Role details --}}
-            <div class="lg:col-span-2 lg:sticky lg:top-6">
+            <div data-reveal="left" class="lg:col-span-2 lg:sticky lg:top-6">
                 <span class="section-badge">
                     Now hiring
                 </span>
@@ -44,7 +38,7 @@
             </div>
 
             {{-- Application form --}}
-            <div class="lg:col-span-3">
+            <div data-reveal="right" data-reveal-delay="100" class="lg:col-span-3">
                 <h2 class="text-lg font-bold text-navy mb-4">Apply for this role</h2>
                 @include('public.partials.application-form', [
                     'action' => route('careers.apply', $opening->slug),

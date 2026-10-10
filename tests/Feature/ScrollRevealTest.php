@@ -93,4 +93,29 @@ class ScrollRevealTest extends TestCase
         $this->assertStringContainsString('.story-hero-title', $motion);
         $this->assertStringContainsString('[data-reveal="draw"].is-revealed .tl-line', $motion);
     }
+
+    public function test_careers_pages_reveal_use_the_shared_breadcrumb_and_have_the_new_touches(): void
+    {
+        $opening = \App\Models\JobOpening::create([
+            'title' => 'Sales Executive', 'slug' => 'sales-executive', 'location' => 'Jaipur',
+            'employment_type' => 'full-time', 'is_active' => true,
+        ]);
+
+        $list = $this->get(route('careers'))->assertOk()->getContent();
+        $this->assertGreaterThanOrEqual(12, substr_count($list, 'data-reveal'));
+        $this->assertStringContainsString('class="crumbs"', $list);              // same breadcrumb as every other page
+        $this->assertStringContainsString('edge-left', $list);                   // role cards: cyan edge on hover
+        $this->assertStringContainsString('arrow-nudge-down', $list);
+        $this->assertStringContainsString('href="#apply"', $list);               // banner jumps to the form
+        $this->assertStringContainsString('BreadcrumbList', $list);
+
+        $detail = $this->get(route('careers.show', $opening))->assertOk()->getContent();
+        $this->assertStringContainsString('class="crumbs"', $detail);
+        $this->assertStringContainsString('data-reveal="left"', $detail);
+        $this->assertStringContainsString('data-reveal="right"', $detail);
+
+        $css = file_get_contents(resource_path('css/app.css'));
+        $this->assertStringContainsString('.edge-left::before', $css);
+        $this->assertStringContainsString('.arrow-nudge-down', $css);
+    }
 }

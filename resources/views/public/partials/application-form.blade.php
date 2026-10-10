@@ -7,11 +7,11 @@
 
 <div id="apply" class="scroll-mt-6">
     @if (session('success'))
-        <div class="mb-5"><x-form.alert>{{ session('success') }}</x-form.alert></div>
+        <div data-reveal="fade" class="mb-5"><x-form.alert>{{ session('success') }}</x-form.alert></div>
     @endif
 
     @if ($errors->any())
-        <div class="mb-5"><x-form.alert type="error">Please fix the highlighted fields and try again.</x-form.alert></div>
+        <div data-reveal="fade" class="mb-5"><x-form.alert type="error">Please fix the highlighted fields and try again.</x-form.alert></div>
     @endif
 
     <form action="{{ $action }}" method="POST" enctype="multipart/form-data" x-data="formGuard(@js(collect($errors->messages())->map(fn ($m) => $m[0])->all()))" @submit="submit($event)" novalidate

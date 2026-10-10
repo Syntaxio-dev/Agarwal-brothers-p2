@@ -5,34 +5,30 @@
 
     <div class="relative w-[98%] mx-auto px-4 md:px-10 lg:px-20 py-10 sm:py-14">
 
-        <div class="text-sm text-slate mb-8">
-            <a href="/" class="hover:text-link transition">Home</a>
-            <span class="mx-1.5">/</span>
-            <span class="text-navy font-medium">Careers</span>
-        </div>
+        @include('public.partials.breadcrumb', ['items' => [['Home', '/'], ['Careers', null]]])
 
         {{-- ===== Hero ===== --}}
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
             <div>
-                <h1 class="text-4xl sm:text-5xl font-bold text-cyan-ink leading-tight">We are hiring</h1>
-                <h2 class="mt-3 text-2xl sm:text-3xl font-semibold text-navy leading-snug">
+                <h1 data-reveal class="text-4xl sm:text-5xl font-bold text-cyan-ink leading-tight">We are hiring</h1>
+                <h2 data-reveal class="mt-3 text-2xl sm:text-3xl font-semibold text-navy leading-snug">
                     Do the most meaningful work of your career at <span class="text-link">Agarwal Brothers</span>
                 </h2>
-                <p class="mt-5 text-base text-slate leading-relaxed max-w-xl">
+                <p data-reveal class="mt-5 text-base text-slate leading-relaxed max-w-xl">
                     Agarwal Brothers is always on the lookout for exceptional talent. We hire for potential, not just positions,
                     and we care deeply about the emotional and mental well-being of every person on our team.
                 </p>
-                <a href="#openings"
+                <a data-reveal href="#openings"
                    class="mt-7 inline-flex items-center gap-2 rounded-full bg-navy px-7 py-3 text-sm font-semibold text-white shadow-md
                           hover:bg-link hover:scale-105 transition-all duration-300 btn-primary">
                     View open roles
-                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <svg class="arrow-nudge-down h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"/>
                     </svg>
                 </a>
             </div>
 
-            <div class="rounded-3xl bg-white border border-gray-100 shadow-lg p-5 sm:p-7">
+            <div data-reveal="right" class="rounded-3xl bg-white border border-gray-100 shadow-lg p-5 sm:p-7">
                 <div class="flex justify-center">
                     <span class="section-badge">
                         Life at Agarwal Brothers
@@ -45,9 +41,9 @@
                         ['Learn from experts', 'Work alongside specialists in laboratory instruments, chemicals and service.', 'M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.62 48.62 0 0 1 12 20.904a48.62 48.62 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.636 50.636 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.717 50.717 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342'],
                         ['Open culture', 'Ideas are welcome at every level, and people are treated with respect.', 'M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z'],
                     ] as [$title, $desc, $icon])
-                        <div class="rounded-2xl border border-gray-100 bg-gradient-to-br from-ice to-white p-4">
-                            <div class="h-10 w-10 rounded-xl bg-cyan/10 flex items-center justify-center">
-                                <svg class="h-5 w-5 text-link" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
+                        <div data-reveal="zoom" class="group rounded-2xl border border-gray-100 bg-gradient-to-br from-ice to-white p-4 transition-all duration-300 hover:-translate-y-1 hover:border-cyan/40 hover:shadow-md">
+                            <div class="pop-icon h-10 w-10 rounded-xl bg-cyan/10 flex items-center justify-center transition-colors duration-300 group-hover:bg-navy">
+                                <svg class="h-5 w-5 text-link transition-colors duration-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="{{ $icon }}"/>
                                 </svg>
                             </div>
@@ -61,7 +57,7 @@
 
         {{-- ===== Open roles ===== --}}
         <div id="openings" class="mt-20 scroll-mt-6">
-            <div class="text-center flex flex-col items-center gap-3 mb-8">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-8">
                 <span class="section-badge">
                     Careers @ Agarwal Brothers
                 </span>
@@ -75,7 +71,7 @@
 
             <div class="max-w-4xl mx-auto flex flex-col gap-4">
                 @forelse ($openings as $opening)
-                    <div class="group flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl bg-white border border-gray-100 shadow-sm
+                    <div data-reveal class="edge-left group relative overflow-hidden flex flex-col sm:flex-row sm:items-center gap-4 rounded-2xl bg-white border border-gray-100 shadow-sm
                                 px-6 py-5 hover:shadow-lg hover:border-cyan/40 transition-all duration-300">
                         <div class="flex-1 min-w-0">
                             <h3 class="text-lg font-bold text-navy group-hover:text-link transition-colors">{{ $opening->title }}</h3>
@@ -107,13 +103,13 @@
                            class="shrink-0 inline-flex items-center justify-center gap-2 rounded-full bg-navy px-6 py-2.5 text-sm font-semibold text-white shadow-md
                                   hover:bg-link hover:scale-105 transition-all duration-300 btn-primary">
                             Apply
-                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                            <svg class="arrow-nudge h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
                             </svg>
                         </a>
                     </div>
                 @empty
-                    <div class="rounded-2xl bg-white border border-gray-100 p-10 text-center text-slate">
+                    <div data-reveal="fade" class="rounded-2xl bg-white border border-gray-100 p-10 text-center text-slate">
                         <p class="font-semibold text-navy">No open positions right now.</p>
                         <p class="mt-1 text-sm">Share your profile below and we'll reach out when a suitable role opens up.</p>
                     </div>
@@ -122,14 +118,22 @@
         </div>
 
         {{-- ===== Banner ===== --}}
-        <div class="mt-16 rounded-3xl bg-gradient-to-br from-navy to-link px-7 py-9 sm:px-12 sm:py-12">
-            <h2 class="text-2xl sm:text-3xl font-bold text-white">Don't see a perfect role?</h2>
-            <p class="mt-2 text-sm sm:text-base text-white/80">We always welcome exceptional talent. Share your profile with us.</p>
+        <div data-reveal="zoom" class="mt-16 flex flex-col items-start justify-between gap-6 rounded-3xl bg-gradient-to-br from-navy to-link px-7 py-9 sm:flex-row sm:items-center sm:px-12 sm:py-12">
+            <div>
+                <h2 class="text-2xl sm:text-3xl font-bold text-white">Don't see a perfect role?</h2>
+                <p class="mt-2 text-sm sm:text-base text-white/80">We always welcome exceptional talent. Share your profile with us.</p>
+            </div>
+            <a href="#apply" class="btn-glass shrink-0 px-7 py-3">
+                Share your profile
+                <svg class="arrow-nudge-down h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"/>
+                </svg>
+            </a>
         </div>
 
         {{-- ===== General application ===== --}}
         <div class="mt-14 max-w-4xl mx-auto">
-            <div class="text-center flex flex-col items-center gap-3 mb-8">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-8">
                 <span class="section-badge">
                     Apply to join our team
                 </span>

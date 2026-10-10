@@ -138,6 +138,8 @@ Own `reveal.js` (no library): starts when 200 px / 60 % of an item is visible, s
 
 **Catalogue pages reveal (done by a second agent, checked afterwards)** — `data-reveal` added to Verticals index, Vertical, Brand, Category and Product pages (headers, cards, sections, CTA). Checked in real Chrome on desktop and phone: every item ends visible, no layout shift, no sideways scroll, no console errors. One gap found and fixed: cards that appear without scrolling (a Category filter showing/hiding models, `x-show`) never got their turn, so `reveal.js` now also watches `style/class/hidden` changes (MutationObserver) and re-checks. The Category filter only shows with 8 or more models (the dummy data has none that large), so it was tested with a simulated hide/show.
 
+**Careers pages (`careers`, `career`, shared `application-form`)** — hero text and the "Life at Agarwal Brothers" card reveal in order (first screen reveals at load, no hidden flash thanks to the failsafe); life cards lift on hover and their icon box turns navy; role cards reveal one by one with a cyan left edge growing on hover (`.edge-left`) and an Apply arrow that nudges right; "Don't see a perfect role?" banner got a **Share your profile** button that jumps to the form; form and success/error alerts fade in. Fixed on the way: both pages used an old plain "Home / Careers" trail, now the shared chevron breadcrumb (with JSON-LD) like every other page. New reusable CSS helpers in `app.css`: `.edge-left`, `.arrow-nudge-down`, `.pop-icon` (icon pop-in after its card appears). Checked in real Chrome (desktop + phone, hover states, reduced motion, blocked script). Note: the very first page load after the Vite dev server restarts can be too slow for reveal.js and makes a test look failed; repeat the run (production build is not affected).
+
 **Notes for any new agent / helper**
 - Start by reading this file. Uncommitted changes in `git status` may belong to another agent: look at `git diff` before touching those files.
 - Never run two PHPUnit runs at the same time: they share `ab_new_project_testing` and corrupt it (symptom: "Base table or view not found" everywhere). Fix: drop and recreate that database (`DROP DATABASE ab_new_project_testing; CREATE DATABASE ab_new_project_testing CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`), then run once.
@@ -148,10 +150,10 @@ Own `reveal.js` (no library): starts when 200 px / 60 % of an item is visible, s
 
 ## 10. Test status (last full run)
 
-146 PHP tests passing with GD enabled (4 skipped without GD) · 10 Node tests passing · real-Chrome E2E scripts (kept outside the repo) for drafts, scroll reveal (timing, layout shift, reduced motion, failsafe, phone), marquee hover, admin page geometry/overflow scans.
+147 PHP tests passing with GD enabled (4 skipped without GD) · 10 Node tests passing · real-Chrome E2E scripts (kept outside the repo) for drafts, scroll reveal (timing, layout shift, reduced motion, failsafe, phone), marquee hover, admin page geometry/overflow scans.
 
 ## 11. Next steps / backlog
 
-- **AOS rollout, page by page:** Home ✅ → Our Story ✅ → Verticals/Brand/Category ✅ → Product ✅ → Insights/Careers/Contact (still to do, plus Compare, Enquiry list, Search, Application resources, Privacy). Use `data-reveal`; only fade things that already move.
+- **AOS rollout, page by page:** Home ✅ → Our Story ✅ → Verticals/Brand/Category ✅ → Product ✅ → Careers ✅ → Insights/Contact (still to do, plus Compare, Enquiry list, Search, Application resources, Privacy). Use `data-reveal`; only fade things that already move.
 - Before launch (owner will do last): replace dummy data and phone numbers (`config/contact.php`), real footer links/Terms page, WhatsApp number in Site Settings, production `.env`, GD on the server, cron for `schedule:run`, run `filament:cache-components` and `migrate`, legal review of the privacy text, change the admin password, compress remaining heavy images (`images:optimize`).
 - Ideas not started: 2FA for admins, per-record "History" tab on edit pages, contact-message/application assignment, translation of the public site.
