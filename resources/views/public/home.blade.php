@@ -40,7 +40,9 @@
         }
         .brand-marquee-left  { animation-name: brand-marquee-left; }
         .brand-marquee-right { animation-name: brand-marquee-right; }
-        .brand-marquee-track.is-paused {
+        /* Each row stops by itself while the mouse (or keyboard focus) is on it; the other row keeps moving. */
+        .brand-marquee-track:hover,
+        .brand-marquee-track:focus-within {
             animation-play-state: paused;
         }
     </style>
@@ -346,10 +348,7 @@
                 ];
             @endphp
 
-            <div data-reveal="fade" x-data="{ paused: false }"
-                 @mouseenter="paused = true"
-                 @mouseleave="paused = false"
-                 class="relative overflow-hidden py-6 flex flex-col gap-6">
+            <div data-reveal="fade" class="relative overflow-hidden py-6 flex flex-col gap-6">
 
                 {{-- Edge fades --}}
                 <div class="absolute left-0 inset-y-0 w-6 sm:w-12 bg-gradient-to-r from-white to-transparent z-10 pointer-events-none"></div>
@@ -364,8 +363,7 @@
                         $duration = max(30, $half_set->count() * 4);
                     @endphp
                     <div class="brand-marquee-track brand-marquee-{{ $row['dir'] }} flex w-max gap-5"
-                         style="--dur: {{ $duration }}s"
-                         :class="{ 'is-paused': paused }">
+                         style="--dur: {{ $duration }}s">
                         @foreach ([0, 1] as $copy)
                             @foreach ($half_set as $brand)
                                 <a href="{{ route('brand.show', $brand->slug) }}"
@@ -453,7 +451,7 @@
             </div>
 
             @if ($verticals->count() > 8)
-                <div class="mt-8 text-center">
+                <div data-reveal class="mt-8 text-center">
                     <a href="{{ route('verticals.index') }}"
                         class="inline-flex items-center gap-2 rounded-full bg-navy px-7 py-2.5
                                text-sm font-semibold text-white shadow-md
@@ -492,10 +490,10 @@
                 </p>
             </div>
 
-            <div data-reveal class="grid grid-cols-1 lg:grid-cols-[260px_1fr_240px] lg:h-[420px] gap-5 items-stretch">
+            <div class="grid grid-cols-1 lg:grid-cols-[260px_1fr_240px] lg:h-[420px] gap-5 items-stretch">
 
                 {{-- Product selector list --}}
-                <div class="order-2 lg:order-1 rounded-2xl bg-white border border-gray-100 shadow-sm p-3
+                <div data-reveal="left" class="order-2 lg:order-1 rounded-2xl bg-white border border-gray-100 shadow-sm p-3
                             flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible lg:overflow-y-auto">
                     @foreach ($topPicks as $i => $product)
                         <button type="button"
@@ -513,7 +511,7 @@
                 </div>
 
                 {{-- Image stage --}}
-                <div class="order-1 lg:order-2 relative rounded-2xl border border-gray-100 shadow-sm overflow-hidden
+                <div data-reveal="zoom" class="order-1 lg:order-2 relative rounded-2xl border border-gray-100 shadow-sm overflow-hidden
                             bg-gradient-to-br from-white via-ice to-cyan/10 min-h-[280px] sm:min-h-[380px]">
                     @foreach ($topPicks as $i => $product)
                         <a href="{{ route('product.show', $product->slug) }}"
@@ -539,7 +537,7 @@
                 </div>
 
                 {{-- Details + CTA --}}
-                <div class="order-3 rounded-2xl bg-white border border-gray-100 shadow-sm p-6 flex flex-col justify-center text-center lg:text-left lg:overflow-y-auto">
+                <div data-reveal="right" class="order-3 rounded-2xl bg-white border border-gray-100 shadow-sm p-6 flex flex-col justify-center text-center lg:text-left lg:overflow-y-auto">
                     <div class="grid">
                     @foreach ($topPicks as $i => $product)
                         <div :class="active === {{ $i }} ? 'opacity-100' : 'opacity-0 pointer-events-none'"
@@ -594,7 +592,7 @@
                 </p>
             </div>
 
-            <div data-reveal="fade" x-data="brandMap(@js($mapCountries))" x-ref="wrap"
+            <div data-reveal="zoom" x-data="brandMap(@js($mapCountries))" x-ref="wrap"
                  @keydown.escape.window="close()"
                  class="relative w-full">
 
@@ -665,13 +663,13 @@
                 </h2>
             </div>
 
-            <div data-reveal class="rounded-3xl border border-gray-100 bg-white/70 p-4 sm:p-6 shadow-sm
+            <div data-reveal="fade" class="rounded-3xl border border-gray-100 bg-white/70 p-4 sm:p-6 shadow-sm
                         grid grid-cols-1 lg:grid-cols-2 gap-6 items-center">
 
                 {{-- Blog list (click to select) --}}
                 <div class="order-2 lg:order-1 flex flex-col gap-3">
                     @foreach ($blogs as $i => $blog)
-                        <button type="button" @click="active = {{ $i }}"
+                        <button data-reveal="left" type="button" @click="active = {{ $i }}"
                             :class="active === {{ $i }}
                                 ? 'border-cyan bg-cyan/10'
                                 : 'border-gray-100 bg-white hover:border-cyan/40'"
@@ -691,7 +689,7 @@
                 </div>
 
                 {{-- Cover image + Read More --}}
-                <div class="order-1 lg:order-2 flex flex-col items-center gap-5">
+                <div data-reveal="right" class="order-1 lg:order-2 flex flex-col items-center gap-5">
                     <div class="relative w-full aspect-[16/8] rounded-2xl overflow-hidden bg-gradient-to-br from-navy/10 to-cyan/20 shadow-sm">
                         @foreach ($blogs as $i => $blog)
                             <a href="{{ route('insights.show', $blog->slug) }}"
@@ -721,7 +719,7 @@
                 </div>
             </div>
 
-            <div class="mt-6 text-center">
+            <div data-reveal class="mt-6 text-center">
                 <a href="{{ route('insights.blogs') }}" class="text-sm font-semibold text-link hover:text-navy transition">
                     View all blogs &rarr;
                 </a>
@@ -785,7 +783,7 @@
                 @endforeach
             </div>
 
-            <div class="mt-8 text-center">
+            <div data-reveal class="mt-8 text-center">
                 <a href="{{ route('insights.news') }}" class="text-sm font-semibold text-link hover:text-navy transition">
                     View all news & events &rarr;
                 </a>

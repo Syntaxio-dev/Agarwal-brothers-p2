@@ -39,4 +39,32 @@ class ScrollRevealTest extends TestCase
         }
         $this->assertStringContainsString('600ms', $css);                                   // balanced speed
     }
+
+    public function test_tall_blocks_are_split_up_and_get_a_bigger_entrance(): void
+    {
+        $css = file_get_contents(resource_path('css/app.css'));
+        $js = file_get_contents(resource_path('js/reveal.js'));
+
+        $this->assertStringContainsString('@keyframes reveal-up-lg', $css);
+        $this->assertStringContainsString('reveal-lg', $js);
+        // an item starts once 200px (or 60% of a small item) is on screen, not at the first visible pixel
+        $this->assertStringContainsString('MIN_VISIBLE_PX = 200', $js);
+
+        // blogs and news are not one big block any more: rows, cover, cards and the links under them each reveal
+        $template = file_get_contents(resource_path('views/public/home.blade.php'));
+        $this->assertGreaterThanOrEqual(25, substr_count($template, 'data-reveal'));
+        $this->assertStringContainsString('<button data-reveal="left"', $template);    // blog rows
+        $this->assertStringContainsString('<div data-reveal="right" class="order-1 lg:order-2', $template);   // blog cover
+    }
+
+    public function test_each_brand_row_stops_on_its_own_when_hovered(): void
+    {
+        $html = $this->get('/')->getContent();
+
+        $this->assertStringContainsString('.brand-marquee-track:hover', $html);
+        $this->assertStringContainsString('.brand-marquee-track:focus-within', $html);
+        // the old "stop everything" switch on the shared container is gone
+        $this->assertStringNotContainsString("'is-paused': paused", $html);
+        $this->assertDoesNotMatchRegularExpression('/data-reveal="fade" x-data="\{ paused/', $html);
+    }
 }
