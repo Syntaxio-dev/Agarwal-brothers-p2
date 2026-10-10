@@ -20,12 +20,12 @@
 
         <header class="relative px-5 py-5 sm:px-10">
             <a href="/" aria-label="Agarwal Brothers home">
-                <img src="{{ asset('sidebar-logo.png') }}" alt="Agarwal Brothers" class="h-11 w-auto sm:h-12">
+                <img src="{{ asset('sidebar-logo.png') }}" alt="Agarwal Brothers" class="img-load h-11 w-auto sm:h-12" decoding="async" onload="this.classList.add('is-loaded')" {!! \App\Support\Img::publicAttrs('sidebar-logo.png') !!}>
             </a>
         </header>
 
         <main class="relative flex flex-1 items-center justify-center px-5 py-10">
-            <div class="w-full max-w-2xl text-center">
+            <div class="w-full max-w-3xl text-center">
                 <span class="section-badge">@yield('eyebrow')</span>
 
                 <p class="mt-6 select-none bg-gradient-to-br from-navy to-link bg-clip-text font-mono text-[7rem] font-normal leading-none tracking-tighter text-transparent sm:text-[10rem]">
@@ -49,11 +49,7 @@
                     @endif
                 </div>
 
-                <p class="mt-10 text-sm text-slate">
-                    Need help? Write to
-                    <a href="mailto:{{ config('contact.mail_24x7') }}" class="font-semibold text-link hover:underline">{{ config('contact.mail_24x7') }}</a>
-                    or visit our <a href="/contact-us" class="font-semibold text-link hover:underline">contact page</a>.
-                </p>
+                <x-help-links />
             </div>
         </main>
 

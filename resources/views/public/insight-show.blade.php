@@ -86,7 +86,7 @@
             @if ($poster)
                 <aside class="lg:col-span-2 lg:sticky lg:top-6">
                     <div class="overflow-hidden rounded-3xl border border-gray-200 bg-ice p-3 shadow-lg">
-                        <img src="{{ asset('storage/' . $insight->image) }}" alt="{{ $insight->title }}" class="w-full rounded-2xl object-contain">
+                        <img src="{{ asset('storage/' . $insight->image) }}" alt="{{ $insight->title }}" class="img-load w-full rounded-2xl object-contain" decoding="async" {!! \App\Support\Img::attrs($insight->image) !!} onload="this.classList.add('is-loaded')">
                     </div>
                 </aside>
             @endif
@@ -117,7 +117,7 @@
                 {{-- Cover (blog / webinar) --}}
                 @if (! $poster && $insight->image)
                     <img src="{{ asset('storage/' . $insight->image) }}" alt="{{ $insight->title }}"
-                         class="mt-8 aspect-[16/9] w-full rounded-2xl object-cover shadow-md ring-1 ring-black/5">
+                         class="img-load mt-8 aspect-[16/9] w-full rounded-2xl object-cover shadow-md ring-1 ring-black/5" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($insight->image) !!} onload="this.classList.add('is-loaded')">
                 @endif
 
                 {{-- Webinar details --}}
@@ -232,7 +232,7 @@
                             <div class="flex aspect-[16/9] items-center justify-center overflow-hidden bg-gradient-to-br from-ice to-cyan/10">
                                 @if ($r->image)
                                     <img src="{{ asset('storage/' . $r->image) }}" alt="{{ $r->title }}"
-                                         class="h-full w-full {{ $r->type === 'news' ? 'object-contain' : 'object-cover' }} transition-transform duration-500 group-hover:scale-105">
+                                         class="img-load h-full w-full {{ $r->type === 'news' ? 'object-contain' : 'object-cover' }} transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($r->image) !!} onload="this.classList.add('is-loaded')">
                                 @else
                                     <span class="line-clamp-3 px-6 text-center text-sm font-bold text-navy/50">{{ $r->title }}</span>
                                 @endif

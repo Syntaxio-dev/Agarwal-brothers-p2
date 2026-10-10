@@ -24,3 +24,12 @@ Options -Indexes -ExecCGI
         Header set Content-Security-Policy "sandbox; default-src 'none'; img-src 'self' data:; style-src 'unsafe-inline'"
     </FilesMatch>
 </IfModule>
+
+# Bandwidth: uploads get a new file name whenever they are replaced, so browsers may keep them for a long time.
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/webp "access plus 1 year"
+    ExpiresByType image/jpeg "access plus 1 year"
+    ExpiresByType image/png "access plus 1 year"
+    ExpiresByType image/gif "access plus 1 year"
+</IfModule>

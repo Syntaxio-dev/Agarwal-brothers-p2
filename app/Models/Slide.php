@@ -9,5 +9,5 @@ class Slide extends Model
 {
     use HasFactory;
 
-protected $fillable = ['title', 'subtitle', 'image', 'video_url', 'video', 'sort_order', 'is_active', 'link_url'];
+protected $fillable = ['title', 'subtitle', 'image', 'alt_text', 'video_url', 'video', 'sort_order', 'is_active', 'link_url'];
 }

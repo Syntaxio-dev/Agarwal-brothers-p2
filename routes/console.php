@@ -15,3 +15,5 @@ Schedule::command('queue:work --stop-when-empty --max-time=50 --tries=3')
     ->everyMinute()
     ->withoutOverlapping(5);
 Schedule::command('backup:run')->dailyAt('02:30')->withoutOverlapping();
+
+Schedule::command('housekeeping:run')->dailyAt('03:30')->withoutOverlapping();

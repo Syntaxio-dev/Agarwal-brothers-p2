@@ -49,6 +49,7 @@ class HelpGuide
                     'Banners: wide images. Blogs and webinars about 3:1 (for example 1800x600). Team photos about 4:5 (portrait).',
                     'PDFs: up to 20 MB. Resumes sent by candidates are private and can only be downloaded from the admin panel.',
                     'Videos for hero slides: MP4 or WebM, up to 50 MB. For long videos paste a YouTube link instead.',
+                    'Image description (alt text): hero slides ask for a short description of the picture. Write what a person would see, for example "Scientists working in a modern laboratory". It helps people who use screen readers and it helps Google. Other images use their name or title automatically.',
                 ],
                 'tips' => [
                     'Name files clearly before uploading (for example shimadzu-lc-2050.png).',

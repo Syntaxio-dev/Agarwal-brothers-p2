@@ -30,11 +30,11 @@ class LatestActivity extends Widget
         $rows = collect();
 
         if ($user->canManage('enquiries')) {
-            Enquiry::with('product')->latest()->limit(6)->get()->each(fn ($e) => $rows->push([
+            Enquiry::with('product')->withCount('items')->latest()->limit(6)->get()->each(fn ($e) => $rows->push([
                 'type' => 'Enquiry',
                 'tone' => 'warning',
                 'title' => $e->name,
-                'detail' => $e->product?->name ? 'about ' . $e->product->name : 'general enquiry',
+                'detail' => $e->items_count ? 'group enquiry, ' . $e->items_count . ' products' : ($e->product?->name ? 'about ' . $e->product->name : 'general enquiry'),
                 'status' => $e->status,
                 'at' => $e->created_at,
                 'url' => route('filament.admin.resources.enquiries.edit', $e),

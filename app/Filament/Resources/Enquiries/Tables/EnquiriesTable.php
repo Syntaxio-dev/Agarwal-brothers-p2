@@ -14,6 +14,7 @@ class EnquiriesTable
     public static function configure(Table $table): Table
     {
         return $table
+            ->modifyQueryUsing(fn ($query) => $query->withCount('items')->with('items'))
             ->columns([
                 TextColumn::make('created_at')
                     ->label('Received')
@@ -30,6 +31,12 @@ class EnquiriesTable
                 TextColumn::make('product.name')
                     ->label('Product')
                     ->placeholder('General enquiry')
+                    ->state(fn ($record) => $record->items_count
+                        ? $record->items_count . ' products (group)'
+                        : $record->product?->name)
+                    ->description(fn ($record) => $record->items_count ? $record->items->pluck('product_name')->take(2)->implode(', ') . ($record->items_count > 2 ? '…' : '') : null)
+                    ->badge(fn ($record) => (bool) $record->items_count)
+                    ->color(fn ($record) => $record->items_count ? 'info' : 'gray')
                     ->limit(30),
                 TextColumn::make('status')
                     ->badge()

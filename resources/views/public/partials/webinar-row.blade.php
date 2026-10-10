@@ -24,7 +24,7 @@
 
     <div class="h-20 w-full sm:w-32 shrink-0 rounded-xl bg-white border border-gray-100 flex items-center justify-center p-3">
         @if ($w->brand?->logo)
-            <img src="{{ asset('storage/' . $w->brand->logo) }}" alt="{{ $w->brand->name }}" class="max-h-full max-w-full object-contain">
+            <img src="{{ asset('storage/' . $w->brand->logo) }}" alt="{{ $w->brand->name }}" class="img-load max-h-full max-w-full object-contain" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($w->brand->logo) !!} onload="this.classList.add('is-loaded')">
         @elseif ($w->brand)
             <span class="text-sm font-bold text-navy text-center">{{ $w->brand->name }}</span>
         @else

@@ -13,6 +13,8 @@
     --color-navy: #0B2545;
     --color-link: #0077B6;
     --color-cyan: #00B4D8;
+    /* Cyan for text and icons on light backgrounds (4.5:1 on white and ice); bright cyan stays for dark surfaces */
+    --color-cyan-ink: #007C98;
     --color-slate: #6C757D;
     --color-ice: #F4F9FB;
     --color-success: #2A9D8F;
@@ -44,8 +46,51 @@ h1 { letter-spacing: -0.028em; }
 }
 
 :focus-visible {
-    outline: 2px solid #00B4D8;
+    outline: 2px solid #0077B6;
     outline-offset: 2px;
+}
+/* On navy surfaces the bright cyan is the visible one */
+:is(footer, .bg-navy, [class*="from-navy"], [class*="to-navy"]) :focus-visible {
+    outline-color: #00B4D8;
+}
+.btn-glass:focus-visible {
+    outline-color: #ffffff;
+}
+
+/* Fields that sit inside a container with its own focus ring (search bars etc.) keep no inner outline */
+.outline-none:focus-visible {
+    outline: none;
+}
+/* Bordered fields show a clear blue border + soft ring when focused */
+.outline-none.border:focus-visible,
+.outline-none.border:focus {
+    border-color: #0077B6;
+    box-shadow: 0 0 0 3px rgb(0 119 182 / 0.22);
+}
+/* Search bars: the whole bar lights up, not the bare input inside it */
+[role="search"]:focus-within,
+form.search-bar:focus-within {
+    border-color: #0077B6;
+    box-shadow: 0 0 0 3px rgb(0 119 182 / 0.22);
+}
+
+/* Skip link target: no outline when focus is moved there by the skip link */
+main:focus {
+    outline: none;
+}
+
+/* Respect "reduce motion": no smooth scrolling, no looping animations */
+@media (prefers-reduced-motion: reduce) {
+    html {
+        scroll-behavior: auto;
+    }
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
 }
 
 /* ------------------------------------------------------------------
@@ -111,6 +156,15 @@ h1 { letter-spacing: -0.028em; }
         color: #0077B6;
         box-shadow: inset 0 -2px 0 rgb(0 180 216 / 0.6);
         transform: translateY(-1px);
+    }
+
+    /* Selected state for ghost-style toggle buttons (compare on the product page) */
+    .btn-ghost.compare-on,
+    .btn-ghost.compare-on:hover {
+        border-color: transparent;
+        color: #ffffff;
+        background-color: #0B2545;
+        box-shadow: inset 0 -2px 0 #00B4D8;
     }
 
     /* Floating action buttons */
@@ -349,4 +403,25 @@ h1 { letter-spacing: -0.028em; }
     }
     .rich-text pre code { padding: 0; background: none; color: inherit; }
     .rich-text hr { margin: 2.2em 0; border: 0; border-top: 1px solid #E5E7EB; }
+}
+
+/* Form fields that failed validation (set by formGuard in resources/js/form-guard.js) */
+input[aria-invalid="true"],
+textarea[aria-invalid="true"],
+select[aria-invalid="true"] {
+    border-color: #E76F51;
+    box-shadow: 0 0 0 2px rgb(231 111 81 / 0.18);
+}
+
+/* Image placeholder: a soft shimmer until the picture has loaded (is-loaded is added by the img's onload) */
+.js img.img-load:not(.is-loaded) {
+    background: linear-gradient(110deg, #EAF4FA 30%, #F8FCFE 50%, #EAF4FA 70%);
+    background-size: 200% 100%;
+    animation: img-shimmer 1.4s linear infinite;
+}
+@keyframes img-shimmer {
+    to { background-position: -200% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .js img.img-load:not(.is-loaded) { animation: none; }
 }

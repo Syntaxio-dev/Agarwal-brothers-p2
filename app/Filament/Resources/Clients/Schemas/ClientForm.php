@@ -24,6 +24,7 @@ class ClientForm
                         FileUpload::make('logo')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
+                            ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))
                             ->maxSize(\App\Filament\Support\Uploads::IMAGE_MAX_KB)
                             ->disk('public')
                             ->visibility('public')

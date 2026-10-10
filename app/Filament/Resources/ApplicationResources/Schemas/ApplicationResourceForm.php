@@ -47,6 +47,7 @@ class ApplicationResourceForm
                             ->helperText('Shown on the card. Landscape (about 16:10) works best.')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
+                            ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))
                             ->maxSize(\App\Filament\Support\Uploads::IMAGE_MAX_KB)
                             ->disk('public')
                             ->visibility('public')

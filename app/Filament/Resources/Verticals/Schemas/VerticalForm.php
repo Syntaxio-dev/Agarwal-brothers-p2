@@ -36,6 +36,7 @@ class VerticalForm
                             ->helperText('Shown as a small square on the homepage card; a square image works best.')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
+                            ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))
                             ->maxSize(\App\Filament\Support\Uploads::IMAGE_MAX_KB)
                             ->disk('public')
                             ->visibility('public')

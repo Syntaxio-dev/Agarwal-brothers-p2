@@ -11,6 +11,7 @@ Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('sitemap');
 Route::get('/robots.txt', [SeoController::class, 'robots'])->name('robots');
 Route::get('/our-story', [PublicController::class, 'ourStory'])->name('our-story');
 Route::get('/application-resources', [PublicController::class, 'applicationResources'])->name('application-resources');
+Route::get('/privacy-policy', [PublicController::class, 'privacy'])->name('privacy');
 Route::get('/careers', [CareerController::class, 'index'])->name('careers');
 Route::post('/careers/apply', [CareerController::class, 'applyGeneral'])->name('careers.apply.general')->middleware('throttle:5,1');
 Route::get('/careers/{opening:slug}', [CareerController::class, 'show'])->name('careers.show');
@@ -28,4 +29,8 @@ Route::get('/brands/{brand:slug}', [PublicController::class, 'brand'])->name('br
 Route::get('/brands/{brand:slug}/{category:slug}', [PublicController::class, 'category'])->name('category.show');
 Route::get('/products/{product:slug}', [PublicController::class, 'product'])->name('product.show');
 Route::post('/enquiries', [PublicController::class, 'storeEnquiry'])->name('enquiry.store')->middleware('throttle:5,1');
+Route::get('/enquiry-list', [PublicController::class, 'enquiryList'])->name('enquiry-list');
+Route::post('/enquiry-list', [PublicController::class, 'storeEnquiryList'])->name('enquiry-list.store')->middleware('throttle:5,1');
+Route::get('/compare', [PublicController::class, 'compare'])->name('compare');
+Route::get('/search/suggest', [PublicController::class, 'suggest'])->middleware('throttle:90,1')->name('search.suggest');
 Route::get('/search', [PublicController::class, 'search'])->name('search');

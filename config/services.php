@@ -28,6 +28,10 @@ return [
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
 
+    // Google Analytics 4 measurement id (G-XXXXXXXXXX). Leave empty to run without analytics.
+    // It is only loaded for visitors who accept analytics cookies.
+    'analytics_id' => env('ANALYTICS_ID'),
+
     'slack' => [
         'notifications' => [
             'bot_user_oauth_token' => env('SLACK_BOT_USER_OAUTH_TOKEN'),

@@ -22,7 +22,15 @@ class NewEnquiry extends Mailable implements ShouldQueue
 
     public function build()
     {
-        return $this->subject('New Enquiry: ' . $this->enquiry->product?->name)
+        $this->enquiry->loadMissing('items', 'product.category.brand');
+        $count = $this->enquiry->items->count();
+
+        $subject = $count
+            ? "New group enquiry: {$count} " . ($count === 1 ? 'product' : 'products') . ' from ' . $this->enquiry->name
+            : 'New enquiry: ' . ($this->enquiry->product?->name ?? 'General') . ' from ' . $this->enquiry->name;
+
+        return $this->subject($subject)
+            ->replyTo($this->enquiry->email, $this->enquiry->name)
             ->view('emails.new-enquiry');
     }
 }

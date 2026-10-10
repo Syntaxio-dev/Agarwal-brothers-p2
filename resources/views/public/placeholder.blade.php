@@ -10,7 +10,7 @@
 
         <div class="text-center py-20">
             <div class="mx-auto h-20 w-20 rounded-full bg-cyan/10 flex items-center justify-center mb-6">
-                <svg class="h-10 w-10 text-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                <svg class="h-10 w-10 text-cyan-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                 </svg>
             </div>

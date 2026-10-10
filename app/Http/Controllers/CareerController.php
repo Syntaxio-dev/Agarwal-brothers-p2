@@ -6,7 +6,10 @@ use App\Models\JobApplication;
 use App\Models\JobOpening;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use App\Support\FormRules;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 
 class CareerController extends Controller
 {
@@ -51,7 +54,7 @@ class CareerController extends Controller
             $rules["answers.$i"] = $rule;
         }
 
-        $data = $request->validate($rules);
+        $data = $this->check($request, $rules);
 
         $answers = $questions->map(fn ($q, $i) => [
             'label' => $q['label'],
@@ -77,7 +80,7 @@ class CareerController extends Controller
 
     public function applyGeneral(Request $request): RedirectResponse
     {
-        $data = $request->validate($this->baseRules() + [
+        $data = $this->check($request, $this->baseRules() + [
             'position' => ['required', 'string', 'max:255'],
             'preferred_location' => ['required', 'string', 'max:255'],
             'department' => ['required', 'string', 'max:255'],
@@ -102,14 +105,29 @@ class CareerController extends Controller
     private function baseRules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => FormRules::name(),
             'email' => ['required', 'email', 'max:255'],
-            'phone' => ['required', 'string', 'max:20'],
+            'phone' => FormRules::phone(),
+            'phone_country' => FormRules::phoneCountry(),
             'message' => ['nullable', 'string', 'max:2000'],
             'resume' => ['required', 'file', 'mimes:pdf,docx', 'max:5120'],
             // Honeypot: real users never fill this in.
             'website' => ['prohibited'],
         ];
+    }
+
+    /** Validate; on failure return to the form with the typed values kept. */
+    private function check(Request $request, array $rules): array
+    {
+        FormRules::prepare($request);
+
+        $validator = Validator::make($request->all(), $rules, FormRules::messages());
+
+        if ($validator->fails()) {
+            throw new ValidationException($validator, back()->withErrors($validator)->withInput()->withFragment('apply'));
+        }
+
+        return FormRules::finish($validator->validated());
     }
 
     private function store(Request $request, array $attributes): void

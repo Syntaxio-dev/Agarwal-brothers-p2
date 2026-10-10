@@ -33,10 +33,26 @@
     @endisset
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
     <link rel="shortcut icon" href="{{ asset('favicon.png') }}">
+    @if (filled(config('services.analytics_id')))
+        <meta name="analytics-id" content="{{ config('services.analytics_id') }}">
+    @endif
+
+    {{-- Lets CSS show image placeholders only when JS is available to remove them again --}}
+    <script>document.documentElement.classList.add('js')</script>
+
+    {{-- Load the main fonts early so text does not shift when they swap in --}}
+    @foreach (['ibm-plex-sans/files/ibm-plex-sans-latin-400-normal.woff2', 'ibm-plex-sans/files/ibm-plex-sans-latin-600-normal.woff2', 'ibm-plex-mono/files/ibm-plex-mono-latin-400-normal.woff2'] as $font)
+        <link rel="preload" href="{{ \Illuminate\Support\Facades\Vite::asset('node_modules/@fontsource/' . $font) }}" as="font" type="font/woff2" crossorigin>
+    @endforeach
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
 <body class="bg-white text-navy antialiased" x-data="{ sidebarOpen: false }">
+
+    <a href="#main"
+       class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-navy focus:px-5 focus:py-3 focus:text-sm focus:font-semibold focus:text-white focus:shadow-xl"
+       style="outline-offset: 3px;">Skip to main content</a>
 
     {{-- Mobile top bar --}}
     <div class="fixed top-0 left-0 right-0 z-40 flex items-center gap-3 bg-white border-b border-gray-200 px-4 h-14 lg:hidden">
@@ -46,7 +62,12 @@
             </svg>
         </button>
         <a href="/" aria-label="Home">
-            <img src="{{ asset('sidebar-logo.png') }}" alt="Agarwal Brothers" class="h-9 w-auto object-contain">
+            <img src="{{ asset('sidebar-logo.png') }}" alt="Agarwal Brothers" class="img-load h-9 w-auto object-contain" decoding="async" onload="this.classList.add('is-loaded')" {!! \App\Support\Img::publicAttrs('sidebar-logo.png') !!}>
+        </a>
+        <a href="{{ route('enquiry-list') }}" x-cloak x-show="$store.enquiryList.count" aria-label="Enquiry list"
+           class="relative ml-auto flex h-10 w-10 items-center justify-center rounded-md bg-ice text-navy">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm0 5.25h.007v.008H3.75V12Zm0 5.25h.007v.008H3.75v-.008Z"/></svg>
+            <span class="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-cyan px-1 font-mono text-[11px] font-semibold text-navy" x-text="$store.enquiryList.count"></span>
         </a>
     </div>
 
@@ -67,7 +88,7 @@
                 <div class="hidden lg:flex items-center justify-center px-1 mb-3 pt-3">
                     <a href="/" aria-label="Home">
                         <img src="{{ asset('sidebar-logo.png') }}" alt="Agarwal Brothers"
-                            class="w-full max-w-[210px] h-auto object-contain">
+                            class="img-load w-full max-w-[210px] h-auto object-contain" decoding="async" onload="this.classList.add('is-loaded')" {!! \App\Support\Img::publicAttrs('sidebar-logo.png') !!}>
                     </a>
                 </div>
 
@@ -106,7 +127,7 @@
                                    {{ request()->is('insights*') ? 'bg-navy text-white shadow' : 'text-navy' }}"
                             :class="open && !{{ request()->is('insights*') ? 'true' : 'false' }} && 'bg-gray-100'">
                             <span class="text-left">Insights & Updates</span>
-                            <svg class="h-4 w-4 text-cyan transition-transform duration-200"
+                            <svg class="h-4 w-4 text-cyan-ink transition-transform duration-200"
                                 :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
                             </svg>
@@ -155,10 +176,22 @@
                 {{-- Bottom actions --}}
                 <div class="space-y-2 pt-4 border-t border-gray-200 mt-auto">
 
+                    {{-- Enquiry list: only appears once the visitor has added a product --}}
+                    <a href="{{ route('enquiry-list') }}" x-cloak x-show="$store.enquiryList.count" x-transition.opacity
+                        class="flex items-center justify-between gap-2 px-4 py-2.5 bg-ice text-navy border border-cyan/50 rounded-md
+                               hover:border-cyan transition w-full"
+                        style="box-shadow: inset 0 -2px 0 rgb(0 180 216 / 0.6);">
+                        <span class="flex items-center gap-2 text-sm font-semibold">
+                            <svg class="w-4 h-4 text-link" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm0 5.25h.007v.008H3.75V12Zm0 5.25h.007v.008H3.75v-.008Z"/></svg>
+                            Enquiry List
+                        </span>
+                        <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-navy px-1.5 font-mono text-[11px] font-semibold text-white" x-text="$store.enquiryList.count"></span>
+                    </a>
+
                     <a href="{{ route('search') }}"
                         class="flex items-center gap-2 px-4 py-2.5 bg-white text-navy border border-gray-300 rounded-md
                                hover:border-cyan hover:bg-ice transition w-full">
-                        <svg class="w-4 h-4 text-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <svg class="w-4 h-4 text-cyan-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <circle cx="11" cy="11" r="8"/>
                             <path d="m21 21-4.3-4.3"/>
                         </svg>
@@ -192,7 +225,7 @@
 
             <div class="relative flex flex-col min-h-screen">
 
-                <main class="flex-grow mt-14 lg:mt-0">
+                <main id="main" tabindex="-1" class="flex-grow mt-14 lg:mt-0">
                     {{ $slot }}
                 </main>
 
@@ -204,7 +237,7 @@
                             <div>
                                 <a href="/" class="inline-block mb-5">
                                     <img src="{{ asset('images/new-logo.png') }}" alt="Agarwal Brothers"
-                                        class="h-14 w-auto brightness-0 invert object-contain">
+                                        class="img-load h-14 w-auto brightness-0 invert object-contain" decoding="async" onload="this.classList.add('is-loaded')" {!! \App\Support\Img::publicAttrs('images/new-logo.png') !!}>
                                 </a>
                                 <p class="text-sm leading-7 text-white/70">
                                     43+ years of excellence in laboratory equipment, scientific instruments and chemicals.
@@ -273,7 +306,8 @@
                         <div class="px-6 sm:px-10 lg:px-16 py-5 flex flex-col sm:flex-row items-center justify-between gap-3">
                             <p class="text-xs text-white/50">&copy; {{ date('Y') }} Agarwal Brothers. All rights reserved.</p>
                             <div class="flex items-center gap-5">
-                                <a href="#" class="text-xs text-white/50 hover:text-white transition">Privacy Policy</a>
+                                <a href="{{ route('privacy') }}" class="text-xs text-white/50 hover:text-white transition">Privacy Policy</a>
+                                <button type="button" x-data @click="$store.consent.reopen()" class="text-xs text-white/50 hover:text-white transition">Cookie settings</button>
                                 <a href="#" class="text-xs text-white/50 hover:text-white transition">Terms & Conditions</a>
                             </div>
                         </div>
@@ -283,6 +317,25 @@
             </div>
         </div>
     </div>
+
+    <x-cookie-consent />
+
+    @unless (request()->routeIs('compare', 'enquiry-list'))
+        <x-recently-viewed :current="request()->route('product')?->slug" />
+    @endunless
+
+    {{-- "Added to enquiry list" message --}}
+    <div x-data x-cloak x-show="$store.enquiryList.toast" x-transition.opacity
+         class="fixed inset-x-0 bottom-6 z-50 flex justify-center px-4 pr-20 pointer-events-none">
+        <div class="pointer-events-auto flex items-center gap-4 rounded-xl bg-navy px-5 py-3 text-sm text-white shadow-xl" style="box-shadow: inset 0 -2px 0 #00B4D8, 0 18px 36px -16px rgba(11,37,69,0.6);">
+            <span x-text="$store.enquiryList.toast"></span>
+            <a href="{{ route('enquiry-list') }}" x-show="$store.enquiryList.count" class="whitespace-nowrap font-semibold text-cyan hover:text-white">View list &rarr;</a>
+        </div>
+    </div>
+
+    @unless (request()->routeIs('compare'))
+        <x-compare-tray />
+    @endunless
 
     {{-- Floating action buttons --}}
     @php

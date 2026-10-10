@@ -9,10 +9,21 @@ class Enquiry extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['product_id', 'name', 'email', 'phone', 'budget', 'order_location', 'message', 'status'];
+    protected $fillable = ['product_id', 'name', 'email', 'phone', 'company', 'budget', 'order_location', 'message', 'status'];
 
     public function product()
     {
         return $this->belongsTo(Product::class);
+    }
+
+    public function items()
+    {
+        return $this->hasMany(EnquiryItem::class);
+    }
+
+    /** True when this came from the multi-product enquiry list. */
+    public function isGroup(): bool
+    {
+        return $this->items()->exists();
     }
 }

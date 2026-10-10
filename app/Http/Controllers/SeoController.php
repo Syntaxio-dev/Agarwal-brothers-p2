@@ -53,7 +53,7 @@ class SeoController extends Controller
         foreach ([
             ['/', '1.0'], ['/our-story', '0.7'], ['/verticals', '0.9'],
             ['/insights/blogs', '0.7'], ['/insights/news-events', '0.7'], ['/insights/webinars', '0.7'],
-            ['/application-resources', '0.6'], ['/careers', '0.5'], ['/contact-us', '0.6'],
+            ['/application-resources', '0.6'], ['/careers', '0.5'], ['/contact-us', '0.6'], ['/privacy-policy', '0.3'],
         ] as [$path, $priority]) {
             $add($path, null, $priority);
         }

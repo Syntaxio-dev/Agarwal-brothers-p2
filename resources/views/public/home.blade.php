@@ -75,8 +75,8 @@
                             <source src="{{ asset('storage/' . $slide->video) }}" type="video/mp4">
                         </video>
                     @elseif ($slide->image)
-                        <img src="{{ asset('storage/' . $slide->image) }}" alt="{{ $slide->title ?? 'Slide' }}"
-                            class="absolute inset-0 h-full w-full object-cover">
+                        <img src="{{ asset('storage/' . $slide->image) }}" alt="{{ $slide->alt_text ?: ($slide->title ?: 'Agarwal Brothers laboratory equipment') }}"
+                            class="img-load absolute inset-0 h-full w-full object-cover" decoding="async" {!! \App\Support\Img::attrs($slide->image) !!} onload="this.classList.add('is-loaded')">
                     @endif
 
                     <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10"></div>
@@ -183,7 +183,7 @@
                 Who We Are
             </span>
             <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight text-center">
-                We Will Ensure You Always Get the <span class="text-cyan">Best Results</span>
+                We Will Ensure You Always Get the <span class="text-cyan-ink">Best Results</span>
             </h2>
         </div>
 
@@ -200,7 +200,7 @@
                                  drop-shadow-sm select-none">
                         43
                     </span>
-                    <span class="absolute -right-4 top-4 sm:-right-5 sm:top-5 text-cyan text-3xl sm:text-4xl font-black">+</span>
+                    <span class="absolute -right-4 top-4 sm:-right-5 sm:top-5 text-cyan-ink text-3xl sm:text-4xl font-black">+</span>
                 </div>
 
                 <p class="text-base sm:text-lg font-bold text-navy uppercase tracking-[0.15em] -mt-2">Years of</p>
@@ -251,7 +251,7 @@
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-1">
                             <span class="text-2xl font-bold text-navy" x-text="c.customers.toLocaleString()"></span>
-                            <span class="text-cyan font-bold text-lg">+</span>
+                            <span class="text-cyan-ink font-bold text-lg">+</span>
                         </div>
                         <h3 class="uppercase text-sm text-link tracking-wider font-semibold">Customers</h3>
                         <p class="text-xs text-navy/50 leading-tight mt-0.5 hidden sm:block">Serving pharma, biotech, diagnostics & academia.</p>
@@ -270,7 +270,7 @@
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-1">
                             <span class="text-2xl font-bold text-navy" x-text="c.brands.toLocaleString()"></span>
-                            <span class="text-cyan font-bold text-lg">+</span>
+                            <span class="text-cyan-ink font-bold text-lg">+</span>
                         </div>
                         <h3 class="uppercase text-sm text-link tracking-wider font-semibold">Brands</h3>
                         <p class="text-xs text-navy/50 leading-tight mt-0.5 hidden sm:block">Global leaders across instruments & automation.</p>
@@ -289,7 +289,7 @@
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-1">
                             <span class="text-2xl font-bold text-navy" x-text="c.awards.toLocaleString()"></span>
-                            <span class="text-cyan font-bold text-lg">+</span>
+                            <span class="text-cyan-ink font-bold text-lg">+</span>
                         </div>
                         <h3 class="uppercase text-sm text-link tracking-wider font-semibold">Awards</h3>
                         <p class="text-xs text-navy/50 leading-tight mt-0.5 hidden sm:block">Recognized for excellence in performance.</p>
@@ -309,7 +309,7 @@
                     <div class="flex-1 min-w-0">
                         <div class="flex items-center gap-1">
                             <span class="text-2xl font-bold text-navy" x-text="c.branches.toLocaleString()"></span>
-                            <span class="text-cyan font-bold text-lg">+</span>
+                            <span class="text-cyan-ink font-bold text-lg">+</span>
                         </div>
                         <h3 class="uppercase text-sm text-link tracking-wider font-semibold">Branches</h3>
                         <p class="text-xs text-navy/50 leading-tight mt-0.5 hidden sm:block">Pan-India reach ensuring fast, localized support.</p>
@@ -331,7 +331,7 @@
                     Our Principals
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
-                    Strategic Alliances with <span class="text-cyan">Global Scientific Leaders</span>
+                    Strategic Alliances with <span class="text-cyan-ink">Global Scientific Leaders</span>
                 </h2>
                 <p class="mt-1 max-w-2xl text-sm text-slate">
                     Trusted partnerships with world-renowned manufacturers, bringing cutting-edge laboratory technology to India.
@@ -376,7 +376,7 @@
                                            transition-all duration-300 group relative">
                                     @if ($brand->logo)
                                         <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}"
-                                            class="max-h-14 max-w-full object-contain transition-transform duration-300 group-hover:scale-105">
+                                            class="img-load max-h-14 max-w-full object-contain transition-transform duration-300 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($brand->logo) !!} onload="this.classList.add('is-loaded')">
                                     @else
                                         <span class="text-sm font-bold text-navy text-center">{{ $brand->name }}</span>
                                     @endif
@@ -402,7 +402,7 @@
                     Verticals
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
-                    Explore Our <span class="text-cyan">Scientific Verticals</span>
+                    Explore Our <span class="text-cyan-ink">Scientific Verticals</span>
                 </h2>
                 <p class="max-w-2xl text-sm text-slate">
                     From research to production, discover how our solutions support every lab need.
@@ -423,9 +423,9 @@
                                             flex items-center justify-center">
                                     @if ($vertical->image)
                                         <img src="{{ asset('storage/' . $vertical->image) }}" alt="{{ $vertical->name }}"
-                                            class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110">
+                                            class="img-load h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($vertical->image) !!} onload="this.classList.add('is-loaded')">
                                     @else
-                                        <svg class="h-6 w-6 text-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+                                        <svg class="h-6 w-6 text-cyan-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0 1 12 15a9.065 9.065 0 0 0-6.23.693L5 14.5m14.8.8 1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0 1 12 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5"/>
                                         </svg>
                                     @endif
@@ -485,7 +485,7 @@
                     Precision Picks
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
-                    Explore Our <span class="text-cyan">Top Lab Solutions</span>
+                    Explore Our <span class="text-cyan-ink">Top Lab Solutions</span>
                 </h2>
                 <p class="max-w-2xl text-sm text-slate">
                     Expert-curated equipment engineered for accuracy, reliability, and ease.
@@ -521,7 +521,7 @@
                            class="absolute inset-0 flex items-center justify-center p-8 sm:p-10 transition-opacity duration-500">
                             @if ($product->image)
                                 <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
-                                    class="max-h-full max-w-full object-contain drop-shadow-xl">
+                                    class="img-load max-h-full max-w-full object-contain drop-shadow-xl" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($product->image) !!} onload="this.classList.add('is-loaded')">
                             @else
                                 <div class="h-24 w-24 rounded-full bg-white shadow flex items-center justify-center">
                                     <svg class="h-10 w-10 text-slate/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
@@ -587,7 +587,7 @@
                     Global Presence
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
-                    Global Brands Represented by <span class="text-cyan">Agarwal Brothers</span> in India
+                    Global Brands Represented by <span class="text-cyan-ink">Agarwal Brothers</span> in India
                 </h2>
                 <p class="max-w-2xl text-sm text-slate">
                     Hover over a pin to see the brands from each country.
@@ -634,7 +634,7 @@
             <div class="mt-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-w-5xl mx-auto lg:hidden">
                 @foreach ($mapCountries as $country)
                     <div class="bg-white rounded-xl p-3 border border-gray-100 shadow-sm">
-                        <h4 class="text-xs font-bold text-cyan mb-1.5">{{ $country['name'] }}</h4>
+                        <h4 class="text-xs font-bold text-cyan-ink mb-1.5">{{ $country['name'] }}</h4>
                         @foreach ($country['brands'] as $b)
                             <a href="{{ $b['url'] }}" class="block text-[12px] text-navy font-medium leading-relaxed hover:text-link">{{ $b['name'] }}</a>
                         @endforeach
@@ -661,7 +661,7 @@
                     Blogs
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
-                    Expert Perspectives | <span class="text-cyan">Real-World Lab Applications</span>
+                    Expert Perspectives | <span class="text-cyan-ink">Real-World Lab Applications</span>
                 </h2>
             </div>
 
@@ -699,7 +699,7 @@
                                class="absolute inset-0 transition-opacity duration-500">
                                 @if ($blog->image)
                                     <img src="{{ asset('storage/' . $blog->image) }}" alt="{{ $blog->title }}"
-                                        class="h-full w-full object-cover">
+                                        class="img-load h-full w-full object-cover" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($blog->image) !!} onload="this.classList.add('is-loaded')">
                                 @else
                                     <div class="h-full w-full flex items-center justify-center px-8 text-center">
                                         <span class="text-base font-bold text-navy/60 line-clamp-3">{{ $blog->title }}</span>
@@ -742,7 +742,7 @@
                     News & Events
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
-                    Events, Initiatives & <span class="text-cyan">Community Highlights</span>
+                    Events, Initiatives & <span class="text-cyan-ink">Community Highlights</span>
                 </h2>
             </div>
 
@@ -757,7 +757,7 @@
                                         flex items-center justify-center">
                                 @if ($item->image)
                                     <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->title }}"
-                                        class="h-full w-full object-contain transition-transform duration-500 group-hover:scale-105">
+                                        class="img-load h-full w-full object-contain transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($item->image) !!} onload="this.classList.add('is-loaded')">
                                 @else
                                     <span class="px-6 text-center text-base font-bold text-navy/60 line-clamp-4">{{ $item->title }}</span>
                                 @endif
@@ -806,7 +806,7 @@
                     Our Clients
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
-                    Trusted by <span class="text-cyan">Industry Leaders</span>
+                    Trusted by <span class="text-cyan-ink">Industry Leaders</span>
                 </h2>
                 <p class="max-w-2xl text-sm text-slate">
                     Laboratories and organisations that rely on us for instruments, service and support.
@@ -862,14 +862,14 @@
                                             flex items-center justify-center p-6">
                                     @if ($client->logo)
                                         <img src="{{ asset('storage/' . $client->logo) }}" alt="{{ $client->name }}"
-                                            class="max-h-full max-w-full object-contain">
+                                            class="img-load max-h-full max-w-full object-contain" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($client->logo) !!} onload="this.classList.add('is-loaded')">
                                     @else
                                         <span class="text-3xl font-black text-navy/70">{{ strtoupper(mb_substr($client->name, 0, 2)) }}</span>
                                     @endif
                                 </div>
 
                                 <div class="flex-1 w-full rounded-2xl bg-white border border-gray-100 shadow-sm px-6 py-6 sm:px-8 sm:py-8 text-center sm:text-left min-h-[12rem] sm:min-h-[12.5rem] flex flex-col justify-center">
-                                    <p class="text-[11px] font-bold uppercase tracking-widest text-cyan">
+                                    <p class="text-[11px] font-bold uppercase tracking-widest text-cyan-ink">
                                         Client {{ $idx + 1 }} / {{ $featuredClients->count() }}
                                     </p>
                                     <h3 class="mt-2 text-2xl sm:text-3xl font-bold text-navy leading-tight">{{ $client->name }}</h3>

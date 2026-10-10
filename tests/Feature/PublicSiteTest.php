@@ -67,7 +67,7 @@ class PublicSiteTest extends TestCase
         $this->post(route('enquiry.store'), ['product_id' => $p->id, 'name' => 'Bot', 'email' => 'b@example.com', 'website' => 'spam'])->assertSessionHasErrors('website');
 
         $hidden = $this->product(brandActive: false);
-        $this->post(route('enquiry.store'), ['product_id' => $hidden->id, 'name' => 'X', 'email' => 'x@example.com'])->assertSessionHasErrors('product_id');
+        $this->post(route('enquiry.store'), ['product_id' => $hidden->id, 'name' => 'Xavier', 'email' => 'x@example.com'])->assertSessionHasErrors('product_id');
 
         $this->assertSame(0, Enquiry::count());
         Mail::assertNothingQueued();

@@ -14,7 +14,7 @@
         {{-- ===== Hero ===== --}}
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-14 items-center">
             <div>
-                <h1 class="text-4xl sm:text-5xl font-bold text-cyan leading-tight">We are hiring</h1>
+                <h1 class="text-4xl sm:text-5xl font-bold text-cyan-ink leading-tight">We are hiring</h1>
                 <h2 class="mt-3 text-2xl sm:text-3xl font-semibold text-navy leading-snug">
                     Do the most meaningful work of your career at <span class="text-link">Agarwal Brothers</span>
                 </h2>
@@ -66,7 +66,7 @@
                     Careers @ Agarwal Brothers
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
-                    Let's Work <span class="text-cyan">Together</span>
+                    Let's Work <span class="text-cyan-ink">Together</span>
                 </h2>
                 <p class="max-w-2xl text-sm text-slate">
                     Join a passionate team and do your best work, backed by a culture of growth.

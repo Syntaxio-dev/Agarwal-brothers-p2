@@ -6,6 +6,7 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 
 class SlideForm
@@ -38,10 +39,16 @@ class SlideForm
                         FileUpload::make('image')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
+                            ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))
                             ->maxSize(\App\Filament\Support\Uploads::IMAGE_MAX_KB)
                             ->disk('public')
                             ->visibility('public')
                             ->directory('slides'),
+                        TextInput::make('alt_text')
+                            ->label('Image description (alt text)')
+                            ->maxLength(150)
+                            ->required(fn (Get $get) => filled($get('image')))
+                            ->helperText('Required with an image. Say in a few words what the picture shows, for people using screen readers and for Google. Example: "Scientists working in a modern laboratory".'),
                         FileUpload::make('video')
                             ->label('Video (MP4 / WebM, max 50 MB)')
                             ->disk('public')

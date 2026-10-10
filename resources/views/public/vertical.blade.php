@@ -37,7 +37,7 @@
                         <div class="flex items-center justify-between gap-3">
                             <a href="{{ route('brand.show', $brand->slug) }}" class="flex h-12 min-w-0 items-center" title="{{ $brand->name }}">
                                 @if ($brand->logo)
-                                    <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="max-h-full max-w-[160px] object-contain">
+                                    <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="img-load max-h-full max-w-[160px] object-contain" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($brand->logo) !!} onload="this.classList.add('is-loaded')">
                                 @else
                                     <span class="truncate text-lg font-bold text-navy">{{ $brand->name }}</span>
                                 @endif

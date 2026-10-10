@@ -111,7 +111,7 @@
                             </div>
                             <div class="h-14 w-24 shrink-0 rounded-xl border border-gray-100 bg-white flex items-center justify-center p-2">
                                 @if ($next->brand?->logo)
-                                    <img src="{{ asset('storage/' . $next->brand->logo) }}" alt="{{ $next->brand->name }}" class="max-h-full max-w-full object-contain">
+                                    <img src="{{ asset('storage/' . $next->brand->logo) }}" alt="{{ $next->brand->name }}" class="img-load max-h-full max-w-full object-contain" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($next->brand->logo) !!} onload="this.classList.add('is-loaded')">
                                 @elseif ($next->brand)
                                     <span class="text-xs font-bold text-navy text-center">{{ $next->brand->name }}</span>
                                 @endif
@@ -138,7 +138,7 @@
         @else
             <div class="relative w-full overflow-hidden rounded-3xl shadow-lg ring-1 ring-black/5">
                 @if ($hero)
-                    <img src="{{ $hero }}" alt="Webinars" class="block w-full aspect-[16/7] sm:aspect-[3/1] object-cover">
+                    <img src="{{ $hero }}" alt="Webinars" class="img-load block w-full aspect-[16/7] sm:aspect-[3/1] object-cover" decoding="async" onload="this.classList.add('is-loaded')">
                 @else
                     <div class="relative w-full aspect-[16/8] sm:aspect-[3/1] bg-gradient-to-br from-navy to-link flex items-center">
                         <div class="pointer-events-none absolute inset-0
@@ -171,7 +171,7 @@
                            class="chip {{ $selectedSlug === $row['brand']->slug ? 'chip-active' : '' }}">
                             <span class="flex h-7 w-9 items-center justify-center overflow-hidden rounded-md bg-white p-0.5">
                                 @if ($row['brand']->logo)
-                                    <img src="{{ asset('storage/' . $row['brand']->logo) }}" alt="" class="max-h-full max-w-full object-contain">
+                                    <img src="{{ asset('storage/' . $row['brand']->logo) }}" alt="" class="img-load max-h-full max-w-full object-contain" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($row['brand']->logo) !!} onload="this.classList.add('is-loaded')">
                                 @endif
                             </span>
                             {{ $row['brand']->name }} ({{ $row['count'] }})

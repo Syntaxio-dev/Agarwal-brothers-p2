@@ -1,6 +1,6 @@
 @php
     $c = config('contact');
-    $input = 'h-11 w-full rounded-full border border-gray-200 bg-white px-5 text-sm text-navy placeholder:text-slate/60 outline-none focus:border-cyan focus:ring-2 focus:ring-cyan/20 transition';
+    $input = 'h-11 w-full rounded-full border border-gray-200 bg-white px-5 text-sm text-navy placeholder:text-slate outline-none focus:border-cyan focus:ring-2 focus:ring-cyan/20 transition';
     $card = 'w-full sm:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.84rem)] rounded-2xl bg-white border border-gray-100 shadow-sm p-6 text-center hover:shadow-lg hover:border-cyan/40 hover:-translate-y-1 transition-all duration-300';
     $icon = 'mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-navy text-white shadow-md';
 @endphp
@@ -24,7 +24,7 @@
                 Contact Us
             </span>
             <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-navy leading-tight">
-                Get in <span class="text-cyan">Touch</span>
+                Get in <span class="text-cyan-ink">Touch</span>
             </h1>
             <p class="max-w-2xl text-sm sm:text-base text-slate leading-relaxed">
                 Have questions about our products or need a custom solution? We would love to hear from you.
@@ -35,7 +35,7 @@
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 items-center">
 
             <div class="order-2 lg:order-1 text-center lg:text-left">
-                <h2 class="text-2xl sm:text-3xl font-bold text-cyan leading-tight">Headquartered in {{ $c['head_office']['city'] }}</h2>
+                <h2 class="text-2xl sm:text-3xl font-bold text-cyan-ink leading-tight">Headquartered in {{ $c['head_office']['city'] }}</h2>
                 <p class="mt-3 text-base sm:text-lg text-navy leading-relaxed">
                     Wherever you are in Rajasthan, we are nearby, ready to support and serve your scientific journey.
                 </p>
@@ -56,20 +56,20 @@
                         @if ($pin['main'])
                             <span class="absolute -left-4 -top-4 h-8 w-8 rounded-full bg-cyan/40 animate-ping"></span>
                         @endif
-                        <svg class="absolute -translate-x-1/2 -translate-y-full h-9 w-9 drop-shadow-lg {{ $pin['main'] ? 'text-cyan' : 'text-navy' }}"
+                        <svg class="absolute -translate-x-1/2 -translate-y-full h-9 w-9 drop-shadow-lg {{ $pin['main'] ? 'text-cyan-ink' : 'text-navy' }}"
                              viewBox="0 0 24 24" fill="currentColor">
                             <path fill-rule="evenodd" d="m11.54 22.351.07.04.028.016a.76.76 0 0 0 .723 0l.028-.015.071-.041a16.975 16.975 0 0 0 1.144-.742 19.58 19.58 0 0 0 2.683-2.282c1.944-1.99 3.963-4.98 3.963-8.827a8.25 8.25 0 0 0-16.5 0c0 3.846 2.02 6.837 3.963 8.827a19.58 19.58 0 0 0 2.682 2.282 16.975 16.975 0 0 0 1.145.742ZM12 13.5a3 3 0 1 0 0-6 3 3 0 0 0 0 6Z" clip-rule="evenodd"/>
                         </svg>
                         <div class="absolute left-0 top-1 -translate-x-1/2 whitespace-nowrap rounded-lg bg-white border border-gray-200 shadow-md px-3 py-1.5 text-center">
                             <p class="text-xs font-bold text-navy leading-none">{{ $pin['city'] }}</p>
-                            <p class="mt-1 text-[10px] font-semibold uppercase tracking-wide {{ $pin['main'] ? 'text-cyan' : 'text-slate' }} leading-none">{{ $pin['tag'] }}</p>
+                            <p class="mt-1 text-[10px] font-semibold uppercase tracking-wide {{ $pin['main'] ? 'text-cyan-ink' : 'text-slate' }} leading-none">{{ $pin['tag'] }}</p>
                         </div>
                     </div>
                 @endforeach
             </div>
 
             <div class="order-3 text-center lg:text-right">
-                <h2 class="text-2xl sm:text-3xl font-bold text-cyan leading-tight">Closer Than You Think</h2>
+                <h2 class="text-2xl sm:text-3xl font-bold text-cyan-ink leading-tight">Closer Than You Think</h2>
                 <p class="mt-3 text-base sm:text-lg text-navy leading-relaxed">
                     Tap into our local teams in {{ $c['head_office']['city'] }} and Jodhpur for expert consultation and service tailored to your region.
                 </p>
@@ -83,7 +83,7 @@
                     Contact Us
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
-                    For Support &amp; <span class="text-cyan">Enquiries</span>
+                    For Support &amp; <span class="text-cyan-ink">Enquiries</span>
                 </h2>
                 <p class="max-w-2xl text-sm text-slate">
                     Reach out to the respective team, or visit us at one of our offices.
@@ -102,11 +102,11 @@
                         </div>
                         <h3 class="mt-4 text-base font-bold text-navy">{{ $dept['title'] }}</h3>
                         <a href="mailto:{{ $dept['email'] }}" class="mt-3 flex items-center justify-center gap-2 text-sm font-semibold text-navy hover:text-link transition">
-                            <svg class="h-4 w-4 text-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0-8.4 5.25a1.5 1.5 0 0 1-1.6 0L2.25 6.75"/></svg>
+                            <svg class="h-4 w-4 text-cyan-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0-8.4 5.25a1.5 1.5 0 0 1-1.6 0L2.25 6.75"/></svg>
                             {{ $dept['email'] }}
                         </a>
                         <a href="tel:{{ preg_replace('/\s+/', '', $dept['phone']) }}" class="mt-1.5 flex items-center justify-center gap-2 text-sm font-semibold text-navy hover:text-link transition">
-                            <svg class="h-4 w-4 text-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
+                            <svg class="h-4 w-4 text-cyan-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
                             {{ $dept['phone'] }}
                         </a>
                     </div>
@@ -166,26 +166,19 @@
                             <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg>
                             Need a quick response?
                         </span>
-                        <h2 class="mt-3 text-xl sm:text-2xl font-bold text-navy">Contact Our <span class="text-cyan">Team</span></h2>
+                        <h2 class="mt-3 text-xl sm:text-2xl font-bold text-navy">Contact Our <span class="text-cyan-ink">Team</span></h2>
                         <p class="mt-1 text-sm text-slate">Fill out the form and our team will get back to you shortly. Fields marked * are required.</p>
                     </div>
 
                     @if (session('success'))
-                        <div class="mt-6 flex items-start gap-3 rounded-xl border border-success/30 bg-success/10 px-5 py-4 text-sm text-navy">
-                            <svg class="h-5 w-5 shrink-0 text-success" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
-                            </svg>
-                            <span>{{ session('success') }}</span>
-                        </div>
+                        <div class="mt-6"><x-form.alert>{{ session('success') }}</x-form.alert></div>
                     @endif
 
                     @if ($errors->any())
-                        <div class="mt-6 rounded-xl border border-alert/30 bg-alert/10 px-5 py-4 text-sm text-navy">
-                            Please fix the highlighted fields and try again.
-                        </div>
+                        <div class="mt-6"><x-form.alert type="error">Please fix the highlighted fields and try again.</x-form.alert></div>
                     @endif
 
-                    <form action="{{ route('contact.store') }}" method="POST" class="mt-6">
+                    <form action="{{ route('contact.store') }}" method="POST" class="mt-6" x-data="formGuard(@js(collect($errors->messages())->map(fn ($m) => $m[0])->all()))" @submit="submit($event)" novalidate>
                         @csrf
 
                         <div class="hidden" aria-hidden="true">
@@ -194,16 +187,15 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div>
-                                <input name="name" type="text" value="{{ old('name') }}" placeholder="Your Name *" class="{{ $input }}" required>
-                                @error('name') <p class="mt-1 pl-4 text-xs text-alert">{{ $message }}</p> @enderror
+                                <input name="name" type="text" value="{{ old('name') }}" placeholder="Your Name *" class="{{ $input }}" required data-rule="required name" data-clean="name" data-label="Name" maxlength="80" autocomplete="name" @input="clean($el)" @blur="check($el)">
+                                <x-form.error name="name" class="pl-4" />
                             </div>
                             <div>
-                                <input name="email" type="email" value="{{ old('email') }}" placeholder="Your Email *" class="{{ $input }}" required>
-                                @error('email') <p class="mt-1 pl-4 text-xs text-alert">{{ $message }}</p> @enderror
+                                <input name="email" type="email" value="{{ old('email') }}" placeholder="Your Email *" class="{{ $input }}" required data-rule="required email" data-label="Email" maxlength="255" autocomplete="email" @input="clean($el)" @blur="check($el)">
+                                <x-form.error name="email" class="pl-4" />
                             </div>
                             <div>
-                                <input name="phone" type="tel" value="{{ old('phone') }}" placeholder="Your Phone *" class="{{ $input }}" required>
-                                @error('phone') <p class="mt-1 pl-4 text-xs text-alert">{{ $message }}</p> @enderror
+                                <x-form.phone :required="true" :input="$input" rounded="rounded-full" />
                             </div>
                             <div>
                                 <input name="company" type="text" value="{{ old('company') }}" placeholder="Company / Organisation" class="{{ $input }}">
@@ -215,21 +207,14 @@
                                 <input name="subject" type="text" value="{{ old('subject') }}" placeholder="Application / Product" class="{{ $input }}">
                             </div>
                             <div class="md:col-span-2">
-                                <textarea name="message" rows="4" placeholder="Please elaborate your requirement *" required
-                                    class="w-full rounded-2xl border border-gray-200 bg-white px-5 py-3 text-sm text-navy placeholder:text-slate/60 outline-none focus:border-cyan focus:ring-2 focus:ring-cyan/20 transition">{{ old('message') }}</textarea>
-                                @error('message') <p class="mt-1 pl-4 text-xs text-alert">{{ $message }}</p> @enderror
+                                <textarea name="message" rows="4" placeholder="Please elaborate your requirement *" required data-rule="required" data-label="Message" @input="clean($el)" @blur="check($el)"
+                                    class="w-full rounded-2xl border border-gray-200 bg-white px-5 py-3 text-sm text-navy placeholder:text-slate outline-none focus:border-cyan focus:ring-2 focus:ring-cyan/20 transition">{{ old('message') }}</textarea>
+                                <x-form.error name="message" class="pl-4" />
                             </div>
                         </div>
 
                         <div class="mt-6 text-center">
-                            <button type="submit"
-                                class="inline-flex items-center gap-2 rounded-full bg-navy px-9 py-3 text-sm font-semibold text-white shadow-md
-                                       hover:bg-link hover:scale-105 transition-all duration-300 btn-primary">
-                                Submit
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
-                                </svg>
-                            </button>
+                            <x-form.submit label="Submit" />
                         </div>
                     </form>
                 </div>

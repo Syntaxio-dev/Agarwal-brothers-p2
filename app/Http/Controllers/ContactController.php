@@ -7,6 +7,8 @@ use App\Models\ContactMessage;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Support\Facades\Validator;
+use App\Support\FormRules;
 
 class ContactController extends Controller
 {
@@ -17,17 +19,26 @@ class ContactController extends Controller
 
     public function store(Request $request): RedirectResponse
     {
-        $data = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+        FormRules::prepare($request);
+
+        $validator = Validator::make($request->all(), [
+            'name' => FormRules::name(),
             'email' => ['required', 'email', 'max:255'],
-            'phone' => ['required', 'string', 'max:20'],
+            'phone' => FormRules::phone(),
+            'phone_country' => FormRules::phoneCountry(),
             'company' => ['nullable', 'string', 'max:255'],
             'city' => ['nullable', 'string', 'max:255'],
             'subject' => ['nullable', 'string', 'max:255'],
             'message' => ['required', 'string', 'max:3000'],
             // Honeypot: real users never fill this in.
             'website' => ['prohibited'],
-        ]);
+        ], FormRules::messages());
+
+        if ($validator->fails()) {
+            return back()->withErrors($validator)->withInput()->withFragment('contact-form');
+        }
+
+        $data = FormRules::finish($validator->validated());
 
         $contact = ContactMessage::create($data);
 

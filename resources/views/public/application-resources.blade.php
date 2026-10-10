@@ -33,7 +33,7 @@
                 Resources
             </span>
             <h1 class="text-2xl sm:text-3xl lg:text-4xl font-bold text-navy leading-tight">
-                Application <span class="text-cyan">Resources</span>
+                Application <span class="text-cyan-ink">Resources</span>
             </h1>
             <p class="max-w-2xl text-sm sm:text-base text-slate leading-relaxed">
                 Technical guides, application notes and reference material to help you get the most from your laboratory instruments.
@@ -79,7 +79,7 @@
                     <div class="relative aspect-[16/10] w-full overflow-hidden bg-gradient-to-br from-ice to-cyan/10 flex items-center justify-center">
                         @if ($res->cover_image)
                             <img src="{{ asset('storage/' . $res->cover_image) }}" alt="{{ $res->title }}"
-                                 class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+                                 class="img-load h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($res->cover_image) !!} onload="this.classList.add('is-loaded')">
                         @else
                             <div class="h-16 w-16 rounded-2xl bg-white shadow flex items-center justify-center">
                                 <svg class="h-8 w-8 text-link" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">

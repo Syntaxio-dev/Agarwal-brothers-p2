@@ -52,7 +52,7 @@
         {{-- ===== 1. Banner ===== --}}
         <div class="relative flex h-[250px] items-end overflow-hidden rounded-3xl shadow-lg ring-1 ring-black/5 sm:h-[430px]">
             <img src="{{ $banner ?: asset('building-image.png') }}" alt="Agarwal Brothers office, Jaipur"
-                 class="absolute inset-0 h-full w-full object-cover object-[50%_22%]">
+                 class="img-load absolute inset-0 h-full w-full object-cover object-[50%_22%]" decoding="async" onload="this.classList.add('is-loaded')">
             <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-navy/25 to-transparent"></div>
             <div class="relative px-6 pb-6 text-left sm:px-10 sm:pb-9">
                 <h1 class="text-3xl sm:text-5xl font-bold text-white leading-tight">Our Story</h1>
@@ -70,15 +70,15 @@
             <div class="relative mx-auto w-full max-w-lg h-[360px] sm:h-[440px]">
                 <div class="absolute left-0 top-0 h-[72%] w-[68%] overflow-hidden rounded-3xl shadow-xl bg-gradient-to-br from-ice to-cyan/20 flex items-center justify-center">
                     @if ($img('story_image_1'))
-                        <img src="{{ $img('story_image_1') }}" alt="" class="h-full w-full object-cover">
+                        <img src="{{ $img('story_image_1') }}" alt="" class="img-load h-full w-full object-cover" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
                     @else
-                        <img src="{{ asset('sidebar-logo.png') }}" alt="Agarwal Brothers" class="w-3/4 object-contain">
+                        <img src="{{ asset('sidebar-logo.png') }}" alt="Agarwal Brothers" class="img-load w-3/4 object-contain" decoding="async" onload="this.classList.add('is-loaded')" {!! \App\Support\Img::publicAttrs('sidebar-logo.png') !!}>
                     @endif
                 </div>
 
                 <div class="absolute bottom-0 right-0 h-[56%] w-[58%] overflow-hidden rounded-3xl border-4 border-white shadow-2xl bg-gradient-to-br from-navy to-link flex items-center justify-center">
                     @if ($img('story_image_2'))
-                        <img src="{{ $img('story_image_2') }}" alt="" class="h-full w-full object-cover">
+                        <img src="{{ $img('story_image_2') }}" alt="" class="img-load h-full w-full object-cover" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
                     @else
                         <div class="text-center text-white">
                             <p class="text-xs font-semibold uppercase tracking-[0.25em] text-cyan">Since</p>
@@ -96,7 +96,7 @@
             <div>
                 <span class="section-badge">Company About</span>
                 <h2 class="mt-4 text-2xl sm:text-4xl font-bold text-navy leading-tight">
-                    Four decades of powering <span class="text-cyan">India's laboratories</span>
+                    Four decades of powering <span class="text-cyan-ink">India's laboratories</span>
                 </h2>
                 <p class="mt-5 text-base text-slate leading-relaxed">{{ $intro }}</p>
 
@@ -131,7 +131,7 @@
             <div>
                 <span class="section-badge">About Mission</span>
                 <h2 class="mt-4 text-2xl sm:text-3xl font-bold text-navy leading-tight">
-                    Our main goal is <span class="text-cyan">satisfied labs</span>, everywhere in India
+                    Our main goal is <span class="text-cyan-ink">satisfied labs</span>, everywhere in India
                 </h2>
 
                 <div class="mt-6 flex flex-wrap gap-2.5">
@@ -157,7 +157,7 @@
 
             <div class="relative aspect-[4/3] w-full overflow-hidden rounded-3xl shadow-xl ring-4 ring-white bg-gradient-to-br from-navy to-link flex items-center justify-center">
                 @if ($img('story_mission_image'))
-                    <img src="{{ $img('story_mission_image') }}" alt="" class="absolute inset-0 h-full w-full object-cover">
+                    <img src="{{ $img('story_mission_image') }}" alt="" class="img-load absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
                 @else
                     <div class="absolute inset-0 bg-[radial-gradient(400px_220px_at_80%_10%,rgba(0,180,216,0.4),transparent_70%)]"></div>
                     <div class="relative text-center text-white">
@@ -175,7 +175,7 @@
         <div class="mt-20 sm:mt-24">
             <div class="text-center flex flex-col items-center gap-3 mb-10">
                 <span class="section-badge">Our Journey</span>
-                <h2 class="text-2xl sm:text-3xl font-bold text-navy leading-tight">From one office to <span class="text-cyan">50+ global brands</span></h2>
+                <h2 class="text-2xl sm:text-3xl font-bold text-navy leading-tight">From one office to <span class="text-cyan-ink">50+ global brands</span></h2>
             </div>
 
             @php
@@ -243,7 +243,7 @@
         <div class="mt-20 sm:mt-24">
             <div class="text-center flex flex-col items-center gap-3 mb-10">
                 <span class="section-badge">Our Values</span>
-                <h2 class="text-2xl sm:text-3xl font-bold text-navy leading-tight">What <span class="text-cyan">drives us</span></h2>
+                <h2 class="text-2xl sm:text-3xl font-bold text-navy leading-tight">What <span class="text-cyan-ink">drives us</span></h2>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -268,7 +268,7 @@
             <div class="mt-20 sm:mt-24">
                 <div class="text-center flex flex-col items-center gap-3 mb-10">
                     <span class="section-badge">Meet our leadership</span>
-                    <h2 class="text-2xl sm:text-3xl font-bold text-navy leading-tight">The people <span class="text-cyan">behind the company</span></h2>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-navy leading-tight">The people <span class="text-cyan-ink">behind the company</span></h2>
                 </div>
 
                 <div class="flex flex-col gap-8 sm:gap-10">
@@ -276,7 +276,7 @@
                         @php $flip = $i % 2 === 1; @endphp
                         <div class="relative overflow-hidden rounded-3xl shadow-xl ring-1 ring-black/5 bg-gradient-to-br from-navy to-link">
                             @if ($leadBg)
-                                <img src="{{ $leadBg }}" alt="" class="absolute inset-0 h-full w-full scale-105 object-cover blur-[3px]">
+                                <img src="{{ $leadBg }}" alt="" class="img-load absolute inset-0 h-full w-full scale-105 object-cover blur-[3px]" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
                                 <div class="absolute inset-0 bg-gradient-to-br from-navy/70 via-navy/45 to-link/40"></div>
                             @else
                                 <div class="absolute inset-0 bg-[radial-gradient(520px_280px_at_{{ $flip ? '15%' : '85%' }}_10%,rgba(0,180,216,0.38),transparent_70%)]"></div>
@@ -288,7 +288,7 @@
                                 <div class="{{ $flip ? 'md:order-2' : '' }} flex h-[260px] items-end justify-center md:h-[400px] lg:h-[430px]">
                                     @if ($leader->photo)
                                         <img src="{{ asset('storage/' . $leader->photo) }}" alt="{{ $leader->name }}"
-                                             class="h-full w-auto max-w-full object-contain object-bottom drop-shadow-2xl">
+                                             class="img-load h-full w-auto max-w-full object-contain object-bottom drop-shadow-2xl" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($leader->photo) !!} onload="this.classList.add('is-loaded')">
                                     @else
                                         <svg viewBox="0 0 200 240" class="h-full w-auto text-white/25" fill="currentColor" role="img" aria-label="Photo placeholder">
                                             <circle cx="100" cy="78" r="46"/>
@@ -331,7 +331,7 @@
             <div class="mt-20 sm:mt-24">
                 <div class="text-center flex flex-col items-center gap-3 mb-10">
                     <span class="section-badge">Our people</span>
-                    <h2 class="text-2xl sm:text-3xl font-bold text-navy leading-tight">Meet the <span class="text-cyan">team</span></h2>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-navy leading-tight">Meet the <span class="text-cyan-ink">team</span></h2>
                 </div>
 
                 <div class="flex flex-wrap justify-center gap-6">
@@ -341,7 +341,7 @@
                             <div class="aspect-[4/5] w-full overflow-hidden bg-gradient-to-br from-ice to-cyan/20 flex items-center justify-center">
                                 @if ($member->photo)
                                     <img src="{{ asset('storage/' . $member->photo) }}" alt="{{ $member->name }}"
-                                         class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105">
+                                         class="img-load h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($member->photo) !!} onload="this.classList.add('is-loaded')">
                                 @else
                                     <span class="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-navy to-link text-3xl font-bold text-white shadow-lg">
                                         {{ strtoupper(mb_substr($member->name, 0, 1)) }}

@@ -58,13 +58,13 @@
             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 items-center">
                 <div>
                     <span class="section-badge">
-                        <svg class="h-3.5 w-3.5 text-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <svg class="h-3.5 w-3.5 text-cyan-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5m4.75-11.396c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3"/>
                         </svg>
                         Agarwal Brothers Events
                     </span>
                     <h1 class="mt-5 text-3xl sm:text-4xl lg:text-5xl font-bold text-navy leading-tight">
-                        Events, Exhibitions &amp; <span class="text-cyan">Scientific Updates</span>
+                        Events, Exhibitions &amp; <span class="text-cyan-ink">Scientific Updates</span>
                     </h1>
                     <div class="mt-5 flex flex-wrap gap-2">
                         <span class="rounded-full bg-navy px-4 py-1.5 text-[11px] font-bold uppercase tracking-wider text-white">At the center of lab innovation</span>
@@ -80,7 +80,7 @@
                 <div class="rounded-2xl bg-white border border-gray-100 shadow-lg p-6">
                     <div class="flex items-start justify-between gap-4">
                         <div>
-                            <p class="text-xs font-bold uppercase tracking-widest text-cyan">Discover</p>
+                            <p class="text-xs font-bold uppercase tracking-widest text-cyan-ink">Discover</p>
                             <h2 class="mt-1 text-lg font-semibold text-navy leading-snug">Explore events, initiatives and community highlights.</h2>
                         </div>
                         <svg class="h-6 w-6 shrink-0 text-link" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
@@ -96,7 +96,7 @@
             <div class="relative w-full overflow-hidden rounded-3xl shadow-lg ring-1 ring-black/5">
                 @if ($hero)
                     <img src="{{ $hero }}" alt="{{ $title }}"
-                         class="block w-full aspect-[16/7] sm:aspect-[3/1] object-cover">
+                         class="img-load block w-full aspect-[16/7] sm:aspect-[3/1] object-cover" decoding="async" onload="this.classList.add('is-loaded')">
                 @else
                     <div class="relative w-full aspect-[16/8] sm:aspect-[3/1] bg-gradient-to-br from-navy to-link flex items-center">
                         <div class="pointer-events-none absolute inset-0
@@ -160,7 +160,7 @@
         {{-- ===== Heading ===== --}}
         <div class="mt-14 mb-8">
             <{{ ($type === 'news' && ! $hero) ? 'h2' : 'h1' }} class="text-2xl sm:text-3xl font-bold text-navy leading-tight">
-                {{ $meta['heading'] }} <span class="text-cyan">{{ $meta['accent'] }}</span>
+                {{ $meta['heading'] }} <span class="text-cyan-ink">{{ $meta['accent'] }}</span>
             </{{ ($type === 'news' && ! $hero) ? 'h2' : 'h1' }}>
             <div class="mt-3 h-1 w-16 rounded-full bg-cyan"></div>
         </div>
@@ -176,7 +176,7 @@
                         <div class="relative {{ $meta['ratio'] }} w-full overflow-hidden bg-gradient-to-br from-ice to-cyan/10 flex items-center justify-center">
                             @if ($insight->image)
                                 <img src="{{ asset('storage/' . $insight->image) }}" alt="{{ $insight->title }}"
-                                    class="h-full w-full {{ $meta['fit'] }} transition-transform duration-500 group-hover:scale-105">
+                                    class="img-load h-full w-full {{ $meta['fit'] }} transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($insight->image) !!} onload="this.classList.add('is-loaded')">
                             @else
                                 <span class="px-6 text-center text-base font-bold text-navy/50 line-clamp-3">{{ $insight->title }}</span>
                             @endif

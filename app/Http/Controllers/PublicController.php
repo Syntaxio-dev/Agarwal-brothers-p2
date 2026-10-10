@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreEnquiryListRequest;
 use App\Http\Requests\StoreEnquiryRequest;
 use App\Mail\NewEnquiry;
 use App\Models\Brand;
@@ -16,7 +17,9 @@ use App\Models\SiteSetting;
 use App\Models\TeamMember;
 use App\Models\Slide;
 use App\Models\Vertical;
+use App\Support\FormRules;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 
 class PublicController extends Controller
@@ -119,6 +122,11 @@ class PublicController extends Controller
         ));
     }
 
+    public function privacy()
+    {
+        return view('public.privacy');
+    }
+
     public function verticalsIndex()
     {
         $verticals = Vertical::where('is_active', true)
@@ -160,7 +168,7 @@ class PublicController extends Controller
 
         $products = Product::where('is_active', true)
             ->whereHas('category', fn ($q) => $q->where('brand_id', $brand->id))
-            ->with('category')
+            ->with('category.brand')
             ->get();
 
         return view('public.brand', compact('brand', 'products'));
@@ -174,6 +182,10 @@ class PublicController extends Controller
             ->where('is_active', true)
             ->orderBy('id')
             ->get();
+
+        // Already known: saves one query per card (used by the compare / enquiry-list buttons).
+        $category->setRelation('brand', $brand);
+        $products->each(fn ($p) => $p->setRelation('category', $category));
 
         // Group models (e.g. "Standard Models"), keeping first-seen order.
         $groups = $products->groupBy(fn ($p) => $p->model_group ?: 'Models');
@@ -346,6 +358,136 @@ class PublicController extends Controller
         return view('public.insight-show', compact('insight', 'related'));
     }
 
+    /** Side-by-side specification table for up to four products (?p=slug1,slug2). */
+    public function compare(Request $request)
+    {
+        $max = 4;
+
+        $slugs = collect(explode(',', mb_substr((string) $request->query('p', ''), 0, 400)))
+            ->map(fn ($s) => trim($s))
+            ->filter(fn ($s) => preg_match('/^[A-Za-z0-9-]{1,190}$/', $s))
+            ->unique()
+            ->take($max)
+            ->values();
+
+        $found = Product::whereIn('slug', $slugs)
+            ->where('is_active', true)
+            ->whereHas('category.brand', fn ($q) => $q->where('is_active', true))
+            ->with('category.brand')
+            ->get()
+            ->keyBy('slug');
+
+        $products = $slugs->map(fn ($s) => $found->get($s))->filter()->values();
+
+        // One row per specification name (matched ignoring case and spaces), in order of first appearance.
+        $rows = [];
+        foreach ($products as $i => $product) {
+            foreach ((array) ($product->specs ?? []) as $label => $value) {
+                $label = trim((string) $label);
+                $value = is_scalar($value) ? trim((string) $value) : '';
+                if ($label === '' || $value === '') {
+                    continue;
+                }
+                $key = mb_strtolower(preg_replace('/\s+/', ' ', $label));
+                $rows[$key]['label'] ??= $label;
+                $rows[$key]['cells'][$i] = $value;
+            }
+        }
+
+        $rows = collect($rows)->map(function ($row) use ($products) {
+            $cells = [];
+            foreach ($products as $i => $_) {
+                $cells[$i] = $row['cells'][$i] ?? null;
+            }
+            $distinct = collect($cells)->map(fn ($c) => $c === null ? null : mb_strtolower($c))->unique();
+            $row['cells'] = $cells;
+            $row['differs'] = $distinct->count() > 1;
+
+            return $row;
+        })->values();
+
+        return view('public.compare', compact('products', 'rows', 'max'));
+    }
+
+    /**
+     * Shared catalogue search (full results page and live suggestions).
+     *
+     * @return array{0: \Illuminate\Support\Collection, 1: \Illuminate\Support\Collection, 2: \Illuminate\Support\Collection, 3: \Illuminate\Support\Collection} products, brands, product lines, verticals
+     */
+    private function catalogueSearch(string $query, int $limitProducts, int $limitBrands, int $limitLines, int $limitVerticals): array
+    {
+        // Escape LIKE wildcards so "50%" or "a_b" are searched literally.
+        $escaped = addcslashes($query, '\\%_');
+        $contains = "%{$escaped}%";
+        $starts = "{$escaped}%";
+
+        $products = Product::where('products.is_active', true)
+            ->whereHas('category.brand', fn ($q) => $q->where('brands.is_active', true))
+            ->where(function ($q) use ($contains) {
+                $q->where('products.name', 'like', $contains)
+                    ->orWhere('products.short_description', 'like', $contains)
+                    ->orWhereHas('category', fn ($c) => $c->where('categories.name', 'like', $contains))
+                    ->orWhereHas('category.brand', fn ($b) => $b->where('brands.name', 'like', $contains));
+            })
+            ->with('category.brand')
+            ->orderByRaw('CASE WHEN products.name LIKE ? THEN 1 WHEN products.name LIKE ? THEN 2 ELSE 3 END', [$starts, $contains])
+            ->orderBy('products.name')
+            ->limit($limitProducts)
+            ->get();
+
+        $brands = Brand::where('is_active', true)
+            ->where('name', 'like', $contains)
+            ->withCount('categories')
+            ->orderBy('name')
+            ->limit($limitBrands)
+            ->get();
+
+        $lines = Category::whereHas('brand', fn ($b) => $b->where('is_active', true))
+            ->where('name', 'like', $contains)
+            ->with('brand')
+            ->orderBy('name')
+            ->limit($limitLines)
+            ->get();
+
+        $verticals = Vertical::where('is_active', true)
+            ->where('name', 'like', $contains)
+            ->orderBy('sort_order')
+            ->limit($limitVerticals)
+            ->get();
+
+        return [$products, $brands, $lines, $verticals];
+    }
+
+    /** Live search suggestions for the search boxes (JSON). */
+    public function suggest(Request $request)
+    {
+        $query = mb_substr(trim((string) $request->query('q', '')), 0, 80);
+        $rows = [];
+
+        if (mb_strlen($query) >= 2) {
+            [$products, $brands, $lines, $verticals] = $this->catalogueSearch($query, 5, 3, 3, 2);
+
+            foreach ($products as $p) {
+                $rows[] = ['type' => 'Products', 'label' => $p->name, 'sub' => collect([$p->category?->brand?->name, $p->category?->name])->filter()->implode(' · '),
+                    'url' => route('product.show', $p->slug), 'image' => $p->image ? asset('storage/' . $p->image) : null];
+            }
+            foreach ($brands as $b) {
+                $rows[] = ['type' => 'Brands', 'label' => $b->name, 'sub' => $b->categories_count . ' product ' . \Illuminate\Support\Str::plural('line', $b->categories_count),
+                    'url' => route('brand.show', $b->slug), 'image' => $b->logo ? asset('storage/' . $b->logo) : null];
+            }
+            foreach ($lines as $c) {
+                $rows[] = ['type' => 'Product lines', 'label' => $c->name, 'sub' => $c->brand?->name,
+                    'url' => route('category.show', [$c->brand->slug, $c->slug]), 'image' => $c->image ? asset('storage/' . $c->image) : null];
+            }
+            foreach ($verticals as $v) {
+                $rows[] = ['type' => 'Verticals', 'label' => $v->name, 'sub' => null,
+                    'url' => route('vertical.show', $v->slug), 'image' => null];
+            }
+        }
+
+        return response()->json(['q' => $query, 'rows' => $rows]);
+    }
+
     public function search(Request $request)
     {
         $query = trim((string) $request->input('q', ''));
@@ -357,44 +499,7 @@ class PublicController extends Controller
         $verticals = collect();
 
         if ($query !== '') {
-            // Escape LIKE wildcards so "50%" or "a_b" are searched literally.
-            $escaped = addcslashes($query, '\\%_');
-            $contains = "%{$escaped}%";
-            $starts = "{$escaped}%";
-
-            $products = Product::where('products.is_active', true)
-                ->whereHas('category.brand', fn ($q) => $q->where('brands.is_active', true))
-                ->where(function ($q) use ($contains) {
-                    $q->where('products.name', 'like', $contains)
-                        ->orWhere('products.short_description', 'like', $contains)
-                        ->orWhereHas('category', fn ($c) => $c->where('categories.name', 'like', $contains))
-                        ->orWhereHas('category.brand', fn ($b) => $b->where('brands.name', 'like', $contains));
-                })
-                ->with('category.brand')
-                ->orderByRaw('CASE WHEN products.name LIKE ? THEN 1 WHEN products.name LIKE ? THEN 2 ELSE 3 END', [$starts, $contains])
-                ->orderBy('products.name')
-                ->limit(60)
-                ->get();
-
-            $brands = Brand::where('is_active', true)
-                ->where('name', 'like', $contains)
-                ->withCount('categories')
-                ->orderBy('name')
-                ->limit(8)
-                ->get();
-
-            $lines = Category::whereHas('brand', fn ($b) => $b->where('is_active', true))
-                ->where('name', 'like', $contains)
-                ->with('brand')
-                ->orderBy('name')
-                ->limit(10)
-                ->get();
-
-            $verticals = Vertical::where('is_active', true)
-                ->where('name', 'like', $contains)
-                ->orderBy('sort_order')
-                ->limit(6)
-                ->get();
+            [$products, $brands, $lines, $verticals] = $this->catalogueSearch($query, 60, 8, 10, 6);
         }
 
         // Shown when there is no query or nothing matched.
@@ -404,6 +509,62 @@ class PublicController extends Controller
         return view('public.search', compact(
             'products', 'brands', 'lines', 'verticals', 'query', 'suggestVerticals', 'suggestBrands'
         ));
+    }
+
+    /** The visitor's enquiry list (items live in their browser; this page just renders the form). */
+    public function enquiryList()
+    {
+        return view('public.enquiry-list');
+    }
+
+    /** One enquiry for several products. Product details are re-read from the database, never trusted from the form. */
+    public function storeEnquiryList(StoreEnquiryListRequest $request)
+    {
+        $data = FormRules::finish($request->validated());
+
+        $quantities = collect($data['items'])->mapWithKeys(fn ($i) => [$i['slug'] => (int) $i['qty']]);
+
+        $products = Product::whereIn('slug', $quantities->keys())
+            ->where('is_active', true)
+            ->whereHas('category.brand', fn ($q) => $q->where('brands.is_active', true))
+            ->with('category.brand')
+            ->get();
+
+        if ($products->isEmpty()) {
+            return back()->withInput()->withErrors(['items' => 'These products are no longer available. Please add them again.']);
+        }
+
+        $enquiry = DB::transaction(function () use ($data, $products, $quantities) {
+            $enquiry = Enquiry::create([
+                'name' => $data['name'],
+                'email' => $data['email'],
+                'phone' => $data['phone'] ?? null,
+                'company' => $data['company'] ?? null,
+                'order_location' => $data['order_location'] ?? null,
+                'message' => $data['message'] ?? null,
+            ]);
+
+            foreach ($products as $product) {
+                $enquiry->items()->create([
+                    'product_id' => $product->id,
+                    'product_name' => $product->name,
+                    'brand_name' => $product->category?->brand?->name,
+                    'category_name' => $product->category?->name,
+                    'quantity' => $quantities[$product->slug] ?? 1,
+                ]);
+            }
+
+            return $enquiry;
+        });
+
+        try {
+            Mail::to(config('contact.inbox') ?: config('mail.from.address'))
+                ->queue(new NewEnquiry($enquiry));
+        } catch (\Throwable $e) {
+            report($e);
+        }
+
+        return redirect()->route('enquiry-list')->with('enquiry_sent', $products->count());
     }
 
     public function storeEnquiry(StoreEnquiryRequest $request)
@@ -417,6 +578,6 @@ class PublicController extends Controller
             report($e);
         }
 
-        return back()->with('success', 'Thank you! We have received your enquiry and will contact you soon.');
+        return back()->with('success', 'Thank you! We have received your enquiry and will contact you soon.')->withFragment('enquiry-form');
     }
 }
