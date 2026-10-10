@@ -30,7 +30,7 @@
         @include('public.partials.breadcrumb', ['items' => $crumbs])
 
         {{-- Title banner: category on the left, brand on the right --}}
-        <div class="flex flex-col items-start justify-between gap-5 rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-ice px-6 py-6 shadow-sm sm:flex-row sm:items-center sm:px-10 sm:py-8">
+        <div data-reveal class="flex flex-col items-start justify-between gap-5 rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-ice px-6 py-6 shadow-sm sm:flex-row sm:items-center sm:px-10 sm:py-8">
             <div>
                 <p class="font-mono text-xs font-medium uppercase tracking-[0.2em] text-link">{{ $brand->name }}</p>
                 <h1 class="mt-2 text-3xl sm:text-4xl font-bold text-navy leading-tight">{{ $category->name }}</h1>
@@ -46,7 +46,7 @@
 
         {{-- Heading + intro --}}
         @if ($category->heading || $category->description)
-            <div class="mx-auto mt-12 max-w-4xl text-center">
+            <div data-reveal class="mx-auto mt-12 max-w-4xl text-center">
                 @if ($category->heading)
                     <h2 class="text-2xl sm:text-3xl font-bold text-link leading-tight">{{ $category->heading }}</h2>
                 @endif
@@ -59,14 +59,14 @@
         {{-- Models, grouped --}}
         @if ($products->count())
             <div class="mt-14" @if ($filterable) x-data="catalogueFilter(@js($filterData))" @endif>
-                <div class="flex items-center gap-4">
+                <div data-reveal class="flex items-center gap-4">
                     <h2 class="text-xl sm:text-2xl font-bold text-navy">Model Categories</h2>
                     <div class="h-px flex-1 bg-gradient-to-r from-cyan/50 to-transparent"></div>
                 </div>
 
                 @if ($filterable)
                     {{-- Find a model quickly: keyword, model group and sorting --}}
-                    <div class="mt-6 rounded-2xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4">
+                    <div data-reveal class="mt-6 rounded-2xl border border-gray-200 bg-white p-3 shadow-sm sm:p-4">
                         <div class="flex flex-col gap-3 lg:flex-row lg:items-center">
                             <label class="relative block flex-1">
                                 <span class="sr-only">Search these models</span>
@@ -109,11 +109,11 @@
 
                 @foreach ($groups as $groupName => $items)
                     <div class="mt-8" @if ($filterable) x-show="groupShown(@js($groupName)) > 0" @endif>
-                        <h3 class="mb-5 text-center font-mono text-sm font-medium uppercase tracking-[0.2em] text-link">{{ $groupName }}</h3>
+                        <h3 data-reveal class="mb-5 text-center font-mono text-sm font-medium uppercase tracking-[0.2em] text-link">{{ $groupName }}</h3>
 
                         <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                             @foreach ($items as $product)
-                                <div class="relative flex" @if ($filterable) x-show="matches({{ $product->id }})" :style="{ order: order({{ $product->id }}) }" @endif>
+                                <div data-reveal class="relative flex" @if ($filterable) x-show="matches({{ $product->id }})" :style="{ order: order({{ $product->id }}) }" @endif>
                                 <a href="{{ route('product.show', [$product->slug] + $q) }}"
                                    class="w-full group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-cyan/50 hover:shadow-xl">
                                     <div class="flex h-48 items-center justify-center bg-ice p-5">
@@ -143,7 +143,7 @@
                 @endforeach
             </div>
         @else
-            <div class="mt-12 rounded-2xl border border-gray-100 bg-white py-16 text-center">
+            <div data-reveal class="mt-12 rounded-2xl border border-gray-100 bg-white py-16 text-center">
                 <p class="text-lg font-semibold text-navy">Models for this range are coming soon.</p>
                 <a href="{{ route('contact') }}" class="btn-primary mt-5 inline-flex items-center rounded-full px-6 py-2.5 text-sm font-semibold text-white">Ask our team</a>
                 <x-help-links :verticals="false" />
@@ -152,7 +152,7 @@
 
         {{-- Long-form content --}}
         @if (filled($category->content))
-            <div class="rich-text mx-auto mt-14 max-w-4xl">
+            <div data-reveal class="rich-text mx-auto mt-14 max-w-4xl">
                 {!! \Illuminate\Support\Str::sanitizeHtml((string) $category->content) !!}
             </div>
         @endif
@@ -160,7 +160,7 @@
         @include('public.partials.faq', ['faqs' => $category->faqs, 'title' => 'Frequently Asked Questions about ' . $category->name])
 
         {{-- CTA --}}
-        <div class="mt-16 flex flex-col items-center justify-between gap-5 rounded-3xl bg-gradient-to-br from-navy to-link px-8 py-9 sm:flex-row sm:px-12">
+        <div data-reveal="zoom" class="mt-16 flex flex-col items-center justify-between gap-5 rounded-3xl bg-gradient-to-br from-navy to-link px-8 py-9 sm:flex-row sm:px-12">
             <div class="text-center sm:text-left">
                 <h3 class="text-xl font-bold text-white sm:text-2xl">Need help choosing the right {{ strtolower($category->name) }}?</h3>
                 <p class="mt-1.5 text-sm text-white/75">Our specialists can recommend a model for your application.</p>

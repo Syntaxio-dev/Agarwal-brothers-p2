@@ -7,7 +7,7 @@
             [$brand->name, null],
         ]])
 
-        <div class="flex flex-col sm:flex-row sm:items-center gap-5">
+        <div data-reveal class="flex flex-col sm:flex-row sm:items-center gap-5">
             @if ($brand->logo)
                 <div class="h-20 w-40 shrink-0 rounded-xl border border-gray-100 bg-white p-3 flex items-center justify-center">
                     <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="img-load max-h-full max-w-full object-contain" decoding="async" {!! \App\Support\Img::attrs($brand->logo) !!} onload="this.classList.add('is-loaded')">
@@ -22,14 +22,14 @@
         </div>
 
         @if ($brand->description)
-            <p class="mt-4 text-slate max-w-3xl leading-relaxed">{{ $brand->description }}</p>
+            <p data-reveal class="mt-4 text-slate max-w-3xl leading-relaxed">{{ $brand->description }}</p>
         @endif
 
         @if ($brand->categories->count())
-            <h2 class="mt-10 text-lg font-bold text-navy">Product Categories</h2>
+            <h2 data-reveal class="mt-10 text-lg font-bold text-navy">Product Categories</h2>
             <div class="mt-4 flex flex-wrap gap-3">
                 @foreach ($brand->categories as $category)
-                    <a href="{{ route('category.show', [$brand->slug, $category->slug]) }}"
+                    <a data-reveal="zoom" href="{{ route('category.show', [$brand->slug, $category->slug]) }}"
                         class="rounded-full border border-gray-200 bg-white px-4 py-2 text-sm font-medium text-navy
                                hover:border-cyan hover:text-link transition">
                         {{ $category->name }}
@@ -39,10 +39,10 @@
             </div>
         @endif
 
-        <h2 class="mt-10 text-lg font-bold text-navy">Products</h2>
+        <h2 data-reveal class="mt-10 text-lg font-bold text-navy">Products</h2>
         <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             @foreach ($products as $product)
-                <div class="relative flex">
+                <div data-reveal class="relative flex">
                 <a href="{{ route('product.show', $product->slug) }}"
                     class="w-full group flex flex-col overflow-hidden rounded-xl bg-white border border-gray-100 shadow-sm
                            hover:shadow-lg hover:border-cyan/40 hover:-translate-y-1 transition-all duration-300">
@@ -64,7 +64,7 @@
         </div>
 
         @if ($products->isEmpty())
-            <div class="mt-6 text-center py-16 text-slate">
+            <div data-reveal="fade" class="mt-6 text-center py-16 text-slate">
                 <p class="text-lg">No products available for this brand yet.</p>
             </div>
         @endif

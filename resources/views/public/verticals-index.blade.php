@@ -9,7 +9,7 @@
         @include('public.partials.breadcrumb', ['items' => [['Home', '/'], ['Verticals', null]]])
 
         {{-- Header --}}
-        <div class="text-center flex flex-col items-center gap-3 mb-10">
+        <div data-reveal class="text-center flex flex-col items-center gap-3 mb-10">
             <span class="section-badge">
                 Verticals
             </span>
@@ -39,7 +39,7 @@
         {{-- Cards --}}
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
             @foreach ($verticals as $vertical)
-                <a href="{{ route('vertical.show', $vertical->slug) }}"
+                <a data-reveal href="{{ route('vertical.show', $vertical->slug) }}"
                     class="group flex flex-col overflow-hidden rounded-2xl bg-white
                            border border-gray-100 shadow-sm
                            hover:shadow-xl hover:border-cyan/40 hover:-translate-y-1
@@ -85,13 +85,13 @@
         </div>
 
         @if ($verticals->isEmpty())
-            <div class="mt-6 text-center py-16 text-slate">
+            <div data-reveal="fade" class="mt-6 text-center py-16 text-slate">
                 <p class="text-lg">No scientific verticals available yet.</p>
             </div>
         @endif
 
         {{-- Help banner --}}
-        <div class="mt-14 rounded-3xl bg-gradient-to-br from-ice to-cyan/10 border border-cyan/20 px-6 py-8 sm:px-10
+        <div data-reveal class="mt-14 rounded-3xl bg-gradient-to-br from-ice to-cyan/10 border border-cyan/20 px-6 py-8 sm:px-10
                     flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
             <div class="flex-1">
                 <h2 class="text-lg sm:text-xl font-bold text-navy">Not sure which vertical fits your lab?</h2>

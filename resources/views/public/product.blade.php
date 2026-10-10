@@ -70,7 +70,7 @@
 
         {{-- ===== Hero banner ===== --}}
         <div class="grid grid-cols-1 items-center gap-8 overflow-hidden rounded-3xl border border-cyan/20 bg-gradient-to-br from-ice via-white to-cyan/10 p-6 shadow-sm sm:p-10 lg:grid-cols-5 lg:gap-12">
-            <div class="flex h-64 items-center justify-center rounded-2xl bg-white/80 p-5 shadow-inner sm:h-80 lg:col-span-2">
+            <div data-reveal="left" class="flex h-64 items-center justify-center rounded-2xl bg-white/80 p-5 shadow-inner sm:h-80 lg:col-span-2">
                 @if ($images->count())
                     <img src="{{ $images[0] }}" alt="{{ $product->name }}" class="img-load max-h-full max-w-full object-contain drop-shadow-xl" decoding="async" onload="this.classList.add('is-loaded')">
                 @else
@@ -80,7 +80,7 @@
                 @endif
             </div>
 
-            <div class="lg:col-span-3">
+            <div data-reveal="right" data-reveal-delay="100" class="lg:col-span-3">
                 <div class="flex items-center justify-between gap-4">
                     <p class="font-mono text-xs font-medium uppercase tracking-[0.2em] text-link">{{ $category->name }}</p>
                     <a href="{{ route('brand.show', $brand->slug) }}" class="flex h-11 w-32 shrink-0 items-center justify-center rounded-lg border border-gray-100 bg-white p-2" title="{{ $brand->name }}">
@@ -121,7 +121,7 @@
 
         {{-- ===== Overview ===== --}}
         @if ($overview || $product->short_description)
-            <section class="mt-14 text-center">
+            <section data-reveal class="mt-14 text-center">
                 <span class="section-badge">Overview</span>
                 @if ($overview)
                     <div class="mx-auto mt-5 max-w-4xl text-left leading-relaxed text-slate sm:text-center
@@ -136,7 +136,7 @@
 
         {{-- ===== Technical specifications ===== --}}
         @if ($specs->count())
-            <section class="mt-14 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-10">
+            <section data-reveal class="mt-14 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-10">
                 <div class="text-center">
                     <span class="section-badge">Specifications</span>
                     <h2 class="mt-3 text-xl font-bold text-navy sm:text-2xl">Technical Specifications</h2>
@@ -154,14 +154,14 @@
 
         {{-- ===== Key features ===== --}}
         @if ($features->count())
-            <section class="mt-8 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-10">
+            <section data-reveal class="mt-8 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-10">
                 <div class="text-center">
                     <span class="section-badge">Features</span>
                     <h2 class="mt-3 text-xl font-bold text-navy sm:text-2xl">Key Features of <span class="text-cyan-ink">{{ $product->name }}</span></h2>
                 </div>
                 <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
                     @foreach ($features as $f)
-                        <div class="flex gap-4 rounded-xl border border-gray-100 bg-ice p-4 transition-colors hover:border-cyan/50">
+                        <div data-reveal class="flex gap-4 rounded-xl border border-gray-100 bg-ice p-4 transition-colors hover:border-cyan/50">
                             <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-navy to-link text-white">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $check }}"/></svg>
                             </span>
@@ -179,14 +179,14 @@
 
         {{-- ===== Key advantages ===== --}}
         @if ($advantages->count())
-            <section class="mt-8 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-10">
+            <section data-reveal class="mt-8 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-10">
                 <div class="text-center">
                     <span class="section-badge">Advantages</span>
                     <h2 class="mt-3 text-xl font-bold text-navy sm:text-2xl">Key Advantages of <span class="text-cyan-ink">{{ $product->name }}</span></h2>
                 </div>
                 <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
                     @foreach ($advantages as $f)
-                        <div class="flex gap-4 rounded-xl border border-gray-100 bg-ice p-4 transition-colors hover:border-cyan/50">
+                        <div data-reveal class="flex gap-4 rounded-xl border border-gray-100 bg-ice p-4 transition-colors hover:border-cyan/50">
                             <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-link to-cyan text-white">
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5 14.25 2.25 12 10.5h8.25L9.75 21.75 12 13.5H3.75Z"/></svg>
                             </span>
@@ -204,7 +204,7 @@
 
         {{-- ===== Documents & research papers ===== --}}
         @if ($docs->count())
-            <section class="mt-8 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-10">
+            <section data-reveal class="mt-8 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-10">
                 <div class="text-center">
                     <span class="section-badge">Resources</span>
                     <h2 class="mt-3 text-xl font-bold text-navy sm:text-2xl">Documents &amp; Research Papers</h2>
@@ -212,7 +212,7 @@
                 <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
                     @foreach ($docs as $d)
                         @php $href = filled($d['file'] ?? null) ? asset('storage/' . $d['file']) : $d['url']; @endphp
-                        <a href="{{ $href }}" target="_blank" rel="noopener"
+                        <a data-reveal href="{{ $href }}" target="_blank" rel="noopener"
                            class="group flex items-center gap-4 rounded-xl border border-gray-200 bg-ice p-4 transition-all hover:border-cyan/60 hover:shadow-md">
                             <span class="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg bg-white text-link shadow-sm">
                                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
@@ -231,7 +231,7 @@
         {{-- ===== Video ===== --}}
         @if ($videoId)
             <section class="mt-10">
-                <div class="mx-auto max-w-4xl overflow-hidden rounded-2xl border border-gray-200 bg-navy shadow-lg">
+                <div data-reveal="zoom" class="mx-auto max-w-4xl overflow-hidden rounded-2xl border border-gray-200 bg-navy shadow-lg">
                     <div class="aspect-video">
                         <iframe class="h-full w-full" src="https://www.youtube-nocookie.com/embed/{{ $videoId }}" title="{{ $product->name }} video"
                                 loading="lazy" allowfullscreen
@@ -245,7 +245,7 @@
 
         {{-- ===== Enquiry form ===== --}}
         <section id="enquiry-form" class="mt-16 scroll-mt-6">
-            <div class="mx-auto max-w-3xl rounded-3xl border border-cyan/20 bg-gradient-to-br from-ice to-cyan/10 p-3 sm:p-4">
+            <div data-reveal class="mx-auto max-w-3xl rounded-3xl border border-cyan/20 bg-gradient-to-br from-ice to-cyan/10 p-3 sm:p-4">
                 <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
                     <div class="text-center">
                         <span class="section-badge">Enquiry</span>
@@ -311,13 +311,13 @@
         {{-- ===== Related ===== --}}
         @if ($related->count())
             <section class="mt-16">
-                <div class="flex items-center gap-4">
+                <div data-reveal class="flex items-center gap-4">
                     <h2 class="text-xl font-bold text-navy sm:text-2xl">More from {{ $category->name }}</h2>
                     <div class="h-px flex-1 bg-gradient-to-r from-cyan/50 to-transparent"></div>
                 </div>
                 <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
                     @foreach ($related as $r)
-                        <a href="{{ route('product.show', [$r->slug] + $q) }}"
+                        <a data-reveal href="{{ route('product.show', [$r->slug] + $q) }}"
                            class="group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-cyan/50 hover:shadow-xl">
                             <div class="flex h-40 items-center justify-center bg-ice p-4">
                                 @if ($r->image)

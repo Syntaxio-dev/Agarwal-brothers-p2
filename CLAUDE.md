@@ -136,12 +136,22 @@ Own `reveal.js` (no library): starts when 200 px / 60 % of an item is visible, s
 
 **Our Story page animations (Balanced)** — base `data-reveal` on all sections plus: journey timeline "draw" (`data-reveal="draw"`: the dotted wave wipes in over 1.8 s, each year dot pops when the line reaches it, then its stem and card; phone shows a simple staggered list), value cards (icon pop-in, hover tilt + cyan top edge), team name cyan underline on hover, leadership portrait/quote slide from opposite sides + quote-mark pop, button arrows nudge on hover (`.arrow-nudge` class — add it to arrows on other pages when they are done), Mission/Vision/Goal tabs with a sliding navy pill (Alpine `place()`) and slide+fade panels, banner intro (photo slow zoom, title rise). Not built on purpose: clip-path photo reveal, count-up, parallax. All CSS sits in the `prefers-reduced-motion: no-preference` block of `app.css`.
 
+**Catalogue pages reveal (done by a second agent, checked afterwards)** — `data-reveal` added to Verticals index, Vertical, Brand, Category and Product pages (headers, cards, sections, CTA). Checked in real Chrome on desktop and phone: every item ends visible, no layout shift, no sideways scroll, no console errors. One gap found and fixed: cards that appear without scrolling (a Category filter showing/hiding models, `x-show`) never got their turn, so `reveal.js` now also watches `style/class/hidden` changes (MutationObserver) and re-checks. The Category filter only shows with 8 or more models (the dummy data has none that large), so it was tested with a simulated hide/show.
+
+**Notes for any new agent / helper**
+- Start by reading this file. Uncommitted changes in `git status` may belong to another agent: look at `git diff` before touching those files.
+- Never run two PHPUnit runs at the same time: they share `ab_new_project_testing` and corrupt it (symptom: "Base table or view not found" everywhere). Fix: drop and recreate that database (`DROP DATABASE ab_new_project_testing; CREATE DATABASE ab_new_project_testing CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;`), then run once.
+- `php artisan tinker <file>` can hang in this environment; for one-off checks write a small PHP file that boots the app (`require 'vendor/autoload.php'; $app = require 'bootstrap/app.php'; $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();`) and run it with `timeout 60 php file.php`.
+- XAMPP MySQL can stop on its own; on "connection refused" at port 3306 start it again from the XAMPP control panel, or run `C:\xampp\mysql\bin\mysqld.exe --defaults-file=C:\xampp\mysql\bin\my.ini --standalone` (data stays intact).
+- Slow shell commands get moved to the background automatically; read their output file instead of chaining sleeps.
+- AOS pattern for a new page: add `data-reveal` (or `left`/`right`/`zoom`/`fade`) to headers, cards and CTA; never to the first screen (banner/hero); split very tall blocks into pieces; test with a Puppeteer scroll-through (all revealed, no box moved, no overflow), reduced-motion and a blocked-script run.
+
 ## 10. Test status (last full run)
 
-141 PHP tests passing (4 skipped without GD) · 10 Node tests passing · real-Chrome E2E scripts (kept outside the repo) for drafts, scroll reveal (timing, layout shift, reduced motion, failsafe, phone), marquee hover, admin page geometry/overflow scans.
+146 PHP tests passing with GD enabled (4 skipped without GD) · 10 Node tests passing · real-Chrome E2E scripts (kept outside the repo) for drafts, scroll reveal (timing, layout shift, reduced motion, failsafe, phone), marquee hover, admin page geometry/overflow scans.
 
 ## 11. Next steps / backlog
 
-- **AOS rollout, page by page:** Home ✅ → Our Story ✅ → Verticals/Brand/Category → Product → Insights/Careers/Contact. Use `data-reveal`; only fade things that already move.
+- **AOS rollout, page by page:** Home ✅ → Our Story ✅ → Verticals/Brand/Category ✅ → Product ✅ → Insights/Careers/Contact (still to do, plus Compare, Enquiry list, Search, Application resources, Privacy). Use `data-reveal`; only fade things that already move.
 - Before launch (owner will do last): replace dummy data and phone numbers (`config/contact.php`), real footer links/Terms page, WhatsApp number in Site Settings, production `.env`, GD on the server, cron for `schedule:run`, run `filament:cache-components` and `migrate`, legal review of the privacy text, change the admin password, compress remaining heavy images (`images:optimize`).
 - Ideas not started: 2FA for admins, per-record "History" tab on edit pages, contact-message/application assignment, translation of the public site.

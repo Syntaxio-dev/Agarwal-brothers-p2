@@ -12,7 +12,7 @@
         ]])
 
         {{-- Header --}}
-        <div class="max-w-3xl">
+        <div data-reveal class="max-w-3xl">
             <span class="section-badge">Vertical</span>
             <h1 class="mt-4 text-3xl sm:text-4xl font-bold text-navy leading-tight">{{ $vertical->name }}</h1>
             @if ($vertical->description)
@@ -32,7 +32,7 @@
             <div class="mt-10 grid grid-cols-1 items-start gap-6 md:grid-cols-2 xl:grid-cols-3">
                 @foreach ($brandGroups as $group)
                     @php $brand = $group['brand']; @endphp
-                    <div class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300 hover:border-cyan/50 hover:shadow-lg">
+                    <div data-reveal class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300 hover:border-cyan/50 hover:shadow-lg">
 
                         <div class="flex items-center justify-between gap-3">
                             <a href="{{ route('brand.show', $brand->slug) }}" class="flex h-12 min-w-0 items-center" title="{{ $brand->name }}">
@@ -70,7 +70,7 @@
                 @endforeach
             </div>
         @else
-            <div class="mt-10 rounded-2xl border border-gray-100 bg-white py-16 text-center">
+            <div data-reveal class="mt-10 rounded-2xl border border-gray-100 bg-white py-16 text-center">
                 <p class="text-lg font-semibold text-navy">No product lines in this vertical yet.</p>
                 <p class="mt-2 text-sm text-slate">Check back soon, or tell us what you need.</p>
                 <a href="{{ route('contact') }}" class="btn-primary mt-5 inline-flex items-center rounded-full px-6 py-2.5 text-sm font-semibold text-white">Contact us</a>

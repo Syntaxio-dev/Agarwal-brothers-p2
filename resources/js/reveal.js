@@ -71,7 +71,12 @@ if (reduce) {
         }
     };
 
+    // things that show up without any scrolling (a filter hides/shows cards, a tab opens) get their turn too
+    const watcher = new MutationObserver(request);
+    watcher.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['style', 'class', 'hidden'] });
+
     const detach = () => {
+        watcher.disconnect();
         window.removeEventListener('scroll', request);
         window.removeEventListener('resize', request);
         window.removeEventListener('load', request);
