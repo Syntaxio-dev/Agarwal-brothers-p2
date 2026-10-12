@@ -72,7 +72,7 @@
                     @if ($img('story_image_1'))
                         <img src="{{ $img('story_image_1') }}" alt="" class="img-load h-full w-full object-cover" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
                     @else
-                        <img src="{{ asset('sidebar-logo.png') }}" alt="Agarwal Brothers" class="img-load w-3/4 object-contain" decoding="async" onload="this.classList.add('is-loaded')" {!! \App\Support\Img::publicAttrs('sidebar-logo.png') !!}>
+                        <img src="{{ asset('images/new-logo.png') }}" alt="Agarwal Brothers" class="img-load w-3/4 object-contain" decoding="async" onload="this.classList.add('is-loaded')" {!! \App\Support\Img::publicAttrs('images/new-logo.png') !!}>
                     @endif
                 </div>
 

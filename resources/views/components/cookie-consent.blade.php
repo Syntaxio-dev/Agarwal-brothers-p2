@@ -4,7 +4,7 @@
 <div x-data x-cloak x-show="$store.consent.open"
      x-transition:enter="transition duration-300 ease-out" x-transition:enter-start="translate-y-4 opacity-0" x-transition:enter-end="translate-y-0 opacity-100"
      x-transition:leave="transition duration-200 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-     class="pointer-events-none fixed inset-x-0 bottom-4 z-[70] flex justify-center px-4 lg:pl-[calc(16%+1rem)]"
+     class="pointer-events-none fixed inset-x-0 bottom-4 z-[70] flex justify-center px-4"
      role="dialog" aria-label="Cookie notice" aria-live="polite">
 
     <div class="pointer-events-auto w-full max-w-3xl rounded-2xl border border-gray-200 bg-white p-5 shadow-[0_24px_60px_-20px_rgba(11,37,69,0.45)] sm:p-6"

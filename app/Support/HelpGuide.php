@@ -213,7 +213,7 @@ class HelpGuide
                 'intro' => 'These items appear on the homepage. Active items show; inactive ones are hidden.',
                 'steps' => [
                     'Hero Slides: add a title and subtitle if the image does not already contain text. Upload an image or a video. The optional button link must be a page on this site (for example /verticals) or a full https:// link.',
-                    'Clients: add the logo, a short note, and switch on "Top client" to show it in the homepage carousel (up to 10). Drag rows to set the order.',
+                    'Clients: add the logo, pick the industry (Dairy, Pharma, Universities ...), the city, the year they joined and what you supply them. All active clients appear on the homepage as a logo wall, grouped by industry. "Top client" puts a client first. Drag rows to set the order.',
                     'Reviews: add the reviewer name, role, company and the review text. Rating is 1 to 5. If there are more than three active reviews, the homepage carousel slides automatically.',
                     'Precision Picks (homepage products) are chosen on each product with "Show in Precision Picks".',
                 ],

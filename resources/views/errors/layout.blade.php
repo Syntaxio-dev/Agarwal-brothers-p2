@@ -20,7 +20,7 @@
 
         <header class="relative px-5 py-5 sm:px-10">
             <a href="/" aria-label="Agarwal Brothers home">
-                <img src="{{ asset('sidebar-logo.png') }}" alt="Agarwal Brothers" class="img-load h-11 w-auto sm:h-12" decoding="async" onload="this.classList.add('is-loaded')" {!! \App\Support\Img::publicAttrs('sidebar-logo.png') !!}>
+                <img src="{{ asset('images/new-logo.png') }}" alt="Agarwal Brothers" class="img-load h-9 w-auto sm:h-11" decoding="async" onload="this.classList.add('is-loaded')" {!! \App\Support\Img::publicAttrs('images/new-logo.png') !!}>
             </a>
         </header>
 

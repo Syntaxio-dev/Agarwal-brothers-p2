@@ -51,187 +51,181 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 </head>
 
-<body class="bg-white text-navy antialiased" x-data="{ sidebarOpen: false }">
+<body class="bg-white text-navy antialiased" x-data="{ menuOpen: false }">
 
     <a href="#main"
        class="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[100] focus:rounded-lg focus:bg-navy focus:px-5 focus:py-3 focus:text-sm focus:font-semibold focus:text-white focus:shadow-xl"
        style="outline-offset: 3px;">Skip to main content</a>
 
-    {{-- Mobile top bar --}}
-    <div class="fixed top-0 left-0 right-0 z-40 flex items-center gap-3 bg-white border-b border-gray-200 px-4 h-14 lg:hidden">
-        <button @click="sidebarOpen = !sidebarOpen" class="p-2 rounded-md bg-ice shadow-sm">
-            <svg class="w-6 h-6 text-slate" fill="currentColor" viewBox="0 0 448 512">
-                <path d="M16 132h416c8.8 0 16-7.2 16-16V76c0-8.8-7.2-16-16-16H16C7.2 60 0 67.2 0 76v40c0 8.8 7.2 16 16 16zm0 160h416c8.8 0 16-7.2 16-16v-40c0-8.8-7.2-16-16-16H16c-8.8 0-16 7.2-16 16v40c0 8.8 7.2 16 16 16zm0 160h416c8.8 0 16-7.2 16-16v-40c0-8.8-7.2-16-16-16H16c-8.8 0-16 7.2-16 16v40c0 8.8 7.2 16 16 16z"/>
-            </svg>
-        </button>
-        <a href="/" aria-label="Home">
-            <img src="{{ asset('sidebar-logo.png') }}" alt="Agarwal Brothers" class="img-load h-9 w-auto object-contain" decoding="async" onload="this.classList.add('is-loaded')" {!! \App\Support\Img::publicAttrs('sidebar-logo.png') !!}>
-        </a>
-        <a href="{{ route('enquiry-list') }}" x-cloak x-show="$store.enquiryList.count" aria-label="Enquiry list"
-           class="relative ml-auto flex h-10 w-10 items-center justify-center rounded-md bg-ice text-navy">
-            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm0 5.25h.007v.008H3.75V12Zm0 5.25h.007v.008H3.75v-.008Z"/></svg>
-            <span class="absolute -right-1 -top-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-cyan px-1 font-mono text-[11px] font-semibold text-navy" x-text="$store.enquiryList.count"></span>
-        </a>
-    </div>
+    {{-- =========================================================
+        TOP NAVBAR — fixed, full width (replaces the old left sidebar)
+    ========================================================== --}}
+    @php $catalogue = \App\Models\SiteSetting::latest()->first(); @endphp
+    <header class="site-nav fixed top-0 inset-x-0 z-40 border-b border-gray-200 bg-white/95 shadow-sm backdrop-blur">
+        <div class="site-nav-row mx-auto flex w-[98%] items-center gap-3 px-2 sm:px-4 lg:px-8">
 
-    <div class="flex min-h-screen w-full">
+            {{-- Logo --}}
+            <a href="/" aria-label="Agarwal Brothers home" class="shrink-0">
+                <img src="{{ asset('images/new-logo.png') }}" alt="Agarwal Brothers"
+                     class="site-logo img-load h-8 w-auto object-contain sm:h-10" decoding="async" onload="this.classList.add('is-loaded')" {!! \App\Support\Img::publicAttrs('images/new-logo.png') !!}>
+            </a>
 
-        {{-- =========================================================
-            LEFT SIDEBAR — Inkarp-style fixed navigation
-        ========================================================== --}}
-        <aside
-            class="fixed top-0 left-0 bottom-0 z-30 bg-white border-r border-gray-200 shadow-lg
-                   transition-transform duration-300 ease-in-out w-[260px] lg:w-[16%]"
-            :class="sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'"
-            @click.away="sidebarOpen = false">
+            {{-- Desktop navigation (xl and up) --}}
+            @php $navTop = 'nav-top whitespace-nowrap px-3 py-2 text-[15px] font-medium 2xl:px-3.5'; @endphp
+            <nav class="ml-4 hidden shrink-0 items-center gap-1 xl:ml-8 xl:flex">
+                <a href="/" class="{{ $navTop }} {{ request()->is('/') ? 'is-active' : '' }}">Home</a>
+                <a href="/our-story" class="{{ $navTop }} {{ request()->is('our-story') ? 'is-active' : '' }}">Our Story</a>
+                <a href="/verticals" class="{{ $navTop }} {{ request()->is('verticals*') ? 'is-active' : '' }}">Verticals</a>
 
-            <div class="flex flex-col h-screen max-h-screen w-full py-4 px-3 space-y-3 overflow-y-auto">
-
-                {{-- Logo --}}
-                <div class="hidden lg:flex items-center justify-center px-1 mb-3 pt-3">
-                    <a href="/" aria-label="Home">
-                        <img src="{{ asset('sidebar-logo.png') }}" alt="Agarwal Brothers"
-                            class="img-load w-full max-w-[210px] h-auto object-contain" decoding="async" onload="this.classList.add('is-loaded')" {!! \App\Support\Img::publicAttrs('sidebar-logo.png') !!}>
-                    </a>
-                </div>
-
-                {{-- Navigation --}}
-                <nav class="flex-1 space-y-1 font-medium mt-14 lg:mt-0">
-
-                    <a href="/"
-                        class="nav-link block px-3 py-2.5 rounded-md transition-all duration-200
-                        {{ request()->is('/') ? 'bg-navy text-white shadow' : 'text-navy hover:bg-gray-100' }}">
-                        Home
-                    </a>
-
-                    <a href="/our-story"
-                        class="nav-link block px-3 py-2.5 rounded-md transition-all duration-200
-                        {{ request()->is('our-story') ? 'bg-navy text-white shadow' : 'text-navy hover:bg-gray-100' }}">
-                        Our Story
-                    </a>
-
-                    <a href="/verticals"
-                        class="nav-link block px-3 py-2.5 rounded-md transition-all duration-200
-                        {{ request()->is('verticals*') ? 'bg-navy text-white shadow' : 'text-navy hover:bg-gray-100' }}">
-                        Verticals
-                    </a>
-
-                    {{-- Insights: compact dropdown (hover on desktop, tap on mobile) --}}
-                    <div x-data="{
-                            open: false, t: null,
-                            desktop() { return window.innerWidth >= 1024 },
-                            show() { if (this.desktop()) { clearTimeout(this.t); this.open = true } },
-                            hide() { if (this.desktop()) { clearTimeout(this.t); this.t = setTimeout(() => this.open = false, 200) } }
-                         }"
-                         @mouseenter="show()" @mouseleave="hide()" @keydown.escape="open = false"
-                         class="relative">
-                        <button @click="open = !open"
-                            class="nav-link flex items-center justify-between w-full px-3 py-2.5 rounded-md transition-all whitespace-nowrap
-                                   {{ request()->is('insights*') ? 'bg-navy text-white shadow' : 'text-navy' }}"
-                            :class="open && !{{ request()->is('insights*') ? 'true' : 'false' }} && 'bg-gray-100'">
-                            <span class="text-left">Insights & Updates</span>
-                            <svg class="h-4 w-4 text-cyan-ink transition-transform duration-200"
-                                :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/>
-                            </svg>
-                        </button>
-
-                        <div x-cloak x-show="open"
-                             x-transition:enter="transition ease-out duration-150"
-                             x-transition:enter-start="opacity-0 -translate-y-1"
-                             x-transition:enter-end="opacity-100 translate-y-0"
-                             class="mt-1 space-y-0.5 rounded-lg bg-white p-1.5 border border-gray-100 shadow-lg
-                                    lg:absolute lg:left-0 lg:right-0 lg:top-full lg:z-40">
-                            @foreach ([
-                                ['insights.blogs', 'Blogs', 'insights/blogs'],
-                                ['insights.news', 'News & Events', 'insights/news-events'],
-                                ['insights.webinars', 'Webinars', 'insights/webinars'],
-                            ] as [$r, $label, $match])
-                                <a href="{{ route($r) }}"
-                                   class="block rounded-md px-3 py-2 text-sm transition-colors
-                                          {{ request()->is($match) ? 'bg-cyan/10 text-link font-semibold' : 'text-navy hover:bg-gray-100' }}">
-                                    {{ $label }}
-                                </a>
-                            @endforeach
-                        </div>
+                {{-- Insights dropdown (hover or click) --}}
+                <div x-data="{ open: false, t: null, show() { clearTimeout(this.t); this.open = true }, hide() { clearTimeout(this.t); this.t = setTimeout(() => this.open = false, 180) } }"
+                     @mouseenter="show()" @mouseleave="hide()" @keydown.escape="open = false" class="relative">
+                    <button type="button" @click="open = !open" :aria-expanded="open ? 'true' : 'false'"
+                        class="{{ $navTop }} flex items-center gap-1 {{ request()->is('insights*') ? 'is-active' : '' }}">
+                        Insights &amp; Updates
+                        <svg class="h-4 w-4 transition-transform duration-200" :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div x-cloak x-show="open"
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0"
+                         class="absolute left-0 top-full z-50 mt-1.5 w-52 space-y-0.5 rounded-xl border border-gray-100 bg-white p-1.5 shadow-lg">
+                        @foreach ([
+                            ['insights.blogs', 'Blogs', 'insights/blogs'],
+                            ['insights.news', 'News & Events', 'insights/news-events'],
+                            ['insights.webinars', 'Webinars', 'insights/webinars'],
+                        ] as [$r, $label, $match])
+                            <a href="{{ route($r) }}" class="block rounded-md px-3 py-2 text-sm transition-colors {{ request()->is($match) ? 'text-link font-semibold' : 'text-navy hover:text-link' }}">{{ $label }}</a>
+                        @endforeach
                     </div>
-
-                    <a href="/application-resources"
-                        class="nav-link block px-3 py-2.5 rounded-md transition-all duration-200
-                        {{ request()->is('application-resources') ? 'bg-navy text-white shadow' : 'text-navy hover:bg-gray-100' }}">
-                        Application Resources
-                    </a>
-
-                    <a href="/careers"
-                        class="nav-link block px-3 py-2.5 rounded-md transition-all duration-200
-                        {{ request()->is('careers') ? 'bg-navy text-white shadow' : 'text-navy hover:bg-gray-100' }}">
-                        Careers
-                    </a>
-
-                    <a href="/contact-us"
-                        class="nav-link block px-3 py-2.5 rounded-md transition-all duration-200
-                        {{ request()->is('contact-us') ? 'bg-navy text-white shadow' : 'text-navy hover:bg-gray-100' }}">
-                        Contact Us
-                    </a>
-
-                </nav>
-
-                {{-- Bottom actions --}}
-                <div class="space-y-2 pt-4 border-t border-gray-200 mt-auto">
-
-                    {{-- Enquiry list: only appears once the visitor has added a product --}}
-                    <a href="{{ route('enquiry-list') }}" x-cloak x-show="$store.enquiryList.count" x-transition.opacity
-                        class="flex items-center justify-between gap-2 px-4 py-2.5 bg-ice text-navy border border-cyan/50 rounded-md
-                               hover:border-cyan transition w-full"
-                        style="box-shadow: inset 0 -2px 0 rgb(0 180 216 / 0.6);">
-                        <span class="flex items-center gap-2 text-sm font-semibold">
-                            <svg class="w-4 h-4 text-link" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75Zm0 5.25h.007v.008H3.75V12Zm0 5.25h.007v.008H3.75v-.008Z"/></svg>
-                            Enquiry List
-                        </span>
-                        <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-navy px-1.5 font-mono text-[11px] font-semibold text-white" x-text="$store.enquiryList.count"></span>
-                    </a>
-
-                    <a href="{{ route('search') }}"
-                        class="flex items-center gap-2 px-4 py-2.5 bg-white text-navy border border-gray-300 rounded-md
-                               hover:border-cyan hover:bg-ice transition w-full">
-                        <svg class="w-4 h-4 text-cyan-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                            <circle cx="11" cy="11" r="8"/>
-                            <path d="m21 21-4.3-4.3"/>
-                        </svg>
-                        Search
-                    </a>
-
-                    @php $catalogue = \App\Models\SiteSetting::latest()->first(); @endphp
-                    @if ($catalogue?->catalogue_file)
-                        <a href="{{ asset('storage/' . $catalogue->catalogue_file) }}" download
-                            class="btn-primary flex items-center justify-between gap-2 px-4 py-2.5 h-11
-                                   text-white font-medium rounded-lg w-full">
-                            <span class="whitespace-nowrap overflow-hidden text-ellipsis text-sm">Product Catalogue</span>
-                            <svg class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 17V3m0 14-6-6m6 6 6-6M5 21h14"/>
-                            </svg>
-                        </a>
-                    @endif
-
                 </div>
+
+                <a href="/application-resources" class="{{ $navTop }} {{ request()->is('application-resources') ? 'is-active' : '' }}">Application Resources</a>
+                <a href="/careers" class="{{ $navTop }} {{ request()->is('careers') ? 'is-active' : '' }}">Careers</a>
+                <a href="/contact-us" class="{{ $navTop }} {{ request()->is('contact-us') ? 'is-active' : '' }}">Contact Us</a>
+            </nav>
+
+            {{-- Search: a search icon that grows into a capsule (with the animated "ghost" searches) on hover / tap.
+                 The slot keeps its 40px width, so the capsule opens OVER the free space and nothing else moves. --}}
+            <div class="relative ml-auto h-10 w-10 shrink-0">
+                <form action="{{ route('search') }}" method="GET" role="search" class="nav-search"
+                      x-data="ghostSearch()" x-init="startGhost()" @click.outside="close()"
+                      :class="(open || lastQuery) ? 'is-open' : ''">
+                    <label for="nav-search-input" class="nav-search-icon" title="Search">
+                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35"/></svg>
+                    </label>
+                    <input id="nav-search-input" type="text" name="q" x-ref="input" maxlength="80" autocomplete="off" aria-label="Search products, brands and categories"
+                           :placeholder="ghost" @focus="stopGhost(); if (rows.length) open = true" @blur="startGhost()" @input="suggest($event.target.value)"
+                           @keydown.down.prevent="move(1)" @keydown.up.prevent="move(-1)" @keydown.enter="choose($event)" @keydown.escape="close()"
+                           class="nav-search-input">
+                    <button type="submit" aria-label="Search" class="nav-search-go btn-primary items-center justify-center rounded-full text-white">
+                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m21 21-4.35-4.35M17 10a7 7 0 1 1-14 0 7 7 0 0 1 14 0Z"/></svg>
+                    </button>
+                    <x-search-suggest />
+                </form>
             </div>
-        </aside>
 
-        {{-- Mobile sidebar backdrop --}}
-        <div x-show="sidebarOpen" x-cloak @click="sidebarOpen = false"
-            class="fixed inset-0 bg-black/40 z-20 lg:hidden" x-transition.opacity></div>
+            {{-- Right-side utilities --}}
+            <div class="flex items-center gap-2 sm:gap-3">
+                {{-- Enquiry cart: appears only once the visitor has added a product --}}
+                <a href="{{ route('enquiry-list') }}" x-cloak x-show="$store.enquiryList.count" aria-label="Enquiry list" title="Enquiry list"
+                   class="relative flex h-10 w-10 items-center justify-center rounded-md text-navy transition-colors hover:bg-ice">
+                    <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.7" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
+                    <span class="absolute -right-0.5 -top-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-cyan px-1 font-mono text-[10px] font-semibold text-navy" x-text="$store.enquiryList.count"></span>
+                </a>
 
-        {{-- =========================================================
-            MAIN CONTENT AREA
-        ========================================================== --}}
-        <div class="flex-1 transition-all duration-300 ease-in-out lg:ml-[16%] w-full lg:w-[84%]">
+                {{-- Product catalogue --}}
+                @if ($catalogue?->catalogue_file)
+                    <a href="{{ asset('storage/' . $catalogue->catalogue_file) }}" download
+                       aria-label="Download product catalogue" title="Download product catalogue"
+                       class="btn-primary hidden items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-white sm:inline-flex 2xl:px-4">
+                        <span class="xl:max-2xl:hidden">Catalogue</span>
+                        <svg class="arrow-nudge-down h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 17V3m0 14-6-6m6 6 6-6M5 21h14"/></svg>
+                    </a>
+                @endif
 
-            <div class="page-fade relative flex flex-col min-h-screen">
+                {{-- Hamburger (below xl) --}}
+                <button type="button" @click="menuOpen = true" aria-label="Open menu" aria-controls="mobile-menu"
+                        class="flex h-10 w-10 items-center justify-center rounded-md text-navy transition-colors hover:bg-ice xl:hidden">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5M3.75 17.25h16.5"/></svg>
+                </button>
+            </div>
+        </div>
+    </header>
 
-                <main id="main" tabindex="-1" class="flex-grow mt-14 lg:mt-0">
+    {{-- Mobile / tablet drawer (below xl) --}}
+    <div x-show="menuOpen" x-cloak @click="menuOpen = false" x-transition.opacity class="fixed inset-0 z-40 bg-black/40 xl:hidden"></div>
+    <aside id="mobile-menu" x-cloak
+           class="fixed top-0 right-0 bottom-0 z-50 flex w-[300px] max-w-[85vw] flex-col bg-white shadow-xl transition-transform duration-300 ease-in-out xl:hidden"
+           :class="menuOpen ? 'translate-x-0' : 'translate-x-full'"
+           @keydown.escape.window="menuOpen = false">
+        <div class="flex h-16 items-center justify-between border-b border-gray-200 px-4">
+            <a href="/" aria-label="Home"><img src="{{ asset('images/new-logo.png') }}" alt="Agarwal Brothers" class="h-8 w-auto object-contain" {!! \App\Support\Img::publicAttrs('images/new-logo.png') !!}></a>
+            <button type="button" @click="menuOpen = false" aria-label="Close menu" class="flex h-10 w-10 items-center justify-center rounded-md text-navy hover:bg-ice">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+
+        <div class="flex flex-1 flex-col overflow-y-auto px-3 py-4">
+            <nav class="space-y-1 font-medium">
+                <a href="/" class="nav-link block px-3 py-2.5 rounded-md transition-all duration-200 {{ request()->is('/') ? 'is-active text-link font-semibold' : 'text-navy hover:text-link' }}">Home</a>
+                <a href="/our-story" class="nav-link block px-3 py-2.5 rounded-md transition-all duration-200 {{ request()->is('our-story') ? 'is-active text-link font-semibold' : 'text-navy hover:text-link' }}">Our Story</a>
+                <a href="/verticals" class="nav-link block px-3 py-2.5 rounded-md transition-all duration-200 {{ request()->is('verticals*') ? 'is-active text-link font-semibold' : 'text-navy hover:text-link' }}">Verticals</a>
+
+                <div x-data="{ open: {{ request()->is('insights*') ? 'true' : 'false' }} }">
+                    <button type="button" @click="open = !open" :aria-expanded="open ? 'true' : 'false'"
+                        class="nav-link flex items-center justify-between w-full px-3 py-2.5 rounded-md transition-all duration-200 {{ request()->is('insights*') ? 'is-active text-link font-semibold' : 'text-navy hover:text-link' }}">
+                        <span>Insights &amp; Updates</span>
+                        <svg class="h-4 w-4 transition-transform duration-200" :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div x-show="open" x-cloak
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0"
+                         class="mt-0.5 space-y-0.5 pl-3">
+                        @foreach ([
+                            ['insights.blogs', 'Blogs', 'insights/blogs'],
+                            ['insights.news', 'News & Events', 'insights/news-events'],
+                            ['insights.webinars', 'Webinars', 'insights/webinars'],
+                        ] as [$r, $label, $match])
+                            <a href="{{ route($r) }}" class="block rounded-md px-3 py-2 text-sm transition-colors {{ request()->is($match) ? 'text-link font-semibold' : 'text-navy hover:text-link' }}">{{ $label }}</a>
+                        @endforeach
+                    </div>
+                </div>
+
+                <a href="/application-resources" class="nav-link block px-3 py-2.5 rounded-md transition-all duration-200 {{ request()->is('application-resources') ? 'is-active text-link font-semibold' : 'text-navy hover:text-link' }}">Application Resources</a>
+                <a href="/careers" class="nav-link block px-3 py-2.5 rounded-md transition-all duration-200 {{ request()->is('careers') ? 'is-active text-link font-semibold' : 'text-navy hover:text-link' }}">Careers</a>
+                <a href="/contact-us" class="nav-link block px-3 py-2.5 rounded-md transition-all duration-200 {{ request()->is('contact-us') ? 'is-active text-link font-semibold' : 'text-navy hover:text-link' }}">Contact Us</a>
+            </nav>
+
+            <div class="mt-auto space-y-2 border-t border-gray-200 pt-4">
+                <a href="{{ route('enquiry-list') }}" x-cloak x-show="$store.enquiryList.count"
+                   class="flex w-full items-center justify-between gap-2 rounded-md border border-cyan/50 bg-ice px-4 py-2.5 text-navy transition hover:border-cyan"
+                   style="box-shadow: inset 0 -2px 0 rgb(0 180 216 / 0.6);">
+                    <span class="flex items-center gap-2 text-sm font-semibold">
+                        <svg class="h-4 w-4 text-link" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 0 0-3 3h15.75m-12.75-3h11.218c1.121-2.3 2.1-4.684 2.924-7.138a60.114 60.114 0 0 0-16.536-1.84M7.5 14.25 5.106 5.272M6 20.25a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Zm12.75 0a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0Z"/></svg>
+                        Enquiry List
+                    </span>
+                    <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-navy px-1.5 font-mono text-[11px] font-semibold text-white" x-text="$store.enquiryList.count"></span>
+                </a>
+                @if ($catalogue?->catalogue_file)
+                    <a href="{{ asset('storage/' . $catalogue->catalogue_file) }}" download
+                       class="btn-primary flex h-11 w-full items-center justify-between gap-2 rounded-lg px-4 py-2.5 font-medium text-white">
+                        <span class="overflow-hidden text-ellipsis whitespace-nowrap text-sm">Product Catalogue</span>
+                        <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 17V3m0 14-6-6m6 6 6-6M5 21h14"/></svg>
+                    </a>
+                @endif
+            </div>
+        </div>
+    </aside>
+
+    {{-- =========================================================
+        MAIN CONTENT AREA
+    ========================================================== --}}
+    <div class="page-fade relative flex flex-col min-h-screen">
+
+                <main id="main" tabindex="-1" class="flex-grow pt-[4.6rem]">
                     @if (\App\Support\Preview::active(request()))
                         {{-- Staff preview of a page that may not be live yet --}}
-                        <div class="sticky top-14 z-[55] flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-navy px-5 py-2.5 text-white lg:top-0"
+                        <div class="preview-bar sticky z-[55] flex flex-wrap items-center justify-between gap-x-4 gap-y-2 bg-navy px-5 py-2.5 text-white"
                              style="box-shadow: inset 0 -2px 0 #00B4D8;">
                             <p class="flex flex-wrap items-center gap-x-3 gap-y-1">
                                 <span class="font-mono text-[11px] font-medium uppercase tracking-[0.22em] text-cyan">Preview mode</span>
@@ -363,8 +357,6 @@
                     </div>
                 </footer>
 
-            </div>
-        </div>
     </div>
 
     <x-cookie-consent />
@@ -392,28 +384,36 @@
     @endphp
     <div x-data="{ top: false }"
          @scroll.window.passive="top = window.scrollY > 400"
-         class="fixed bottom-5 right-4 z-40 flex flex-col items-center gap-3">
+         class="fixed bottom-5 right-4 z-40 flex flex-col items-end gap-3">
 
-        <a href="/contact-us" aria-label="Contact us" title="Contact us"
-           class="fab-navy h-12 w-12 rounded-full flex items-center justify-center hover:scale-110">
-            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+        {{-- Get a Quote: jumps to the contact form --}}
+        <a href="{{ route('contact') }}#contact-form" aria-label="Get a quote" class="fab-pill fab-link">
+            <span class="fab-label">Get a Quote</span>
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
+            </svg>
+        </a>
+
+        <a href="/contact-us" aria-label="Contact us" class="fab-pill fab-navy">
+            <span class="fab-label">Contact us</span>
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/>
             </svg>
         </a>
 
         <a href="{{ $wa ? 'https://wa.me/' . $wa : '/contact-us' }}" @if ($wa) target="_blank" rel="noopener" @endif
-           aria-label="Chat on WhatsApp" title="Chat on WhatsApp"
-           class="fab-green h-12 w-12 rounded-full flex items-center justify-center hover:scale-110">
-            <svg class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+           aria-label="Chat on WhatsApp" class="fab-pill fab-green">
+            <span class="fab-label">WhatsApp</span>
+            <svg class="fab-wa h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                 <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/>
             </svg>
         </a>
 
         <button type="button" x-cloak x-show="top" x-transition.opacity
                 @click="window.scrollTo({ top: 0, behavior: 'smooth' })"
-                aria-label="Back to top" title="Back to top"
-                class="fab-light h-12 w-12 rounded-full flex items-center justify-center hover:scale-110">
-            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                aria-label="Back to top" class="fab-pill fab-light">
+            <span class="fab-label">Back to top</span>
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 15.75 7.5-7.5 7.5 7.5"/>
             </svg>
         </button>

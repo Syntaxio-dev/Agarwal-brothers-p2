@@ -230,16 +230,29 @@ class DummyDataSeeder extends Seeder
         // =========================================================
         // CLIENTS
         // =========================================================
-        $clientNames = [
-            'Sun Pharma', 'Cipla', 'Dr. Reddy\'s', 'Biocon',
-            'Lupin', 'Zydus Lifesciences', 'CSIR', 'IIT Bombay',
-            'AIIMS', 'Serum Institute', 'Piramal Group', 'Glenmark',
+        $clientRows = [
+            ['Sun Pharma', 'pharma', 'Mumbai', 2008, 'HPLC, analytical balances'],
+            ['Cipla', 'pharma', 'Mumbai', 2010, 'Dissolution testers, balances'],
+            ['Dr. Reddy\'s', 'pharma', 'Hyderabad', 2012, 'HPLC, service contract'],
+            ['Biocon', 'pharma', 'Bengaluru', 2014, 'Bioprocess instruments'],
+            ['Lupin', 'pharma', 'Pune', 2011, 'Analytical instruments'],
+            ['Zydus Lifesciences', 'pharma', 'Ahmedabad', 2013, 'QC lab equipment'],
+            ['CSIR', 'government', 'New Delhi', 2005, 'Research instruments'],
+            ['IIT Bombay', 'academia', 'Mumbai', 2009, 'Teaching and research labs'],
+            ['AIIMS', 'healthcare', 'New Delhi', 2012, 'Clinical lab equipment'],
+            ['Serum Institute', 'pharma', 'Pune', 2015, 'Vaccine QC instruments'],
+            ['Piramal Group', 'industry', 'Mumbai', 2016, 'Process testing'],
+            ['Glenmark', 'pharma', 'Mumbai', 2010, 'Analytical balances'],
         ];
 
-        foreach ($clientNames as $i => $name) {
-            Client::firstOrCreate(
+        foreach ($clientRows as $i => [$name, $industry, $city, $since, $supplied]) {
+            Client::updateOrCreate(
                 ['name' => $name],
                 [
+                    'industry' => $industry,
+                    'city' => $city,
+                    'since_year' => $since,
+                    'supplied' => $supplied,
                     'sort_order' => $i + 1,
                     'is_active' => true,
                 ]

@@ -95,24 +95,6 @@
             @endforelse
         </div>
 
-        {{-- Search overlay --}}
-        <div class="absolute top-3 right-16 sm:right-20 z-20">
-            <a href="{{ route('search') }}"
-                class="relative h-10 sm:h-12 px-4 sm:px-6 min-w-[160px] sm:min-w-[220px]
-                       rounded-xl text-sm border-2 border-cyan shadow-md
-                       text-navy flex items-center gap-2 transition-all duration-300
-                       hover:ring-2 hover:ring-cyan hover:bg-white group bg-white/90">
-                <span class="absolute -top-2 -right-2 bg-cyan text-navy text-[10px] font-bold px-1.5 py-0.5 rounded-full animate-pulse shadow-lg">NEW</span>
-                <svg class="h-4 w-4 text-navy group-hover:scale-110 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                    <circle cx="11" cy="11" r="8"/>
-                    <path d="m21 21-4.3-4.3"/>
-                </svg>
-                <span class="text-navy font-medium group-hover:text-link transition-all">
-                    Search<span class="hidden sm:inline"> for Products</span>
-                </span>
-            </a>
-        </div>
-
         {{-- Carousel arrows --}}
         @if ($slides->count() > 1)
             <div class="absolute right-0 top-1/2 z-20 flex -translate-y-1/2 flex-col items-center gap-2 rounded-l-xl bg-ice p-2 shadow-md sm:gap-3 sm:p-3">
@@ -298,6 +280,10 @@
             </div>
         </div>
     </section>
+
+
+    {{-- ===== 2b. OUR CLIENTS: sector chips, logo grid, featured panel (sits right under Who we are) ===== --}}
+    @include('public.partials.clients-wall')
 
 
     {{-- ===== 3. OUR PRINCIPALS — Moving Brand Chain ===== --}}
@@ -764,114 +750,6 @@
                 <a href="{{ route('insights.news') }}" class="text-sm font-semibold text-link hover:text-navy transition">
                     View all news & events &rarr;
                 </a>
-            </div>
-
-        </div>
-    </section>
-    @endif
-
-
-    {{-- ===== 9. TRUSTED CLIENTS — one-at-a-time carousel ===== --}}
-    @if ($featuredClients->count())
-    <section class="py-12 sm:py-14">
-        <div class="w-[98%] mx-auto md:px-5 lg:px-20">
-
-            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-8">
-                <span class="section-badge">
-                    Our Clients
-                </span>
-                <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
-                    Trusted by <span class="text-cyan-ink">Industry Leaders</span>
-                </h2>
-                <p class="max-w-2xl text-sm text-slate">
-                    Laboratories and organisations that rely on us for instruments, service and support.
-                </p>
-            </div>
-
-            <div data-reveal x-data="{
-                    i: 0,
-                    n: {{ $featuredClients->count() }},
-                    elapsed: 0,
-                    paused: false,
-                    go(k) { this.i = (k + this.n) % this.n; this.elapsed = 0 },
-                    init() {
-                        setInterval(() => {
-                            if (this.paused || this.n < 2) return;
-                            this.elapsed += 100;
-                            if (this.elapsed >= 20000) this.go(this.i + 1);
-                        }, 100);
-                    }
-                 }"
-                 @mouseenter="paused = true" @mouseleave="paused = false"
-                 class="relative max-w-5xl mx-auto">
-
-                {{-- Prev / Next --}}
-                @if ($featuredClients->count() > 1)
-                    <button type="button" @click="go(i - 1)" aria-label="Previous client"
-                        class="absolute left-2 lg:-left-14 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full glass-icon
-                               flex items-center justify-center">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/>
-                        </svg>
-                    </button>
-                    <button type="button" @click="go(i + 1)" aria-label="Next client"
-                        class="absolute right-2 lg:-right-14 top-1/2 -translate-y-1/2 z-10 h-10 w-10 rounded-full glass-icon
-                               flex items-center justify-center">
-                        <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/>
-                        </svg>
-                    </button>
-                @endif
-
-                <div>
-
-                    {{-- Slides share one grid cell so the box never changes size --}}
-                    <div class="grid">
-                        @foreach ($featuredClients as $idx => $client)
-                            <div :class="i === {{ $idx }} ? 'opacity-100' : 'opacity-0 pointer-events-none'"
-                                 class="[grid-area:1/1] transition-opacity duration-500
-                                        flex flex-col sm:flex-row items-center gap-6 sm:gap-10
-                                        rounded-3xl bg-gradient-to-br from-ice to-cyan/10 border border-cyan/25 shadow-sm px-14 py-8 sm:px-16 sm:py-10 lg:px-10">
-
-                                <div class="h-36 w-36 sm:h-48 sm:w-48 shrink-0 rounded-3xl bg-white border-2 border-cyan/30 shadow-md
-                                            flex items-center justify-center p-6">
-                                    @if ($client->logo)
-                                        <img src="{{ asset('storage/' . $client->logo) }}" alt="{{ $client->name }}"
-                                            class="img-load max-h-full max-w-full object-contain" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($client->logo) !!} onload="this.classList.add('is-loaded')">
-                                    @else
-                                        <span class="text-3xl font-black text-navy/70">{{ strtoupper(mb_substr($client->name, 0, 2)) }}</span>
-                                    @endif
-                                </div>
-
-                                <div class="flex-1 w-full rounded-2xl bg-white border border-gray-100 shadow-sm px-6 py-6 sm:px-8 sm:py-8 text-center sm:text-left min-h-[12rem] sm:min-h-[12.5rem] flex flex-col justify-center">
-                                    <p class="text-[11px] font-bold uppercase tracking-widest text-cyan-ink">
-                                        Client {{ $idx + 1 }} / {{ $featuredClients->count() }}
-                                    </p>
-                                    <h3 class="mt-2 text-2xl sm:text-3xl font-bold text-navy leading-tight">{{ $client->name }}</h3>
-                                    @if ($client->testimonial)
-                                        <p class="mt-3 text-base sm:text-lg text-slate leading-relaxed">{{ $client->testimonial }}</p>
-                                    @endif
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-
-                    {{-- Dots + 20s progress --}}
-                    @if ($featuredClients->count() > 1)
-                        <div class="mt-6 flex flex-col items-center gap-3">
-                            <div class="flex items-center gap-2">
-                                @foreach ($featuredClients as $idx => $client)
-                                    <button type="button" @click="go({{ $idx }})" aria-label="Show client {{ $idx + 1 }}"
-                                        :class="i === {{ $idx }} ? 'w-6 bg-cyan' : 'w-2 bg-gray-300 hover:bg-cyan/50'"
-                                        class="h-2 rounded-full transition-all duration-300"></button>
-                                @endforeach
-                            </div>
-                            <div class="h-0.5 w-40 rounded-full bg-gray-100 overflow-hidden">
-                                <div class="h-full bg-cyan" :style="`width: ${Math.min(elapsed / 200, 100)}%`"></div>
-                            </div>
-                        </div>
-                    @endif
-                </div>
             </div>
 
         </div>

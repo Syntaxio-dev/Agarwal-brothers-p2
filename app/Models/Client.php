@@ -11,7 +11,7 @@ class Client extends Model
     use LogsActivity;
     use HasFactory;
 
-    protected $fillable = ['name', 'logo', 'testimonial', 'sort_order', 'is_active', 'is_featured'];
+    protected $fillable = ['name', 'logo', 'industry', 'city', 'since_year', 'supplied', 'testimonial', 'sort_order', 'is_active', 'is_featured'];
 
     protected $casts = [
         'is_active' => 'boolean',

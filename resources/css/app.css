@@ -23,6 +23,7 @@
 
 html {
     scroll-behavior: smooth;
+    scroll-padding-top: 5.5rem; /* so in-page anchors are not hidden behind the fixed top navbar */
 }
 
 body {
@@ -272,7 +273,7 @@ main:focus {
     }
     .edge-left:hover::before { transform: scaleY(1); }
 
-    /* Sidebar link: a short cyan edge grows on hover and stays on the page you are on */
+    /* Mobile-menu link: a short link-blue edge grows on hover and stays on the page you are on */
     .nav-link { position: relative; }
     .nav-link::before {
         content: '';
@@ -282,12 +283,43 @@ main:focus {
         bottom: 22%;
         width: 3px;
         border-radius: 2px;
-        background: #00B4D8;
+        background: #0077B6;
         transform: scaleY(0);
         transition: transform 0.25s ease;
     }
     .nav-link:hover::before,
-    .nav-link.bg-navy::before { transform: scaleY(1); }
+    .nav-link.is-active::before { transform: scaleY(1); }
+
+    /* Top navbar link: text turns link-blue and a same-colour underline slides in (no background).
+       Same on hover and on the current page (is-active); the Insights button also shows it while its menu is open. */
+    .nav-top {
+        position: relative;
+        border-radius: 0.5rem;
+        color: #0B2545;
+        transition: color 0.2s ease;
+    }
+    .nav-top::after {
+        content: '';
+        position: absolute;
+        left: 0.75rem;
+        right: 0.75rem;
+        bottom: 0.3rem;
+        height: 2px;
+        border-radius: 9999px;
+        background: currentColor;
+        transform: scaleX(0);
+        transform-origin: left center;
+        transition: transform 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .nav-top:hover,
+    .nav-top.is-active,
+    .nav-top[aria-expanded="true"] {
+        color: #0077B6;
+    }
+    .nav-top:hover::after,
+    .nav-top.is-active::after,
+    .nav-top[aria-expanded="true"]::after { transform: scaleX(1); }
+    .nav-top:focus-visible { outline: 2px solid #00B4D8; outline-offset: 2px; }
 
     /* Value card: a cyan edge grows along the top on hover */
     .value-card::before,
@@ -615,3 +647,176 @@ select[aria-invalid="true"] {
 .brand-marquee-track:focus-within {
     animation-play-state: paused;
 }
+
+/* ------------------------------------------------------------------
+   Navbar search: a search icon that grows into a capsule on hover / focus (tap on phones).
+   It is positioned over its 40px slot, so opening it never pushes other navbar items.
+------------------------------------------------------------------- */
+.nav-search {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    height: 2.5rem;
+    width: 2.5rem;
+    border: 1px solid transparent;
+    border-radius: 9999px;
+    background: transparent;
+    transition: width 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.nav-search-icon {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+    width: 2.375rem;
+    height: 2.375rem;
+    color: #0B2545;
+    cursor: pointer;
+}
+.nav-search-input {
+    flex: 1 1 0;
+    width: 0;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: #0B2545;
+    font-size: 0.875rem;
+    opacity: 0;
+    outline: none;
+    pointer-events: none;
+    transition: opacity 0.2s ease 0.08s;
+}
+.nav-search-input::placeholder { color: #6C757D; }
+.nav-search-go {
+    display: flex;
+    flex: none;
+    width: 0;
+    height: 2rem;
+    margin-right: 0;
+    overflow: hidden;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease 0.08s, margin 0.3s ease;
+}
+
+.nav-search:focus-within,
+.nav-search.is-open {
+    width: min(24rem, calc(100vw - 1rem));
+    border-color: #E5E7EB;
+    background: #F4F9FB;
+}
+.nav-search:focus-within {
+    border-color: #00B4D8;
+    background: #ffffff;
+    box-shadow: 0 0 0 2px rgb(0 180 216 / 0.2);
+}
+@media (hover: hover) {
+    .nav-search:hover {
+        width: min(24rem, calc(100vw - 1rem));
+        border-color: #E5E7EB;
+        background: #F4F9FB;
+    }
+    .nav-search:hover .nav-search-input,
+    .nav-search:hover .nav-search-go { opacity: 1; pointer-events: auto; }
+    .nav-search:hover .nav-search-go { width: 2rem; margin-right: 0.1875rem; }
+}
+.nav-search:focus-within .nav-search-input,
+.nav-search.is-open .nav-search-input,
+.nav-search:focus-within .nav-search-go,
+.nav-search.is-open .nav-search-go { opacity: 1; pointer-events: auto; }
+.nav-search:focus-within .nav-search-go,
+.nav-search.is-open .nav-search-go { width: 2rem; margin-right: 0.1875rem; }
+
+/* On laptop-size screens the opened capsule would cover the last links: they fade away while it is open (wide screens have room, so they stay) */
+.site-nav nav { transition: opacity 0.2s ease, visibility 0.2s ease; }
+@media (max-width: 1699px) {
+    .site-nav:has(.nav-search:focus-within) nav,
+    .site-nav:has(.nav-search.is-open) nav { opacity: 0; visibility: hidden; }
+}
+@media (max-width: 1699px) and (hover: hover) {
+    .site-nav:has(.nav-search:hover) nav { opacity: 0; visibility: hidden; }
+}
+
+/* phones: when it opens it takes the whole width of the navbar */
+@media (max-width: 767px) {
+    .nav-search:focus-within,
+    .nav-search.is-open {
+        position: fixed;
+        top: 1rem;
+        left: 0.5rem;
+        right: 0.5rem;
+        width: auto;
+        z-index: 60;
+        animation: nav-search-in 0.22s ease-out;
+    }
+}
+@keyframes nav-search-in { from { opacity: 0.4; transform: scaleX(0.94); } }
+@media (prefers-reduced-motion: reduce) {
+    .nav-search, .nav-search-input, .nav-search-go { transition: none; }
+    .nav-search:focus-within, .nav-search.is-open { animation: none; }
+}
+
+/* ------------------------------------------------------------------
+   Navbar squeeze on scroll (see resources/js/nav-compact.js)
+------------------------------------------------------------------- */
+:root { --nav-h: 4.5rem; }
+html.nav-compact { --nav-h: 3.5rem; }
+.site-nav-row { height: var(--nav-h); transition: height 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+.site-logo { transition: height 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+html.nav-compact .site-logo { height: 2rem; }
+.site-nav { transition: box-shadow 0.28s ease; }
+html.nav-compact .site-nav { box-shadow: 0 8px 22px -14px rgb(11 37 69 / 0.4); }
+.preview-bar { top: calc(var(--nav-h) + 0.05rem); transition: top 0.28s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
+@media (prefers-reduced-motion: reduce) {
+    .site-nav-row, .site-logo, .site-nav, .preview-bar { transition: none; }
+}
+
+/* ------------------------------------------------------------------
+   Floating action buttons: round icon that grows into a capsule with its name on hover / keyboard focus.
+   The stack is right-aligned, so each one grows to the left.
+------------------------------------------------------------------- */
+.fab-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+    height: 3rem;
+    border: 0;
+    border-radius: 9999px;
+    overflow: hidden;
+    white-space: nowrap;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 0 10px 22px -8px rgb(11 37 69 / 0.5);
+    transition: background-color 0.25s ease, box-shadow 0.25s ease;
+}
+.fab-pill > svg {
+    flex: none;
+    width: 3rem;
+    height: 3rem;
+    padding: 0.875rem;
+}
+.fab-pill > svg.fab-wa { padding: 0.75rem; }
+.fab-label {
+    max-width: 0;
+    padding-left: 0;
+    overflow: hidden;
+    opacity: 0;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: max-width 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), padding 0.3s ease, opacity 0.2s ease;
+}
+.fab-pill:focus-visible .fab-label { max-width: 12rem; padding-left: 1.1rem; opacity: 1; }
+@media (hover: hover) {
+    .fab-pill:hover .fab-label { max-width: 12rem; padding-left: 1.1rem; opacity: 1; }
+}
+.fab-pill:focus-visible { outline: 2px solid #00B4D8; outline-offset: 2px; }
+.fab-link { background-color: #0077B6; color: #ffffff; }
+.fab-link:hover { background-color: #0B2545; }
+@media (prefers-reduced-motion: reduce) {
+    .fab-pill, .fab-label { transition: none; }
+}
+

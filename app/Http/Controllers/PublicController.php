@@ -85,15 +85,12 @@ class PublicController extends Controller
                 ->get();
         }
 
-        $featuredClients = Client::where('is_active', true)
-            ->where('is_featured', true)
+        // the whole client wall: top clients first, then the admin's order
+        $clientWall = Client::where('is_active', true)
+            ->orderByDesc('is_featured')
             ->orderBy('sort_order')
-            ->limit(10)
+            ->orderBy('id')
             ->get();
-
-        if ($featuredClients->isEmpty()) {
-            $featuredClients = Client::where('is_active', true)->orderBy('sort_order')->limit(10)->get();
-        }
 
         $reviews = Review::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
 
@@ -121,7 +118,7 @@ class PublicController extends Controller
             'blogs',
             'news',
             'mapCountries',
-            'featuredClients',
+            'clientWall',
             'reviews',
         ));
     }

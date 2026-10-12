@@ -79,7 +79,7 @@
         <article class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-10 print:rounded-none print:border-0 print:p-0 print:shadow-none">
 
             <header class="flex items-center justify-between gap-4 border-b-2 border-cyan pb-5">
-                <img src="{{ asset('sidebar-logo.png') }}" alt="Agarwal Brothers" class="h-12 w-auto object-contain" {!! \App\Support\Img::publicAttrs('sidebar-logo.png') !!}>
+                <img src="{{ asset('images/new-logo.png') }}" alt="Agarwal Brothers" class="h-11 w-auto object-contain" {!! \App\Support\Img::publicAttrs('images/new-logo.png') !!}>
                 <p class="text-right font-mono text-[11px] font-medium uppercase leading-relaxed tracking-[0.2em] text-link">
                     Specification sheet<br><span class="text-slate">{{ now()->format('d M Y') }}</span>
                 </p>

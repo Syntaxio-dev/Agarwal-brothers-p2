@@ -24,6 +24,13 @@ class ClientsTable
                     ->searchable()
                     ->weight('medium')
                     ->description(fn ($record) => $record->testimonial),
+                TextColumn::make('industry')
+                    ->formatStateUsing(fn ($state) => config("industries.$state.label", $state))
+                    ->badge()
+                    ->color('info')
+                    ->toggleable(),
+                TextColumn::make('city')
+                    ->toggleable(),
                 ToggleColumn::make('is_featured')
                     ->label('Top client'),
                 ToggleColumn::make('is_active')
@@ -32,7 +39,7 @@ class ClientsTable
             ->reorderable('sort_order')
             ->defaultSort('sort_order')
             ->emptyStateHeading('No clients yet')
-            ->emptyStateDescription('Mark clients as "Top client" to show them in the homepage carousel. Drag rows to set the order.')
+            ->emptyStateDescription('Add the logo, industry and city. Top clients are listed first on the homepage. Drag rows to set the order.')
             ->recordActions([
                 EditAction::make(),
             ])

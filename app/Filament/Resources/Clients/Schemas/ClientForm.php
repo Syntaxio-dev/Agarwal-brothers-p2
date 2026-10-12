@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Clients\Schemas;
 
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -29,21 +30,37 @@ class ClientForm
                             ->disk('public')
                             ->visibility('public')
                             ->directory('clients'),
+                        Select::make('industry')
+                            ->label('Industry')
+                            ->options(fn () => collect(config('industries'))->map(fn ($i) => $i['label'])->all())
+                            ->helperText('Decides which "Industries we serve" group the client appears in.'),
+                        TextInput::make('city')
+                            ->maxLength(80)
+                            ->helperText('For example Jaipur or Mumbai.'),
+                        TextInput::make('since_year')
+                            ->label('Client since (year)')
+                            ->numeric()
+                            ->minValue(1950)
+                            ->maxValue((int) date('Y')),
+                        TextInput::make('supplied')
+                            ->label('What we supply them')
+                            ->maxLength(160)
+                            ->helperText('For example "HPLC, analytical balances, service contract".'),
                         Textarea::make('testimonial')
-                            ->label('Short note (shown on homepage)')
+                            ->label('Short note (shown in the client card)')
                             ->helperText('A line or two about the client, e.g. "Trusted partner for HPLC installation and AMC since 2012."')
                             ->maxLength(180)
                             ->rows(3)
                             ->columnSpanFull(),
                     ]),
 
-                Section::make('Homepage carousel')
+                Section::make('Homepage')
                     ->columnSpanFull()
                     ->columns(3)
                     ->schema([
                         Toggle::make('is_featured')
                             ->label('Top client')
-                            ->helperText('Shown one at a time in the homepage carousel (max 10). If none are marked, the first 10 active clients appear.')
+                            ->helperText('Top clients are listed first on the homepage.')
                             ->default(false),
                         Toggle::make('is_active')
                             ->label('Active')

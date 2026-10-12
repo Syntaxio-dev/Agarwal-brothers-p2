@@ -11,6 +11,7 @@ import './catalogue-filter';
 import './privacy';
 import './reveal';
 import './page-fade';
+import './nav-compact';
 
 // Ghost search — animated placeholder that cycles through search suggestions
 // Recent searches: kept only in this visitor's browser (30 days, removed by "Clear saved data" on the privacy page)

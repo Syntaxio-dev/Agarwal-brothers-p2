@@ -1,6 +1,6 @@
 {{-- Live suggestions dropdown. Goes inside a `relative` search form that uses x-data="ghostSearch()". --}}
 <div x-cloak x-show="open" x-transition.opacity.duration.150ms
-     class="absolute inset-x-0 top-full z-40 mt-2 overflow-hidden rounded-xl border border-gray-200 bg-white text-left shadow-[0_24px_48px_-20px_rgba(11,37,69,0.35)]"
+     {{ $attributes->merge(['class' => 'absolute inset-x-0 top-full z-40 mt-2 overflow-hidden rounded-xl border border-gray-200 bg-white text-left shadow-[0_24px_48px_-20px_rgba(11,37,69,0.35)]']) }}
      role="listbox">
 
     {{-- Loading edge --}}

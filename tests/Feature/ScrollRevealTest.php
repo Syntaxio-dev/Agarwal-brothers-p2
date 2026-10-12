@@ -274,8 +274,8 @@ class ScrollRevealTest extends TestCase
     {
         $html = $this->get('/')->assertOk()->getContent();
 
-        $this->assertSame(6, substr_count($html, 'nav-link block px-3'));              // six plain sidebar links
-        $this->assertStringContainsString('nav-link flex items-center', $html);         // the Insights button
+        $this->assertSame(6, substr_count($html, 'nav-link block px-3'));              // six plain links in the mobile drawer
+        $this->assertStringContainsString('nav-link flex items-center', $html);         // the Insights button in the drawer
         $footer = strstr($html, '<footer');
         $this->assertSame(5, substr_count($footer, 'data-reveal'));                     // four footer columns + the sales strip
         $this->assertStringContainsString('rounded-[2rem]', $footer);                    // a rounded floating card, not a full-width block
@@ -283,6 +283,31 @@ class ScrollRevealTest extends TestCase
 
         $css = file_get_contents(resource_path('css/app.css'));
         $this->assertStringContainsString('.nav-link::before', $css);
+    }
+
+    public function test_the_site_uses_a_top_navbar_not_a_left_sidebar(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        // a fixed top navbar is present, with the desktop links and a mobile hamburger
+        $this->assertStringContainsString('header class="site-nav fixed top-0', $html);
+        $this->assertStringContainsString('aria-controls="mobile-menu"', $html);          // hamburger
+        $this->assertStringContainsString('id="mobile-menu"', $html);                      // drawer
+
+        // the old sidebar is gone: content is full width (no 16% offset) and the body no longer tracks a sidebar
+        $this->assertStringNotContainsString('lg:ml-[16%]', $html);
+        $this->assertStringNotContainsString('sidebarOpen', $html);
+        $this->assertStringContainsString('flex-grow pt-[4.6rem]', $html);                    // content sits below the fixed navbar (one row at every width)
+
+        // the navbar is OUTSIDE the fading content wrapper, so it stays put while a page fades
+        $this->assertLessThan(strpos($html, 'page-fade'), strpos($html, 'site-nav'));
+
+        // in-page anchors are kept clear of the fixed navbar
+        $this->assertStringContainsString('scroll-padding-top', file_get_contents(resource_path('css/app.css')));
+
+        // the dependent floating pieces no longer carry the sidebar offset
+        $this->assertStringNotContainsString('lg:pl-[calc(16%+1rem)]', $html);
+        $this->assertStringNotContainsString('lg:left-[calc(16%+1.5rem)]', $html);
     }
 
     public function test_page_to_page_fade_is_wired_up_and_leaves_special_links_alone(): void
@@ -300,5 +325,69 @@ class ScrollRevealTest extends TestCase
         $css = file_get_contents(resource_path('css/app.css'));
         $this->assertStringContainsString('html.page-leaving .page-fade', $css);
         $this->assertMatchesRegularExpression('/@media \(prefers-reduced-motion: no-preference\) \{\s*\.page-fade/', $css);
+    }
+
+    public function test_navbar_has_the_cart_icon_the_search_capsule_and_the_new_logo(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+        $bar = strstr(strstr($html, '<header class="site-nav'), '</header>', true);
+
+        // new logo, not the old sidebar logo
+        $this->assertStringContainsString('images/new-logo.png', $bar);
+        $this->assertStringNotContainsString('sidebar-logo.png', $bar);
+        $drawer = strstr($html, 'id="mobile-menu"');
+        $this->assertStringContainsString('images/new-logo.png', substr($drawer, 0, 900));    // the mobile drawer header too
+
+        // search: an icon that grows into a capsule on hover/focus, with the ghost searches and live suggestions
+        $this->assertStringContainsString('x-data="ghostSearch()"', $bar);
+        $this->assertStringContainsString('class="nav-search"', $bar);
+        $this->assertStringContainsString('for="nav-search-input"', $bar);               // tapping the icon focuses the field (phones)
+        $css = file_get_contents(resource_path('css/app.css'));
+        $this->assertStringContainsString('.nav-search:hover', $css);
+        $this->assertStringContainsString('.nav-search:focus-within', $css);
+        $this->assertStringContainsString('role="listbox"', $bar);                        // live suggestions panel
+
+        // the enquiry icon is a cart and still appears only when the list has items
+        $this->assertStringContainsString('M2.25 3h1.386c.51 0 .955.343 1.087.835', $bar);
+        $this->assertMatchesRegularExpression('/<a href="[^"]*enquiry-list" x-cloak x-show="\$store\.enquiryList\.count" aria-label="Enquiry list"/', $bar);
+        $this->assertStringNotContainsString('M8.25 6.75h12M8.25 12h12m-12 5.25h12', $bar);   // the old list icon is gone
+
+        // navbar links: blue text + same-colour underline on hover / current page, no solid navy pill and no tinted background
+        $this->assertStringContainsString('nav-top whitespace-nowrap', $bar);
+        $this->assertStringNotContainsString('bg-navy text-white', $bar);
+        $this->assertStringNotContainsString('bg-link/10', $html);
+        $this->assertStringContainsString('.nav-top::after', $css);
+        $this->assertStringContainsString('.nav-top.is-active', $css);
+
+        // the floating search box on the home hero is gone (the navbar has the search now)
+        $this->assertStringNotContainsString('Search overlay', $html);
+        $this->assertStringNotContainsString('for Products', $html);
+    }
+
+    public function test_floating_buttons_are_capsules_with_a_get_a_quote_button_and_the_navbar_squeezes_on_scroll(): void
+    {
+        $html = $this->get('/')->assertOk()->getContent();
+
+        // four capsule buttons: Get a Quote, Contact us, WhatsApp, Back to top (each with its label)
+        $this->assertSame(4, substr_count($html, 'class="fab-pill'));
+        foreach (['Get a Quote', 'Contact us', 'WhatsApp', 'Back to top'] as $label) {
+            $this->assertStringContainsString('<span class="fab-label">' . $label . '</span>', $html);
+        }
+        // Get a Quote goes to the contact form
+        $this->assertStringContainsString(route('contact') . '#contact-form', $html);
+        // right-aligned stack so the capsules grow to the left
+        $this->assertStringContainsString('fixed bottom-5 right-4 z-40 flex flex-col items-end', $html);
+
+        $css = file_get_contents(resource_path('css/app.css'));
+        $this->assertStringContainsString('.fab-pill:hover .fab-label', $css);
+        $this->assertStringContainsString('html.nav-compact', $css);
+        $this->assertStringContainsString('--nav-h', $css);
+
+        // navbar squeeze script is loaded and only reacts to direction
+        $js = file_get_contents(resource_path('js/nav-compact.js'));
+        $this->assertStringContainsString("classList.add('nav-compact')", $js);
+        $this->assertStringContainsString("classList.remove('nav-compact')", $js);
+        $this->assertStringContainsString("import './nav-compact'", file_get_contents(resource_path('js/app.js')));
+        $this->assertStringContainsString('site-nav-row', $html);
     }
 }
