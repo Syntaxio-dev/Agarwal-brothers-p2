@@ -29,7 +29,22 @@ class SiteSettingForm
                             ->label('WhatsApp number')
                             ->tel()
                             ->placeholder('919876543210')
-                            ->helperText('With country code, digits only (e.g. 919876543210). Used by the floating WhatsApp button.'),
+                            ->helperText('With country code, digits only (e.g. 919876543210). Used by the floating WhatsApp button. Leave it empty to use the primary number (Mukesh Kumar Agarwal) from the website settings.'),
+                    ]),
+
+                Section::make('Our Clients: number tile')
+                    ->description('The big number next to the client logos on the home page. Leave empty to show the number of active clients automatically.')
+                    ->columnSpanFull()
+                    ->columns(2)
+                    ->schema([
+                        TextInput::make('clients_stat_number')
+                            ->label('Number')
+                            ->maxLength(20)
+                            ->placeholder('300+'),
+                        TextInput::make('clients_stat_label')
+                            ->label('Label')
+                            ->maxLength(40)
+                            ->placeholder('Active clients'),
                     ]),
 
                 Section::make('Page banners')
@@ -131,7 +146,7 @@ class SiteSettingForm
                             ->numeric()
                             ->minValue(1900)
                             ->maxValue((int) date('Y'))
-                            ->default(1981)
+                            ->default((int) config('company.founded'))
                             ->helperText('Years of experience are calculated from this automatically.'),
                         Textarea::make('story_intro')
                             ->label('About intro')

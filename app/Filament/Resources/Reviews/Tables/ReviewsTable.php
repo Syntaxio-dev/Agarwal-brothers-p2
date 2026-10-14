@@ -20,6 +20,7 @@ class ReviewsTable
                 TextColumn::make('content')->limit(60),
                 TextColumn::make('rating'),
                 TextColumn::make('sort_order')->sortable(),
+                ToggleColumn::make('is_featured')->label('Big quote'),
                 ToggleColumn::make('is_active')->label('Active'),
             ])
             ->defaultSort('sort_order')

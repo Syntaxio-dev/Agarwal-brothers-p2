@@ -53,7 +53,7 @@ class ScrollRevealTest extends TestCase
 
         // blogs and news are not one big block any more: rows, cover, cards and the links under them each reveal
         $template = file_get_contents(resource_path('views/public/home.blade.php'));
-        $this->assertGreaterThanOrEqual(25, substr_count($template, 'data-reveal'));
+        $this->assertGreaterThanOrEqual(20, substr_count($template, 'data-reveal'));   // the 3 Who-we-are capsules are one @foreach, so the source count is lower than the page count
         $this->assertStringContainsString('<button data-reveal="left"', $template);    // blog rows
         $this->assertStringContainsString('<div data-reveal="right" class="order-1 lg:order-2', $template);   // blog cover
     }

@@ -103,6 +103,9 @@
                             </svg>
                         </div>
                         <h3 class="mt-4 text-base font-bold text-navy">{{ $dept['title'] }}</h3>
+                        @if (! empty($dept['person']))
+                            <p class="mt-1 text-sm text-slate">{{ $dept['person'] }}</p>
+                        @endif
                         <a href="mailto:{{ $dept['email'] }}" class="mt-3 flex items-center justify-center gap-2 text-sm font-semibold text-navy hover:text-link transition">
                             <svg class="h-4 w-4 text-cyan-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0-8.4 5.25a1.5 1.5 0 0 1-1.6 0L2.25 6.75"/></svg>
                             {{ $dept['email'] }}
@@ -124,6 +127,9 @@
                     </div>
                     <h3 class="mt-4 text-base font-bold text-navy">{{ $c['head_office']['label'] }} - {{ $c['head_office']['city'] }}</h3>
                     <p class="mt-2 text-sm text-slate leading-relaxed">{{ $c['head_office']['address'] }}</p>
+                    @if (! empty($c['gstin']))
+                        <p class="mt-3 font-mono text-[11px] uppercase tracking-wider text-slate">GSTIN: <span class="text-navy">{{ $c['gstin'] }}</span></p>
+                    @endif
                 </div>
 
                 {{-- Branch --}}
@@ -148,7 +154,9 @@
                     </div>
                     <h3 class="mt-4 text-base font-bold text-navy">Reach Us</h3>
                     <a href="mailto:{{ $c['mail_24x7'] }}" class="mt-2 block text-sm font-semibold text-navy hover:text-link transition">{{ $c['mail_24x7'] }}</a>
-                    <a href="tel:{{ preg_replace('/\s+/', '', $c['call']) }}" class="mt-1 block text-sm font-semibold text-navy hover:text-link transition">{{ $c['call'] }}</a>
+                    @foreach ($c['departments'] as $dept)
+                        <a href="tel:{{ preg_replace('/\s+/', '', $dept['phone']) }}" class="mt-1 block text-sm font-semibold text-navy hover:text-link transition">{{ $dept['phone'] }}</a>
+                    @endforeach
                     <div class="mt-3 space-y-0.5 text-xs text-slate leading-relaxed">
                         @foreach ($c['working_days'] as $line)
                             <p>{{ $line }}</p>

@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Clients\Schemas;
 
+use App\Models\ClientCategory;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -30,10 +31,25 @@ class ClientForm
                             ->disk('public')
                             ->visibility('public')
                             ->directory('clients'),
-                        Select::make('industry')
-                            ->label('Industry')
-                            ->options(fn () => collect(config('industries'))->map(fn ($i) => $i['label'])->all())
-                            ->helperText('Decides which "Industries we serve" group the client appears in.'),
+                        Select::make('client_category_id')
+                            ->label('Category')
+                            ->relationship('category', 'name', modifyQueryUsing: fn ($query) => $query->orderBy('sort_order')->orderBy('name'))
+                            ->searchable()
+                            ->preload()
+                            ->placeholder('Search or pick a category')
+                            ->helperText('Type to search. Not in the list? Use the + button to add a new category right here.')
+                            ->createOptionForm([
+                                TextInput::make('name')
+                                    ->label('New category name')
+                                    ->required()
+                                    ->maxLength(80)
+                                    ->unique(table: 'client_categories', column: 'name'),
+                            ])
+                            ->createOptionUsing(fn (array $data) => ClientCategory::create([
+                                'name' => trim($data['name']),
+                                'sort_order' => (int) ClientCategory::max('sort_order') + 1,
+                                'is_active' => true,
+                            ])->getKey()),
                         TextInput::make('city')
                             ->maxLength(80)
                             ->helperText('For example Jaipur or Mumbai.'),

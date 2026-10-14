@@ -37,7 +37,7 @@ class HelpLinks
         }
 
         foreach ((array) config('contact.departments', []) as $dept) {
-            if (! empty($dept['phone'])) {
+            if (! empty($dept['phone']) && $dept['phone'] !== $call) {
                 $cards[] = ['title' => $dept['title'], 'phone' => $dept['phone'], 'email' => $dept['email'] ?? null];
             }
         }

@@ -19,5 +19,5 @@ return [
     ],
 
     // Where visitors send access / correction / deletion requests.
-    'contact_email' => env('PRIVACY_EMAIL', env('CONTACT_INBOX', 'info@agarwalbrothers.com')),
+    'contact_email' => env('PRIVACY_EMAIL', env('CONTACT_INBOX', 'office@agarwalbrothers.com')),
 ];

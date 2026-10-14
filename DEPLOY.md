@@ -127,7 +127,7 @@ Open the site and test, in this order:
 
 ## 11. When the client says "go live"
 
-- Replace the dummy data and the dummy phone numbers in `config/contact.php`, the WhatsApp number in Site Settings, social links, the Terms page and have the privacy text checked.
+- Replace the dummy data; the company email, phones, address and GSTIN in `config/contact.php` are already real (branch office and working hours are still placeholders); set the WhatsApp number in Site Settings, social links, the Terms page and have the privacy text checked.
 - Add the real domain in hPanel, set `APP_ENV=production` and `APP_URL=https://yourdomain.com`, then run `bash deploy.sh` again.
 - Change the admin password, keep a copy of the `.env` file somewhere safe (never in Git), and check that the nightly backup is created (admin → Backups).
 

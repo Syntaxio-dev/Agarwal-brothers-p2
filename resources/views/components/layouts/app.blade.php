@@ -242,6 +242,7 @@
                 @php
                     $fc = config('contact');
                     $fSales = $fc['departments'][0] ?? null;
+                    $fPhones = collect($fc['departments'])->filter(fn ($d) => ! empty($d['phone']))->values();
                     $fHeading = 'relative mb-6 pb-3 text-sm font-bold uppercase tracking-wider text-white after:absolute after:bottom-0 after:left-0 after:h-0.5 after:w-9 after:rounded-full after:bg-cyan';
                     $fLink = 'inline-block text-sm text-white/70 transition hover:translate-x-1 hover:text-cyan';
                     $fSocial = 'flex h-10 w-10 items-center justify-center rounded-full text-white ring-1 ring-white/25 transition hover:-translate-y-0.5 hover:bg-cyan hover:text-navy hover:ring-cyan';
@@ -261,7 +262,7 @@
                                             class="img-load h-14 w-auto brightness-0 invert object-contain" decoding="async" onload="this.classList.add('is-loaded')" {!! \App\Support\Img::publicAttrs('images/new-logo.png') !!}>
                                     </a>
                                     <p class="text-sm leading-7 text-white/70">
-                                        43+ years of excellence in laboratory equipment, scientific instruments and chemicals.
+                                        {{ \App\Support\Company::yearsShown() }}+ years of excellence in laboratory equipment, scientific instruments and chemicals.
                                         Serving pharma, biotech, diagnostics &amp; academia across India.
                                     </p>
                                     <p class="mt-6 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-cyan">Follow us</p>
@@ -272,10 +273,26 @@
                                         <a href="#" class="{{ $fSocial }}" aria-label="YouTube">
                                             <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M23.5 6.19a3.02 3.02 0 00-2.12-2.14C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.38.55A3.02 3.02 0 00.5 6.19 31.8 31.8 0 000 12a31.8 31.8 0 00.5 5.81 3.02 3.02 0 002.12 2.14c1.87.55 9.38.55 9.38.55s7.5 0 9.38-.55a3.02 3.02 0 002.12-2.14A31.8 31.8 0 0024 12a31.8 31.8 0 00-.5-5.81zM9.75 15.02V8.98L15.5 12l-5.75 3.02z"/></svg>
                                         </a>
-                                        <a href="#" class="{{ $fSocial }}" aria-label="WhatsApp">
+                                        <a href="{{ 'https://wa.me/' . preg_replace('/\D/', '', (string) (optional(\App\Models\SiteSetting::latest()->first())->whatsapp_number ?: config('contact.whatsapp'))) }}" target="_blank" rel="noopener noreferrer" class="{{ $fSocial }}" aria-label="WhatsApp">
                                             <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24"><path d="M17.47 14.38c-.3-.15-1.76-.87-2.03-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07a8.2 8.2 0 01-2.41-1.49 9.06 9.06 0 01-1.67-2.08c-.17-.3-.02-.46.13-.61.14-.14.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.08-.15-.67-1.62-.92-2.22-.24-.58-.49-.5-.67-.51h-.57a1.1 1.1 0 00-.8.37A3.33 3.33 0 006 9.39a5.78 5.78 0 001.21 3.07 13.26 13.26 0 005.08 4.49 17.4 17.4 0 001.7.62 4.07 4.07 0 001.88.12 3.08 3.08 0 002.02-1.42 2.5 2.5 0 00.17-1.42c-.07-.12-.27-.2-.57-.34zM12.05 21.5A9.44 9.44 0 016.9 19.9l-.34-.2-3.54.93.95-3.47-.22-.36a9.45 9.45 0 01-1.45-5.04 9.5 9.5 0 0116.2-6.72A9.44 9.44 0 0121.5 12a9.5 9.5 0 01-9.45 9.5zm0-21A11.5 11.5 0 003.73 3.73a11.5 11.5 0 00-2.2 13.48L.05 24l6.96-1.45a11.5 11.5 0 005.04 1.17h.01A11.5 11.5 0 0012.05.5z"/></svg>
                                         </a>
                                     </div>
+
+                                    {{-- Also on the Government e Marketplace. The logo is transparent with dark text, so (like the Agarwal logo above)
+                                         its lettering is drawn in white on the navy footer and only the star keeps its colours. The file has a lot of empty border and a tagline, which the box crops away. --}}
+                                    <p class="mt-6 font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-cyan">Also available on</p>
+                                    <a href="https://gem.gov.in" target="_blank" rel="noopener noreferrer"
+                                       aria-label="Available on GeM, Government e Marketplace (opens gem.gov.in in a new tab)"
+                                       style="width: fit-content;"
+                                       class="mt-3 block opacity-90 transition duration-300 hover:-translate-y-1 hover:opacity-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-cyan">
+                                        <span class="relative block overflow-hidden" style="width: 8rem; height: 4rem;">
+                                            {{-- the same file twice: the lettering (right 56%) in white, the star (left 44%) in its own colours --}}
+                                            <img src="{{ asset('images/gem-logo.png') }}" alt="GeM - Government e Marketplace" loading="lazy" decoding="async"
+                                                 style="position: absolute; left: -0.103rem; top: -1.32rem; width: 8.205rem; max-width: none; filter: brightness(0) invert(1); clip-path: inset(0 0 0 44%);">
+                                            <img src="{{ asset('images/gem-logo.png') }}" alt="" aria-hidden="true" loading="lazy" decoding="async"
+                                                 style="position: absolute; left: -0.103rem; top: -1.32rem; width: 8.205rem; max-width: none; clip-path: inset(0 56% 0 0);">
+                                        </span>
+                                    </a>
                                 </div>
 
                                 <div data-reveal class="lg:col-span-3">
@@ -314,7 +331,12 @@
                                         </li>
                                         <li class="flex items-start gap-3">
                                             <svg class="mt-0.5 h-5 w-5 shrink-0 text-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
-                                            <a href="tel:{{ preg_replace('/\s+/', '', $fc['call']) }}" class="text-sm text-white/70 transition hover:text-cyan">{{ $fc['call'] }}</a>
+                                            <div class="text-sm">
+                                                @foreach ($fPhones as $ph)
+                                                    <a href="tel:{{ preg_replace('/\s+/', '', $ph['phone']) }}" class="block text-white/70 transition hover:text-cyan">{{ $ph['phone'] }}</a>
+                                                    <span class="{{ $loop->last ? '' : 'mb-2 ' }}block text-xs text-white/45">{{ collect([$ph['person'] ?? null, $ph['title'] ?? null])->filter()->implode(' · ') }}</span>
+                                                @endforeach
+                                            </div>
                                         </li>
                                         <li class="flex items-start gap-3">
                                             <svg class="mt-0.5 h-5 w-5 shrink-0 text-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
@@ -327,18 +349,20 @@
 
                             </div>
 
-                            {{-- Sales enquiries strip --}}
+                            {{-- Enquiry strip: both phone numbers (primary first) and the office email --}}
                             @if ($fSales)
-                                <div data-reveal="fade" class="mt-12 flex flex-col gap-3 rounded-2xl bg-white/5 px-5 py-4 ring-1 ring-white/10 sm:flex-row sm:items-center sm:justify-between">
-                                    <p class="text-sm font-semibold text-white">{{ $fSales['title'] }}</p>
-                                    <div class="flex flex-col gap-2 sm:flex-row sm:items-center">
-                                        <a href="tel:{{ preg_replace('/\s+/', '', $fSales['phone']) }}" class="inline-flex items-center gap-2 rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan hover:text-navy">
-                                            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
-                                            {{ $fSales['phone'] }}
-                                        </a>
-                                        <a href="mailto:{{ $fSales['email'] }}" class="inline-flex items-center gap-2 break-all rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan hover:text-navy">
+                                <div data-reveal="fade" class="mt-12 flex flex-col gap-3 rounded-2xl bg-white/5 px-5 py-4 ring-1 ring-white/10 lg:flex-row lg:items-center lg:justify-between">
+                                    <p class="text-sm font-semibold text-white">Enquiries &amp; Sales</p>
+                                    <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
+                                        @foreach ($fPhones as $ph)
+                                            <a href="tel:{{ preg_replace('/\s+/', '', $ph['phone']) }}" class="inline-flex items-center gap-2 break-all rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan hover:text-navy">
+                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
+                                                {{ $ph['phone'] }}
+                                            </a>
+                                        @endforeach
+                                        <a href="mailto:{{ $fc['mail_24x7'] }}" class="inline-flex items-center gap-2 break-all rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan hover:text-navy">
                                             <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0-8.4 5.25a1.5 1.5 0 0 1-1.6 0L2.25 6.75"/></svg>
-                                            {{ $fSales['email'] }}
+                                            {{ $fc['mail_24x7'] }}
                                         </a>
                                     </div>
                                 </div>
@@ -346,7 +370,7 @@
 
                             {{-- Bottom bar --}}
                             <div class="mt-6 flex flex-col items-center justify-between gap-3 rounded-3xl bg-white/5 px-6 py-3.5 ring-1 ring-white/10 sm:flex-row sm:rounded-full">
-                                <p class="text-center text-xs text-white/60">&copy; {{ date('Y') }} Agarwal Brothers. All rights reserved.</p>
+                                <p class="text-center text-xs text-white/60">&copy; {{ date('Y') }} Agarwal Brothers. All rights reserved.@if (! empty($fc['gstin'])) <span class="whitespace-nowrap sm:ml-2">GSTIN: {{ $fc['gstin'] }}</span>@endif</p>
                                 <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
                                     <a href="{{ route('privacy') }}" class="text-xs text-white/60 transition hover:text-white">Privacy Policy</a>
                                     <button type="button" x-data @click="$store.consent.reopen()" class="text-xs text-white/60 transition hover:text-white">Cookie settings</button>
@@ -380,7 +404,7 @@
 
     {{-- Floating action buttons --}}
     @php
-        $wa = preg_replace('/\D/', '', (string) optional(\App\Models\SiteSetting::latest()->first())->whatsapp_number);
+        $wa = preg_replace('/\D/', '', (string) (optional(\App\Models\SiteSetting::latest()->first())->whatsapp_number ?: config('contact.whatsapp')));
     @endphp
     <div x-data="{ top: false }"
          @scroll.window.passive="top = window.scrollY > 400"
@@ -401,7 +425,7 @@
             </svg>
         </a>
 
-        <a href="{{ $wa ? 'https://wa.me/' . $wa : '/contact-us' }}" @if ($wa) target="_blank" rel="noopener" @endif
+        <a href="{{ $wa ? 'https://wa.me/' . $wa . '?text=' . rawurlencode('Hello Agarwal Brothers, I would like to make an enquiry.') : '/contact-us' }}" @if ($wa) target="_blank" rel="noopener" @endif
            aria-label="Chat on WhatsApp" class="fab-pill fab-green">
             <span class="fab-label">WhatsApp</span>
             <svg class="fab-wa h-6 w-6" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">

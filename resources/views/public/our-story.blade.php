@@ -1,13 +1,15 @@
 @php
     $img = fn (?string $field) => ($s && $s->{$field}) ? asset('storage/' . $s->{$field}) : null;
-    $founded = $s?->founded_year ?: 1981;
+    $founded = \App\Support\Company::foundedYear();
+    $brandsPlus = \App\Support\Company::plus('brands');
+    $customersPlus = \App\Support\Company::plus('customers');
 
     $intro = $s?->story_intro ?: "Agarwal Brothers has been a trusted name in laboratory equipment, scientific instruments and chemicals since {$founded}. From a single office in Jaipur, we have grown into one of Rajasthan's most respected scientific solutions providers.";
 
     $points = collect($s?->story_points ?? [])->pluck('text')->filter()->values();
     if ($points->isEmpty()) {
         $points = collect([
-            'Authorised partner of 50+ global brands',
+            'Authorised partner of {$brandsPlus} global brands',
             'Installation, calibration and AMC support',
             'Trained application specialists',
             'Fast, reliable service across Rajasthan',
@@ -27,7 +29,7 @@
         [(string) $founded, 'The Beginning', 'Founded in Jaipur, Rajasthan, with a vision to bring world-class scientific instruments to Indian laboratories. Started as a small trading firm supplying lab chemicals and basic equipment.'],
         ['1990s', 'Expanding Horizons', 'Established partnerships with leading global instrument manufacturers and expanded the portfolio to analytical instruments, centrifuges, balances and chromatography systems.'],
         ['2000s', "Serving India's Pharma Boom", "As India's pharmaceutical industry grew, so did our reach. We became a preferred supplier to major pharma companies, CROs and academic institutions across Rajasthan and beyond."],
-        ['Today', "{$years}+ Years Strong", 'Today Agarwal Brothers represents 50+ global brands and serves 36,000+ customers, continuing our commitment to equipping India\'s labs with the finest scientific solutions.'],
+        ['Today', "{$years}+ Years Strong", "Today Agarwal Brothers represents {$brandsPlus} brands from across the world and serves {$customersPlus} customers all over India, continuing our commitment to equipping India\'s labs with the finest scientific solutions."],
     ];
 
     $values = [
@@ -35,14 +37,14 @@
         ['Customer Partnership', 'We do not just sell instruments. We partner with your lab, understand your application and recommend the right solution.', 'M18 18.72a9.094 9.094 0 0 0 3.741-.479 3 3 0 0 0-4.682-2.72m.94 3.198.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0 1 12 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 0 1 6 18.719m12 0a5.971 5.971 0 0 0-.941-3.197m0 0A5.995 5.995 0 0 0 12 12.75a5.995 5.995 0 0 0-5.058 2.772m0 0a3 3 0 0 0-4.681 2.72 8.986 8.986 0 0 0 3.74.477m.94-3.197a5.971 5.971 0 0 0-.94 3.197M15 6.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm6 3a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Zm-13.5 0a2.25 2.25 0 1 1-4.5 0 2.25 2.25 0 0 1 4.5 0Z'],
         ['After-Sales Support', 'Installation, calibration, AMCs and rapid spares support. We stand behind every instrument we sell.', 'M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l5.654-4.654m5.65-5.65 3.029 2.497c.379.312.62.74.757 1.209m-5.786-3.706L5.18 6.748a2.25 2.25 0 0 1 2.12-3.763l6.33 1.53'],
         ['Technical Expertise', 'Our team includes trained application specialists who understand your science, not just the instruments.', 'M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18'],
-        ['Pan-India Reach', 'With 12+ branches across India, we bring the same level of expertise and service to labs wherever they are.', 'M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 0 1 15 0Z'],
+        ['Pan-India Reach', 'With customers all over India, we bring the same level of expertise and service to labs wherever they are.', 'M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0ZM19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 0 1 15 0Z'],
         ['Training & Demos', 'We conduct demonstrations, user training and application workshops so your team gets the most from their investment.', 'M4.26 10.147a60.438 60.438 0 0 0-.491 6.347A48.627 48.627 0 0 1 12 20.904a48.627 48.627 0 0 1 8.232-4.41 60.46 60.46 0 0 0-.491-6.347m-15.482 0a50.57 50.57 0 0 0-2.658-.813A59.906 59.906 0 0 1 12 3.493a59.903 59.903 0 0 1 10.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0 1 12 13.489a50.702 50.702 0 0 1 7.74-3.342'],
     ];
 
     $banner = $img('story_banner');
 @endphp
 
-<x-layouts.app title="Our Story" description="Agarwal Brothers has supplied laboratory equipment, scientific instruments and chemicals from Jaipur since 1981. Read our story, values and leadership.">
+<x-layouts.app title="Our Story" :description="'Agarwal Brothers has supplied laboratory equipment, scientific instruments and chemicals from Jaipur since ' . $founded . '. Read our story, values and leadership.'">
   <div class="relative overflow-hidden">
     <div class="pointer-events-none absolute inset-x-0 top-0 h-[640px]
                 bg-[radial-gradient(900px_420px_at_50%_-8%,rgba(0,180,216,0.16),transparent_70%),radial-gradient(700px_380px_at_6%_16%,rgba(0,119,182,0.08),transparent_70%),radial-gradient(700px_380px_at_96%_22%,rgba(0,180,216,0.10),transparent_70%),linear-gradient(to_bottom,rgba(244,249,251,1),rgba(255,255,255,0))]"></div>

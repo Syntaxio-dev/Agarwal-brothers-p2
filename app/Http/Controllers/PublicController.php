@@ -8,6 +8,7 @@ use App\Mail\NewEnquiry;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Client;
+use App\Models\ClientCategory;
 use App\Models\Country;
 use App\Models\Enquiry;
 use App\Models\Insight;
@@ -87,12 +88,30 @@ class PublicController extends Controller
 
         // the whole client wall: top clients first, then the admin's order
         $clientWall = Client::where('is_active', true)
+            ->with('category')
             ->orderByDesc('is_featured')
             ->orderBy('sort_order')
             ->orderBy('id')
             ->get();
 
+        // the rotating category list under the client number: active categories that have active clients
+        $categoryWheel = ClientCategory::where('is_active', true)
+            ->withCount(['clients' => fn ($q) => $q->where('is_active', true)])
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->get()
+            ->filter(fn ($c) => $c->clients_count > 0)
+            ->map(fn ($c) => ['label' => $c->name, 'count' => $c->clients_count])
+            ->values();
+
         $reviews = Review::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
+
+        // the big quote card in the Our Clients section: featured reviews, else the first review
+        $featuredReviews = $reviews->where('is_featured', true)->values();
+        if ($featuredReviews->isEmpty()) {
+            $featuredReviews = $reviews->take(1)->values();
+        }
+        $siteSetting = SiteSetting::current();
 
         $mapCountries = Country::whereHas('brands', fn ($q) => $q->where('is_active', true))
             ->with(['brands' => fn ($q) => $q->where('is_active', true)->orderBy('name')])
@@ -119,6 +138,9 @@ class PublicController extends Controller
             'news',
             'mapCountries',
             'clientWall',
+            'categoryWheel',
+            'featuredReviews',
+            'siteSetting',
             'reviews',
         ));
     }
@@ -333,7 +355,7 @@ class PublicController extends Controller
 
         return view('public.our-story', [
             's' => $settings,
-            'years' => max(1, now()->year - ($settings?->founded_year ?: 1981)),
+            'years' => \App\Support\Company::yearsShown(),
             'leaders' => TeamMember::where('is_active', true)->where('is_leader', true)->orderBy('sort_order')->orderBy('id')->get(),
             'team' => TeamMember::where('is_active', true)->where('is_leader', false)->orderBy('sort_order')->orderBy('id')->get(),
             'reviews' => Review::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get(),

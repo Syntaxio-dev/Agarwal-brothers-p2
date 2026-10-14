@@ -11,7 +11,11 @@ class Seo
 
     public const DEFAULT_TITLE = 'Laboratory Equipment Supplier in India';
 
-    public const DEFAULT_DESCRIPTION = 'Agarwal Brothers: 43+ years supplying laboratory equipment, analytical instruments and chemicals to labs across India. Partner of 50+ global brands.';
+    /** Default meta description; the years come from the company facts so they never go stale. */
+    public static function defaultDescription(): string
+    {
+        return 'Agarwal Brothers: ' . Company::yearsShown() . '+ years supplying laboratory equipment, analytical instruments and chemicals to labs across India. Partner of ' . Company::plus('brands') . ' global brands.';
+    }
 
     /** "{Page name} | Agarwal Brothers", keeping the page part a sensible length. */
     public static function title(?string $page): string
@@ -35,7 +39,7 @@ class Seo
         $clean = trim(preg_replace('/\s+/u', ' ', strip_tags(html_entity_decode((string) $text, ENT_QUOTES | ENT_HTML5, 'UTF-8'))));
 
         if ($clean === '') {
-            $clean = $fallback ?? self::DEFAULT_DESCRIPTION;
+            $clean = $fallback ?? self::defaultDescription();
         }
 
         if (mb_strlen($clean) <= 160) {

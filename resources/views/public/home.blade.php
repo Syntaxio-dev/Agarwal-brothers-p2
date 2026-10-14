@@ -6,18 +6,23 @@
         'name' => 'Agarwal Brothers',
         'url' => \App\Support\Seo::absolute('/'),
         'logo' => \App\Support\Seo::absolute('sidebar-logo.png'),
-        'description' => $siteSeo?->seo_description ?: \App\Support\Seo::DEFAULT_DESCRIPTION,
-        'foundingDate' => (string) ($siteSeo?->founded_year ?: 1981),
+        'description' => $siteSeo?->seo_description ?: \App\Support\Seo::defaultDescription(),
+        'foundingDate' => (string) \App\Support\Company::foundedYear(),
+        'email' => config('contact.mail_24x7'),
+        'telephone' => config('contact.call'),
+        'taxID' => config('contact.gstin'),
         'address' => [
             '@type' => 'PostalAddress',
+            'streetAddress' => config('contact.head_office.street'),
             'addressLocality' => config('contact.head_office.city'),
+            'postalCode' => config('contact.head_office.postal_code'),
             'addressRegion' => 'Rajasthan',
             'addressCountry' => 'IN',
         ],
     ]);
 @endphp
 <x-layouts.app :title="$siteSeo?->seo_title ?: \App\Support\Seo::DEFAULT_TITLE"
-               :description="$siteSeo?->seo_description ?: \App\Support\Seo::DEFAULT_DESCRIPTION"
+               :description="$siteSeo?->seo_description ?: \App\Support\Seo::defaultDescription()"
                :image="$siteSeo?->default_og_image ? \App\Support\Seo::storage($siteSeo->default_og_image) : null"
                :schema="$orgSchema">
 
@@ -115,13 +120,26 @@
 
 
     {{-- ===== 2. WHO WE ARE ===== --}}
+    @php
+        $companyYears = \App\Support\Company::yearsShown();   // 33 years shows as 30+
+        $foundedYear = \App\Support\Company::foundedYear();
+        // three equal capsules: key, number, label, line of text, icon (24x24 outline path)
+        $capsules = [
+            ['customers', config('company.customers'), 'Customers', 'All over India, from small labs to large plants.',
+             'M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z'],
+            ['industries', config('company.industries'), 'Industry categories', 'Everyone from pharma and dairy to mining and power.',
+             'M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12m-.75 4.5H21'],
+            ['brands', config('company.brands'), 'Brands', 'Global leaders across the world, under one roof.',
+             'M12.75 3.03v.568c0 .334.148.65.405.864l1.068.89c.442.369.535 1.01.216 1.49l-.51.766a2.25 2.25 0 0 1-1.161.886l-.143.048a1.107 1.107 0 0 0-.57 1.664c.369.555.169 1.307-.427 1.605L9 13.125l.423 1.059a.956.956 0 0 1-1.652.928l-.679-.906a1.125 1.125 0 0 0-1.906.172L4.5 15.75l-.612.153M12.75 3.031a9 9 0 0 1 6.69 14.036m0 0-.177-.529A2.25 2.25 0 0 0 17.128 15H16.5l-.324-.324a1.453 1.453 0 0 0-2.328.377l-.036.073a1.586 1.586 0 0 1-.982.816l-.99.282c-.55.157-.894.702-.8 1.267l.073.438c.08.474.49.821.97.821.846 0 1.598.542 1.865 1.345l.215.643m-3.414 1.768A9.004 9.004 0 0 1 3.75 12c0-1.26.26-2.46.727-3.55'],
+        ];
+    @endphp
     <section x-data="{
         started: false,
-        c: { customers: 0, brands: 0, awards: 0, branches: 0 },
+        c: { customers: 0, industries: 0, brands: 0 },
         startCounting() {
             if (this.started) return;
             this.started = true;
-            const targets = { customers: 36500, brands: 50, awards: 10, branches: 12 };
+            const targets = @js(collect($capsules)->mapWithKeys(fn ($cap) => [$cap[0] => $cap[1]])->all());
             const duration = 2000;
             const start = performance.now();
             const animate = (now) => {
@@ -150,7 +168,7 @@
 
         <div class="flex flex-col md:flex-row items-center justify-center gap-8 lg:gap-12">
 
-            {{-- Left: 43+ Years of Excellence --}}
+            {{-- Left: years of excellence (worked out from the founding year) --}}
             <div data-reveal="left" class="flex flex-col items-center justify-center w-full md:w-[42%] text-center">
                 <p class="text-xs sm:text-sm uppercase tracking-[0.25em] font-semibold text-slate mb-1">Celebrating</p>
 
@@ -159,7 +177,7 @@
                                  text-transparent bg-clip-text
                                  bg-gradient-to-br from-cyan via-link to-navy
                                  drop-shadow-sm select-none">
-                        43
+                        {{ $companyYears }}
                     </span>
                     <span class="absolute -right-4 top-4 sm:-right-5 sm:top-5 text-cyan-ink text-3xl sm:text-4xl font-black">+</span>
                 </div>
@@ -169,7 +187,7 @@
 
                 <div class="mt-4 inline-flex items-center gap-2 px-5 py-1.5 rounded-full border-2 border-cyan/60">
                     <div class="h-1.5 w-1.5 rounded-full bg-cyan"></div>
-                    <span class="text-xs sm:text-sm font-bold text-navy tracking-[0.2em]">SINCE 1981</span>
+                    <span class="text-xs sm:text-sm font-bold text-navy tracking-[0.2em]">SINCE {{ $foundedYear }}</span>
                     <div class="h-1.5 w-1.5 rounded-full bg-cyan"></div>
                 </div>
 
@@ -189,101 +207,41 @@
             </div>
 
             {{-- Vertical divider --}}
-            <div data-reveal="fade" class="hidden md:flex flex-col items-center justify-between h-[400px] mx-2 relative">
+            <div data-reveal="fade" class="hidden md:flex flex-col items-center justify-between h-[296px] mx-2 relative">
                 <div class="absolute w-[3px] bg-gradient-to-b from-cyan via-link to-navy h-full left-1/2 -translate-x-1/2 rounded-full z-0"></div>
                 <div class="w-4 h-4 rounded-full border-[3px] border-white z-10 shadow-md bg-cyan"></div>
-                <div class="w-4 h-4 rounded-full border-[3px] border-white z-10 shadow-md bg-link"></div>
                 <div class="w-4 h-4 rounded-full border-[3px] border-white z-10 shadow-md bg-link"></div>
                 <div class="w-4 h-4 rounded-full border-[3px] border-white z-10 shadow-md bg-navy"></div>
             </div>
 
-            {{-- Right: 4 stat capsules with hardcoded SVGs --}}
-            <div class="flex flex-col gap-5 w-full md:w-[42%]">
-
-                {{-- Customers --}}
-                <div data-reveal="right" class="relative flex items-center bg-white/90 rounded-full p-1.5 pr-5
-                            hover:scale-[1.02] transition-all duration-300 group border border-gray-100 shadow-sm hover:shadow-md">
-                    <div class="w-14 h-14 flex items-center justify-center rounded-full text-white ml-1 mr-4 shadow-md
-                                bg-gradient-to-br from-navy to-link group-hover:from-link group-hover:to-cyan transition-all shrink-0">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 0 0 2.625.372 9.337 9.337 0 0 0 4.121-.952 4.125 4.125 0 0 0-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 0 1 8.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0 1 11.964-3.07M12 6.375a3.375 3.375 0 1 1-6.75 0 3.375 3.375 0 0 1 6.75 0Zm8.25 2.25a2.625 2.625 0 1 1-5.25 0 2.625 2.625 0 0 1 5.25 0Z"/>
-                        </svg>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-1">
-                            <span class="text-2xl font-bold text-navy" x-text="c.customers.toLocaleString()"></span>
-                            <span class="text-cyan-ink font-bold text-lg">+</span>
+            {{-- Right: three equal capsules (same height as the divider on desktop: 3 x 5.5rem + 2 gaps = 296px) --}}
+            <div class="flex w-full flex-col gap-3 md:w-[42%] md:gap-4">
+                @foreach ($capsules as [$key, $target, $label, $text, $icon])
+                    <div data-reveal="right" class="group relative flex items-center rounded-full border border-gray-100 bg-white/90 p-1.5 pr-5 shadow-sm
+                                transition-all duration-300 hover:scale-[1.02] hover:shadow-md min-h-[5.5rem] md:h-[5.5rem]">
+                        <div class="mr-3 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-navy to-link text-white shadow-md
+                                    transition-all group-hover:from-link group-hover:to-cyan md:mr-4 md:h-[4.5rem] md:w-[4.5rem]">
+                            <svg class="h-5 w-5 md:h-7 md:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $icon }}"/>
+                            </svg>
                         </div>
-                        <h3 class="uppercase text-sm text-link tracking-wider font-semibold">Customers</h3>
-                        <p class="text-xs text-navy/50 leading-tight mt-0.5 hidden sm:block">Serving pharma, biotech, diagnostics & academia.</p>
-                    </div>
-                </div>
-
-                {{-- Brands --}}
-                <div data-reveal="right" class="relative flex items-center bg-white/90 rounded-full p-1.5 pr-5
-                            hover:scale-[1.02] transition-all duration-300 group border border-gray-100 shadow-sm hover:shadow-md">
-                    <div class="w-14 h-14 flex items-center justify-center rounded-full text-white ml-1 mr-4 shadow-md
-                                bg-gradient-to-br from-navy to-link group-hover:from-link group-hover:to-cyan transition-all shrink-0">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M12.75 3.03v.568c0 .334.148.65.405.864l1.068.89c.442.369.535 1.01.216 1.49l-.51.766a2.25 2.25 0 0 1-1.161.886l-.143.048a1.107 1.107 0 0 0-.57 1.664c.369.555.169 1.307-.427 1.605L9 13.125l.423 1.059a.956.956 0 0 1-1.652.928l-.679-.906a1.125 1.125 0 0 0-1.906.172L4.5 15.75l-.612.153M12.75 3.031a9 9 0 0 1 6.69 14.036m0 0-.177-.529A2.25 2.25 0 0 0 17.128 15H16.5l-.324-.324a1.453 1.453 0 0 0-2.328.377l-.036.073a1.586 1.586 0 0 1-.982.816l-.99.282c-.55.157-.894.702-.8 1.267l.073.438c.08.474.49.821.97.821.846 0 1.598.542 1.865 1.345l.215.643m-3.414 1.768A9.004 9.004 0 0 1 3.75 12c0-1.26.26-2.46.727-3.55"/>
-                        </svg>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-1">
-                            <span class="text-2xl font-bold text-navy" x-text="c.brands.toLocaleString()"></span>
-                            <span class="text-cyan-ink font-bold text-lg">+</span>
+                        <div class="min-w-0 flex-1">
+                            <div class="flex items-baseline gap-1">
+                                <span class="text-2xl font-bold leading-none text-navy md:text-3xl" x-text="c.{{ $key }}">0</span>
+                                <span class="text-lg font-bold text-cyan-ink md:text-xl">+</span>
+                            </div>
+                            <h3 class="mt-0.5 text-xs font-semibold uppercase tracking-wider text-link md:text-[13px]">{{ $label }}</h3>
+                            <p class="mt-0.5 text-xs leading-snug text-navy/60">{{ $text }}</p>
                         </div>
-                        <h3 class="uppercase text-sm text-link tracking-wider font-semibold">Brands</h3>
-                        <p class="text-xs text-navy/50 leading-tight mt-0.5 hidden sm:block">Global leaders across instruments & automation.</p>
                     </div>
-                </div>
-
-                {{-- Awards --}}
-                <div data-reveal="right" class="relative flex items-center bg-white/90 rounded-full p-1.5 pr-5
-                            hover:scale-[1.02] transition-all duration-300 group border border-gray-100 shadow-sm hover:shadow-md">
-                    <div class="w-14 h-14 flex items-center justify-center rounded-full text-white ml-1 mr-4 shadow-md
-                                bg-gradient-to-br from-navy to-link group-hover:from-link group-hover:to-cyan transition-all shrink-0">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 18.75h-9m9 0a3 3 0 0 1 3 3h-15a3 3 0 0 1 3-3m9 0v-3.375c0-.621-.503-1.125-1.125-1.125h-.871M7.5 18.75v-3.375c0-.621.504-1.125 1.125-1.125h.872m5.007 0H9.497m5.007 0a7.454 7.454 0 0 1-.982-3.172M9.497 14.25a7.454 7.454 0 0 0 .982-3.172M2.25 18.75a60.07 60.07 0 0 1 15.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 0 1 3 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 0 0-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 0 1-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 0 0 3 15h-.75M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Zm3 0h.008v.008H18V10.5Zm-12 0h.008v.008H6V10.5Z"/>
-                        </svg>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-1">
-                            <span class="text-2xl font-bold text-navy" x-text="c.awards.toLocaleString()"></span>
-                            <span class="text-cyan-ink font-bold text-lg">+</span>
-                        </div>
-                        <h3 class="uppercase text-sm text-link tracking-wider font-semibold">Awards</h3>
-                        <p class="text-xs text-navy/50 leading-tight mt-0.5 hidden sm:block">Recognized for excellence in performance.</p>
-                    </div>
-                </div>
-
-                {{-- Branches --}}
-                <div data-reveal="right" class="relative flex items-center bg-white/90 rounded-full p-1.5 pr-5
-                            hover:scale-[1.02] transition-all duration-300 group border border-gray-100 shadow-sm hover:shadow-md">
-                    <div class="w-14 h-14 flex items-center justify-center rounded-full text-white ml-1 mr-4 shadow-md
-                                bg-gradient-to-br from-navy to-link group-hover:from-link group-hover:to-cyan transition-all shrink-0">
-                        <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 10.5a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 10.5c0 7.142-7.5 11.25-7.5 11.25S4.5 17.642 4.5 10.5a7.5 7.5 0 1 1 15 0Z"/>
-                        </svg>
-                    </div>
-                    <div class="flex-1 min-w-0">
-                        <div class="flex items-center gap-1">
-                            <span class="text-2xl font-bold text-navy" x-text="c.branches.toLocaleString()"></span>
-                            <span class="text-cyan-ink font-bold text-lg">+</span>
-                        </div>
-                        <h3 class="uppercase text-sm text-link tracking-wider font-semibold">Branches</h3>
-                        <p class="text-xs text-navy/50 leading-tight mt-0.5 hidden sm:block">Pan-India reach ensuring fast, localized support.</p>
-                    </div>
-                </div>
-
+                @endforeach
             </div>
         </div>
     </section>
 
 
-    {{-- ===== 2b. OUR CLIENTS: sector chips, logo grid, featured panel (sits right under Who we are) ===== --}}
-    @include('public.partials.clients-wall')
+    {{-- ===== 2b. OUR CLIENTS: bento (quote card, number tile, rotating logos), right under Who we are ===== --}}
+    @include('public.partials.clients-bento')
 
 
     {{-- ===== 3. OUR PRINCIPALS — Moving Brand Chain ===== --}}
@@ -538,8 +496,8 @@
     @endif
 
 
-    {{-- ===== 6. GLOBAL BRANDS MAP ===== --}}
-    @if ($mapCountries->count())
+    {{-- ===== 6. GLOBAL BRANDS MAP: switched off for now (client does not need it yet). To bring it back, change `false` to `$mapCountries->count()` below. ===== --}}
+    @if (false)
     <section class="bg-ice py-12 sm:py-14">
         <div class="w-[98%] mx-auto md:px-5">
 

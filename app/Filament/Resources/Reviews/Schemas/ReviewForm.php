@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Reviews\Schemas;
 
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -21,6 +22,17 @@ class ReviewForm
                         TextInput::make('name')->required(),
                         TextInput::make('designation')->placeholder('e.g. QC Manager'),
                         TextInput::make('organization')->placeholder('e.g. Sun Pharmaceuticals'),
+                        FileUpload::make('avatar')
+                            ->label('Photo (optional)')
+                            ->helperText('Small square photo for the quote card. Without it the first letter of the name is shown.')
+                            ->image()
+                            ->avatar()
+                            ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
+                            ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))
+                            ->maxSize(\App\Filament\Support\Uploads::IMAGE_MAX_KB)
+                            ->disk('public')
+                            ->visibility('public')
+                            ->directory('reviews'),
                     ]),
 
                 Section::make('Review')
@@ -46,6 +58,10 @@ class ReviewForm
                         Toggle::make('is_active')
                             ->label('Active (show on homepage)')
                             ->default(true),
+                        Toggle::make('is_featured')
+                            ->label('Show in the big quote card (Our Clients)')
+                            ->helperText('The navy card next to the client logos. If you switch on more than one, they take turns every 10 seconds. If none, the first active review is used.')
+                            ->default(false),
                     ]),
             ]);
     }

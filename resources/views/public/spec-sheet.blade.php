@@ -28,7 +28,7 @@
             }
         }
     }
-    $plain->push('', 'Agarwal Brothers | ' . $c['call'] . ' | ' . $c['mail_24x7'], $productUrl);
+    $plain->push('', 'Agarwal Brothers | ' . $c['call'] . ' / ' . $c['call_secondary'] . ' | ' . $c['mail_24x7'], $productUrl);
     $plainText = $plain->implode("\n");
 
     $btn = 'inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold';
@@ -149,7 +149,7 @@
             <footer class="mt-10 break-inside-avoid rounded-2xl border border-cyan/25 bg-ice p-5 text-sm print:border-gray-200">
                 <p class="font-semibold text-navy">Agarwal Brothers</p>
                 <p class="mt-1 text-slate">{{ $c['head_office']['address'] }}</p>
-                <p class="mt-1 text-slate">{{ $c['call'] }} &middot; {{ $c['mail_24x7'] }}</p>
+                <p class="mt-1 text-slate">{{ $c['call'] }} / {{ $c['call_secondary'] }} &middot; {{ $c['mail_24x7'] }}@if (! empty($c['gstin'])) &middot; GSTIN {{ $c['gstin'] }}@endif</p>
                 <p class="mt-3 break-all font-mono text-xs text-link">{{ $productUrl }}</p>
                 <p class="mt-3 text-xs text-slate">Specifications are indicative; please confirm with our team before ordering.</p>
             </footer>

@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Client;
+use App\Models\ClientCategory;
 use App\Models\Insight;
 use App\Models\Product;
 use App\Models\Slide;
@@ -230,26 +231,32 @@ class DummyDataSeeder extends Seeder
         // =========================================================
         // CLIENTS
         // =========================================================
+        // the categories come from the migration that loads the owner's list; make sure they exist (fresh seed on an empty DB)
+        $categories = [];
+        foreach (require database_path('data/client_categories.php') as $i => $categoryName) {
+            $categories[$categoryName] = ClientCategory::firstOrCreate(['name' => $categoryName], ['sort_order' => $i + 1, 'is_active' => true]);
+        }
+
         $clientRows = [
-            ['Sun Pharma', 'pharma', 'Mumbai', 2008, 'HPLC, analytical balances'],
-            ['Cipla', 'pharma', 'Mumbai', 2010, 'Dissolution testers, balances'],
-            ['Dr. Reddy\'s', 'pharma', 'Hyderabad', 2012, 'HPLC, service contract'],
-            ['Biocon', 'pharma', 'Bengaluru', 2014, 'Bioprocess instruments'],
-            ['Lupin', 'pharma', 'Pune', 2011, 'Analytical instruments'],
-            ['Zydus Lifesciences', 'pharma', 'Ahmedabad', 2013, 'QC lab equipment'],
-            ['CSIR', 'government', 'New Delhi', 2005, 'Research instruments'],
-            ['IIT Bombay', 'academia', 'Mumbai', 2009, 'Teaching and research labs'],
-            ['AIIMS', 'healthcare', 'New Delhi', 2012, 'Clinical lab equipment'],
-            ['Serum Institute', 'pharma', 'Pune', 2015, 'Vaccine QC instruments'],
-            ['Piramal Group', 'industry', 'Mumbai', 2016, 'Process testing'],
-            ['Glenmark', 'pharma', 'Mumbai', 2010, 'Analytical balances'],
+            ['Sun Pharma', 'Bulk Drug/API & Formulation', 'Mumbai', 2008, 'HPLC, analytical balances'],
+            ['Cipla', 'Bulk Drug/API & Formulation', 'Mumbai', 2010, 'Dissolution testers, balances'],
+            ['Dr. Reddy\'s', 'Bulk Drug/API & Formulation', 'Hyderabad', 2012, 'HPLC, service contract'],
+            ['Biocon', 'Biotechnology & Biosimilars', 'Bengaluru', 2014, 'Bioprocess instruments'],
+            ['Lupin', 'Bulk Drug/API & Formulation', 'Pune', 2011, 'Analytical instruments'],
+            ['Zydus Lifesciences', 'Bulk Drug/API & Formulation', 'Ahmedabad', 2013, 'QC lab equipment'],
+            ['CSIR', 'Research Institutes', 'New Delhi', 2005, 'Research instruments'],
+            ['IIT Bombay', 'Universities/Colleges/Schools', 'Mumbai', 2009, 'Teaching and research labs'],
+            ['AIIMS', 'Hospitals & Clinics', 'New Delhi', 2012, 'Clinical lab equipment'],
+            ['Serum Institute', 'Biotechnology & Biosimilars', 'Pune', 2015, 'Vaccine QC instruments'],
+            ['Piramal Group', 'Chemicals & Petrochemicals', 'Mumbai', 2016, 'Process testing'],
+            ['Glenmark', 'Bulk Drug/API & Formulation', 'Mumbai', 2010, 'Analytical balances'],
         ];
 
-        foreach ($clientRows as $i => [$name, $industry, $city, $since, $supplied]) {
+        foreach ($clientRows as $i => [$name, $categoryName, $city, $since, $supplied]) {
             Client::updateOrCreate(
                 ['name' => $name],
                 [
-                    'industry' => $industry,
+                    'client_category_id' => $categories[$categoryName]->id,
                     'city' => $city,
                     'since_year' => $since,
                     'supplied' => $supplied,
