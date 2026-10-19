@@ -35,7 +35,7 @@ class ClientShowcaseTest extends TestCase
         $this->assertStringContainsString('340+', $html);                  // the fixed company number, not the 7 client rows
         $this->assertStringNotContainsString('>7+<', $html);
         $this->assertStringContainsString('Active clients', $html);
-        $this->assertStringContainsString('+3 more clients', $html);       // 7 clients, 4 on show
+        $this->assertStringNotContainsString(' more client', $html);       // the '+N more clients' strip was removed
         $this->assertStringContainsString('aria-label="Lab 1', $html);
         $this->assertStringNotContainsString('Hidden Lab', $html);
         // 7 clients = 2 pages of 4 logos that take turns

@@ -9,7 +9,7 @@
     $points = collect($s?->story_points ?? [])->pluck('text')->filter()->values();
     if ($points->isEmpty()) {
         $points = collect([
-            'Authorised partner of {$brandsPlus} global brands',
+            "Authorised partner of {$brandsPlus} global brands",
             'Installation, calibration and AMC support',
             'Trained application specialists',
             'Fast, reliable service across Rajasthan',
@@ -99,7 +99,7 @@
                 <div data-reveal>
                     <span class="section-badge">Company About</span>
                     <h2 class="mt-4 text-2xl sm:text-4xl font-bold text-navy leading-tight">
-                        Four decades of powering <span class="text-cyan-ink">India's laboratories</span>
+                        {{ $years }}+ years of powering <span class="text-cyan-ink">India's laboratories</span>
                     </h2>
                     <p class="mt-5 text-base text-slate leading-relaxed">{{ $intro }}</p>
                 </div>

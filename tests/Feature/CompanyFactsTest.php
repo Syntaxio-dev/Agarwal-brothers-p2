@@ -61,4 +61,24 @@ class CompanyFactsTest extends TestCase
         $this->assertStringContainsString('1000+ customers all over India', $html);
         $this->assertStringContainsString(Company::yearsShown() . '+ Years Strong', $html);
     }
+
+    public function test_our_story_shows_real_numbers_not_template_variables(): void
+    {
+        $html = $this->get('/our-story')->assertOk()->getContent();
+
+        $this->assertStringContainsString('Authorised partner of 50+ global brands', $html);   // was shown as {$brandsPlus}
+        $this->assertStringContainsString(Company::yearsShown() . '+ years of powering', $html);
+        $this->assertStringNotContainsString('Four decades', $html);                           // 1993 is three decades ago
+    }
+
+    public function test_no_public_page_shows_a_raw_php_variable(): void
+    {
+        foreach (['/', '/our-story', '/contact-us', '/verticals', '/insights/blogs', '/insights/news', '/insights/webinars',
+                  '/application-resources', '/careers', '/privacy-policy', '/search', '/compare', '/enquiry-list'] as $url) {
+            $html = $this->get($url)->getContent();
+            // a variable that was put in a single-quoted PHP string shows up as text like {$name} or {{ $name }}
+            $this->assertDoesNotMatchRegularExpression('/\{\$[A-Za-z_]+/', strip_tags(preg_replace('/<script.*?<\/script>/s', '', $html)), "raw variable on {$url}");
+            $this->assertStringNotContainsString('{{ $', preg_replace('/<script.*?<\/script>/s', '', $html), "raw blade on {$url}");
+        }
+    }
 }

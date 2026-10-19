@@ -40,17 +40,56 @@
             </div>
 
             @if ($opening)
+                {{-- Applying for: a dropdown. This job is selected; picking another open position opens that job's form, picking one of
+                     our general roles opens the general form with that role already chosen. (The form below always belongs to the
+                     selected job, so its role-specific questions never get mixed up with another role.) --}}
+                @php $otherOpenings = \App\Models\JobOpening::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get(); @endphp
                 <div>
-                    <label class="{{ $label }}">Applying for</label>
-                    <div class="flex h-11 items-center rounded-lg border border-gray-200 bg-ice px-4 text-sm font-medium text-navy">
-                        {{ $opening->title }}
-                    </div>
+                    <label class="{{ $label }}" for="applying_for">Applying for</label>
+                    <select id="applying_for" @change="window.location.href = $el.value" class="{{ $input }}">
+                        <optgroup label="Open positions">
+                            @foreach ($otherOpenings as $job)
+                                <option value="{{ route('careers.show', $job->slug) }}" @selected($job->id === $opening->id)>{{ $job->title }}</option>
+                            @endforeach
+                            @unless ($otherOpenings->contains('id', $opening->id))
+                                <option value="" selected>{{ $opening->title }}</option>
+                            @endunless
+                        </optgroup>
+                        @foreach (config('careers.roles') as $department => $roles)
+                            <optgroup label="{{ $department }}">
+                                @foreach ($roles as $role)
+                                    <option value="{{ route('careers') }}?role={{ urlencode($role) }}#apply">{{ $role }}</option>
+                                @endforeach
+                            </optgroup>
+                        @endforeach
+                    </select>
                 </div>
             @else
-                <div>
+                {{-- Position: a dropdown of the roles we hire for (grouped by department); "Other" lets the visitor type their own --}}
+                @php $chosenRole = (string) old('position', request('role', '')); @endphp
+                <div x-data="{ role: @js($chosenRole) }"
+                     x-init="$nextTick(() => { const o = $refs.role.selectedOptions[0]; const dep = document.getElementById('department'); if (o && o.dataset.dept && dep && ! dep.value) dep.value = o.dataset.dept; })">
                     <label class="{{ $label }}" for="position">Position *</label>
-                    <input id="position" name="position" type="text" value="{{ old('position') }}" placeholder="Role you are interested in" class="{{ $input }}" required data-rule="required" data-label="Position" @input="clean($el)" @blur="check($el)">
+                    <select id="position" name="position" x-ref="role" x-model="role" required data-rule="required" data-label="Position"
+                            @change="const d = $el.selectedOptions[0] ? $el.selectedOptions[0].dataset.dept : ''; const dep = document.getElementById('department'); if (d && dep && ! dep.dataset.touched) { dep.value = d; clean(dep); } clean($el); check($el)"
+                            class="{{ $input }}">
+                        <option value="">Select your role</option>
+                        @foreach (config('careers.roles') as $department => $roles)
+                            <optgroup label="{{ $department }}">
+                                @foreach ($roles as $role)
+                                    <option value="{{ $role }}" data-dept="{{ $department }}" @selected($chosenRole === $role)>{{ $role }}</option>
+                                @endforeach
+                            </optgroup>
+                        @endforeach
+                        <option value="{{ config('careers.other') }}" @selected($chosenRole === config('careers.other'))>Other (type your own role)</option>
+                    </select>
                     <x-form.error name="position" />
+
+                    <div x-show="role === @js(config('careers.other'))" x-cloak class="mt-3">
+                        <label class="{{ $label }}" for="position_other">Your role *</label>
+                        <input id="position_other" name="position_other" type="text" value="{{ old('position_other') }}" maxlength="100" placeholder="e.g. Chemist, Driver, Sales Manager" class="{{ $input }}">
+                        <x-form.error name="position_other" />
+                    </div>
                 </div>
                 <div>
                     <label class="{{ $label }}" for="preferred_location">Preferred Location *</label>
@@ -59,7 +98,7 @@
                 </div>
                 <div>
                     <label class="{{ $label }}" for="department">Department *</label>
-                    <input id="department" name="department" type="text" value="{{ old('department') }}" placeholder="e.g. Sales, Service, Marketing" class="{{ $input }}" required data-rule="required" data-label="Department" @input="clean($el)" @blur="check($el)">
+                    <input id="department" name="department" type="text" value="{{ old('department') }}" placeholder="e.g. Sales, Service, Marketing" class="{{ $input }}" required data-rule="required" data-label="Department" @input="$el.dataset.touched = 1; clean($el)" @blur="check($el)">
                     <x-form.error name="department" />
                 </div>
             @endif

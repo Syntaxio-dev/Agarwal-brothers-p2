@@ -82,18 +82,25 @@ class CareerController extends Controller
 
     public function applyGeneral(Request $request): RedirectResponse
     {
+        $other = config('careers.other');
+        $roles = collect(config('careers.roles'))->flatten()->all();
+
         $data = $this->check($request, $this->baseRules() + [
-            'position' => ['required', 'string', 'max:255'],
+            'position' => ['required', 'string', 'max:255', Rule::in([...$roles, $other])],
+            'position_other' => ['nullable', 'required_if:position,' . $other, 'string', 'max:100'],
             'preferred_location' => ['required', 'string', 'max:255'],
             'department' => ['required', 'string', 'max:255'],
         ]);
+
+        // "Other": store the role the visitor typed
+        $position = $data['position'] === $other ? trim((string) $data['position_other']) : $data['position'];
 
         $this->store($request, [
             'job_opening_id' => null,
             'name' => $data['name'],
             'email' => $data['email'],
             'phone' => $data['phone'],
-            'position' => $data['position'],
+            'position' => $position,
             'preferred_location' => $data['preferred_location'],
             'department' => $data['department'],
             'message' => $data['message'] ?? null,

@@ -62,7 +62,7 @@ class ClientListTest extends TestCase
         $html = $this->get('/')->assertOk()->getContent();
 
         $this->assertStringContainsString('The labs that rely', $html);
-        $this->assertMatchesRegularExpression('/\+46 more clients/i', $html);           // 50 clients, 4 on show
+        $this->assertStringNotContainsString(' more client', $html);           // the '+N more clients' strip was removed
         $this->assertStringContainsString('Dairy &amp; Dairy Products', $html);          // wheel category
         $this->assertStringContainsString('Research Institutes', $html);
         $this->assertStringNotContainsString('Empty Category', $html);

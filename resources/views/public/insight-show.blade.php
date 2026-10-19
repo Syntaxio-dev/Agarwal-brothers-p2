@@ -187,9 +187,7 @@
                 @endif
 
                 {{-- Body --}}
-                @if (filled($insight->content))
-                    <div data-reveal class="rich-text mt-10">{!! \Illuminate\Support\Str::sanitizeHtml((string) $insight->content) !!}</div>
-                @endif
+                @include('public.partials.article-parts', ['insight' => $insight])
 
                 {{-- Share --}}
                 <div data-reveal class="mt-12 flex flex-wrap items-center gap-3 border-t border-gray-200 pt-6"

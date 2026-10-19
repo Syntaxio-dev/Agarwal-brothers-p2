@@ -1,11 +1,11 @@
 @php
     $c = config('contact');
     $input = 'h-11 w-full rounded-full border border-gray-200 bg-white px-5 text-sm text-navy placeholder:text-slate outline-none focus:border-cyan focus:ring-2 focus:ring-cyan/20 transition';
-    $card = 'edge-top group relative overflow-hidden w-full sm:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.84rem)] rounded-2xl bg-white border border-gray-100 shadow-sm p-6 text-center hover:shadow-lg hover:border-cyan/40 hover:-translate-y-1 transition-all duration-300';
+    $card = 'edge-top group relative overflow-hidden w-full min-w-0 sm:w-[calc(50%-0.625rem)] lg:w-[calc(25%-0.9375rem)] lg:px-3 xl:px-6 rounded-2xl bg-white border border-gray-100 shadow-sm p-6 text-center hover:shadow-lg hover:border-cyan/40 hover:-translate-y-1 transition-all duration-300';
     $icon = 'pop-icon mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-navy text-white shadow-md transition-all duration-300 group-hover:bg-link group-hover:scale-110';
 @endphp
 
-<x-layouts.app title="Contact Us" description="Contact Agarwal Brothers in Jaipur and Jodhpur for laboratory equipment quotes, service and technical support. Send an enquiry and our team will respond.">
+<x-layouts.app title="Contact Us" description="Contact Agarwal Brothers in Jaipur for laboratory equipment quotes, service and technical support. Send an enquiry and our team will respond.">
   <div class="relative overflow-hidden">
     <div class="pointer-events-none absolute inset-x-0 top-0 h-[620px]
                 bg-[radial-gradient(900px_420px_at_50%_-8%,rgba(0,180,216,0.20),transparent_70%),radial-gradient(700px_380px_at_8%_12%,rgba(0,119,182,0.10),transparent_70%),radial-gradient(700px_380px_at_95%_18%,rgba(0,180,216,0.12),transparent_70%),linear-gradient(to_bottom,rgba(244,249,251,1),rgba(255,255,255,0))]"></div>
@@ -49,8 +49,14 @@
                 @php
                     $pins = [
                         ['city' => $c['head_office']['city'], 'tag' => $c['head_office']['label'], 'x' => 71.72, 'y' => 46.04, 'main' => true],
-                        ['city' => 'Jodhpur', 'tag' => 'Branch Office', 'x' => 40.28, 'y' => 55.48, 'main' => false],
                     ];
+                    foreach ($c['branches'] as $branch) {
+                        if (isset($branch['map']['x'], $branch['map']['y'])) {
+                            $pins[] = ['city' => $branch['city'], 'tag' => $branch['label'], 'x' => $branch['map']['x'], 'y' => $branch['map']['y'], 'main' => false];
+                        }
+                    }
+                    $officeCities = collect([$c['head_office']['city']])->merge(collect($c['branches'])->pluck('city'))->filter()->values();
+                    $officeCitiesText = $officeCities->count() > 1 ? $officeCities->slice(0, -1)->implode(', ') . ' and ' . $officeCities->last() : $officeCities->first();
                 @endphp
 
                 @foreach ($pins as $pin)
@@ -73,7 +79,7 @@
             <div data-reveal="right" class="order-3 text-center lg:text-right">
                 <h2 class="text-2xl sm:text-3xl font-bold text-cyan-ink leading-tight">Closer Than You Think</h2>
                 <p class="mt-3 text-base sm:text-lg text-navy leading-relaxed">
-                    Tap into our local teams in {{ $c['head_office']['city'] }} and Jodhpur for expert consultation and service tailored to your region.
+                    Tap into our local {{ $officeCities->count() > 1 ? 'teams' : 'team' }} in {{ $officeCitiesText }} for expert consultation and service tailored to your region.
                 </p>
             </div>
         </div>
@@ -106,8 +112,8 @@
                         @if (! empty($dept['person']))
                             <p class="mt-1 text-sm text-slate">{{ $dept['person'] }}</p>
                         @endif
-                        <a href="mailto:{{ $dept['email'] }}" class="mt-3 flex items-center justify-center gap-2 text-sm font-semibold text-navy hover:text-link transition">
-                            <svg class="h-4 w-4 text-cyan-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0-8.4 5.25a1.5 1.5 0 0 1-1.6 0L2.25 6.75"/></svg>
+                        <a href="mailto:{{ $dept['email'] }}" class="mt-3 flex items-center justify-center gap-2 text-sm font-semibold text-navy transition hover:text-link lg:text-[13px] xl:text-sm">
+                            <svg class="hidden h-4 w-4 text-cyan-ink xl:block" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0-8.4 5.25a1.5 1.5 0 0 1-1.6 0L2.25 6.75"/></svg>
                             {{ $dept['email'] }}
                         </a>
                         <a href="tel:{{ preg_replace('/\s+/', '', $dept['phone']) }}" class="mt-1.5 flex items-center justify-center gap-2 text-sm font-semibold text-navy hover:text-link transition">
@@ -145,21 +151,17 @@
                     </div>
                 @endforeach
 
-                {{-- Reach us --}}
+                {{-- Office timings: only the days, the hours and the festive-off note --}}
                 <div data-reveal class="{{ $card }}">
                     <div class="{{ $icon }}">
-                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/>
+                        <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
                         </svg>
                     </div>
-                    <h3 class="mt-4 text-base font-bold text-navy">Reach Us</h3>
-                    <a href="mailto:{{ $c['mail_24x7'] }}" class="mt-2 block text-sm font-semibold text-navy hover:text-link transition">{{ $c['mail_24x7'] }}</a>
-                    @foreach ($c['departments'] as $dept)
-                        <a href="tel:{{ preg_replace('/\s+/', '', $dept['phone']) }}" class="mt-1 block text-sm font-semibold text-navy hover:text-link transition">{{ $dept['phone'] }}</a>
-                    @endforeach
-                    <div class="mt-3 space-y-0.5 text-xs text-slate leading-relaxed">
+                    <h3 class="mt-4 text-base font-bold text-navy">Office Timings</h3>
+                    <div class="mt-2 space-y-1 text-sm leading-relaxed">
                         @foreach ($c['working_days'] as $line)
-                            <p>{{ $line }}</p>
+                            <p class="{{ $loop->first ? 'font-semibold text-navy' : 'text-slate' }}">{{ $line }}</p>
                         @endforeach
                     </div>
                 </div>

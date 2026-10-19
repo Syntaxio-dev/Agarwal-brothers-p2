@@ -43,7 +43,6 @@ class ContactDetailsTest extends TestCase
         foreach (['00000', 'sales@agarwalbrothers.com', 'service@agarwalbrothers.com', 'info@agarwalbrothers.com'] as $old) {
             $this->assertStringNotContainsString($old, $html, $old);
         }
-        $this->assertStringContainsString('Jodhpur', $html);      // the branch is kept as it was
     }
 
     public function test_footer_shows_both_numbers_primary_first_and_the_gstin(): void
@@ -89,5 +88,38 @@ class ContactDetailsTest extends TestCase
         $phones = array_column(HelpLinks::contacts(), 'phone');
 
         $this->assertSame(['+91 98290 15024', '+91 93529 35901'], $phones);
+    }
+
+    public function test_the_contact_page_has_four_cards_no_branch_and_the_new_office_timings(): void
+    {
+        $html = $this->get('/contact-us')->assertOk()->getContent();
+
+        // exactly four cards: Founder, Enquiries & Sales, Head Office, Office Timings
+        preg_match_all('/<h3 class="mt-4 text-base font-bold text-navy">([^<]+)<\/h3>/', $html, $m);
+        $this->assertSame(['Founder', 'Enquiries & Sales', 'Head Office - Jaipur', 'Office Timings'], array_map('html_entity_decode', $m[1]));
+
+        // the Jodhpur branch is gone everywhere on the page (card, map pin, texts)
+        $this->assertStringNotContainsString('Jodhpur', $html);
+        $this->assertStringNotContainsString('Branch Office', $html);
+        $this->assertStringNotContainsString('Plot No. 00', $html);
+        $this->assertStringContainsString('Tap into our local team in Jaipur', $html);
+
+        // the timings card says only what the owner asked for
+        $this->assertStringContainsString('Monday to Saturday: 10:00 am - 7:00 pm', $html);
+        $this->assertStringContainsString('Closed on festive holidays', $html);
+        $this->assertStringNotContainsString('09:30 am', $html);
+        $this->assertStringNotContainsString('Holiday</p>', $html);
+
+        // four across on desktop, two on tablets, one on phones
+        $this->assertStringContainsString('lg:w-[calc(25%-0.9375rem)]', $html);
+        $this->assertStringContainsString('lg:px-3 xl:px-6', $html);                // a bit tighter between 1024 and 1279px so the email fits
+        $this->assertStringContainsString('sm:w-[calc(50%-0.625rem)]', $html);
+    }
+
+    public function test_the_hours_in_emails_and_on_error_pages_use_the_new_office_timings(): void
+    {
+        $this->assertSame('Monday to Saturday: 10:00 am - 7:00 pm', \App\Support\HelpLinks::hours());
+        $this->assertSame('Monday to Saturday: 10:00 am - 7:00 pm', config('contact.working_days.0'));
+        $this->assertSame([], config('contact.branches'));
     }
 }

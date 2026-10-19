@@ -139,7 +139,8 @@
                 </span>
             </div>
 
-            @include('public.partials.application-form', ['action' => route('careers.apply.general')])
+            {{-- 'opening' => null on purpose: the list above loops with a variable called $opening, which would otherwise leak into this form and turn it into a job form --}}
+            @include('public.partials.application-form', ['action' => route('careers.apply.general'), 'opening' => null])
         </div>
     </div>
   </div>

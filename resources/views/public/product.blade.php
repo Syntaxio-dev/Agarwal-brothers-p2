@@ -53,7 +53,19 @@
                 bg-[radial-gradient(900px_380px_at_50%_-8%,rgba(0,180,216,0.14),transparent_70%),linear-gradient(to_bottom,rgba(244,249,251,1),rgba(255,255,255,0))]"></div>
 
     <div class="relative w-[98%] mx-auto px-4 md:px-10 lg:px-16 py-10 sm:py-14"
-         x-data="{ lightbox: false, i: 0, imgs: @js($images) }" @keydown.escape.window="lightbox = false">
+         x-data="{
+             lightbox: false, i: 0, imgs: @js($images), sx: 0,
+             go(n) {
+                 if (this.imgs.length < 2) return;
+                 this.i = (n + this.imgs.length) % this.imgs.length;
+                 const next = new Image(); next.src = this.imgs[(this.i + 1) % this.imgs.length];   // the next photo is ready before it is needed
+             },
+             prev() { this.go(this.i - 1); },
+             next() { this.go(this.i + 1); },
+             swipe(x) { const d = x - this.sx; if (Math.abs(d) > 40) { d < 0 ? this.next() : this.prev(); } },
+         }"
+         @keydown.escape.window="lightbox = false"
+         @keydown.arrow-left.window="lightbox && prev()" @keydown.arrow-right.window="lightbox && next()">
 
         {{-- Remember this product for the "Recently viewed" card --}}
         <span class="hidden" x-init="$store.recent.add(@js([
@@ -70,13 +82,50 @@
 
         {{-- ===== Hero banner ===== --}}
         <div class="grid grid-cols-1 items-center gap-8 overflow-hidden rounded-3xl border border-cyan/20 bg-gradient-to-br from-ice via-white to-cyan/10 p-6 shadow-sm sm:p-10 lg:grid-cols-5 lg:gap-12">
-            <div data-reveal="left" class="flex h-64 items-center justify-center rounded-2xl bg-white/80 p-5 shadow-inner sm:h-80 lg:col-span-2">
-                @if ($images->count())
-                    <img src="{{ $images[0] }}" alt="{{ $product->name }}" class="img-load max-h-full max-w-full object-contain drop-shadow-xl" decoding="async" onload="this.classList.add('is-loaded')">
-                @else
-                    <svg class="h-20 w-20 text-slate/25" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
+            {{-- Photos: the big photo with previous / next arrows and a counter, thumbnails below; click the photo to enlarge --}}
+            <div data-reveal="left" class="lg:col-span-2">
+                <div class="relative flex h-64 items-center justify-center rounded-2xl bg-white/80 p-5 shadow-inner sm:h-80"
+                     @if ($images->count() > 1)
+                         style="touch-action: pan-y pinch-zoom; overscroll-behavior-x: contain;"
+                         tabindex="0" role="group" aria-roledescription="carousel" aria-label="{{ $product->name }} photos"
+                         @keydown.arrow-left.prevent="! lightbox && prev()" @keydown.arrow-right.prevent="! lightbox && next()"
+                         @touchstart.passive="sx = $event.changedTouches[0].clientX" @touchend.passive="swipe($event.changedTouches[0].clientX)"
+                     @endif>
+                    @if ($images->count())
+                        <img :src="imgs[i]" src="{{ $images[0] }}" :alt="@js($product->name) + ' - photo ' + (i + 1)" alt="{{ $product->name }}"
+                             @click="lightbox = true"
+                             class="img-load max-h-full max-w-full cursor-zoom-in object-contain drop-shadow-xl" decoding="async" onload="this.classList.add('is-loaded')">
+                        @if ($images->count() > 1)
+                            <button type="button" @click.stop="prev()" aria-label="Previous photo"
+                                class="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white text-navy shadow-md ring-1 ring-black/5 transition hover:bg-cyan focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan sm:h-10 sm:w-10">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/></svg>
+                        </button>
+                            <button type="button" @click.stop="next()" aria-label="Next photo"
+                                class="absolute right-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white text-navy shadow-md ring-1 ring-black/5 transition hover:bg-cyan focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan sm:h-10 sm:w-10">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></svg>
+                        </button>
+                            <p class="pointer-events-none absolute bottom-2 right-3 rounded-full bg-navy/80 px-2.5 py-1 font-mono text-[11px] tracking-wider text-white" aria-live="polite">
+                                <span x-text="i + 1">1</span> / {{ $images->count() }}
+                            </p>
+                        @endif
+                    @else
+                        <svg class="h-20 w-20 text-slate/25" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5a1.5 1.5 0 0 0 1.5-1.5V5.25a1.5 1.5 0 0 0-1.5-1.5H3.75a1.5 1.5 0 0 0-1.5 1.5v14.25c0 .828.672 1.5 1.5 1.5Z"/>
                     </svg>
+                    @endif
+                </div>
+
+                @if ($images->count() > 1)
+                    <div class="mt-3 flex gap-2 overflow-x-auto pb-1" role="tablist" aria-label="Choose a photo">
+                        @foreach ($images as $idx => $url)
+                            <button type="button" @click="go({{ $idx }})" role="tab" aria-label="Show photo {{ $idx + 1 }}"
+                                    :aria-selected="i === {{ $idx }}"
+                                    :class="i === {{ $idx }} ? 'border-cyan ring-2 ring-cyan/30' : 'border-gray-200 opacity-80 hover:border-cyan/60 hover:opacity-100'"
+                                    class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg border-2 bg-white p-1 transition focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan sm:h-16 sm:w-16">
+                                <img src="{{ $url }}" alt="" class="max-h-full max-w-full object-contain" loading="lazy" decoding="async">
+                            </button>
+                        @endforeach
+                    </div>
                 @endif
             </div>
 
@@ -106,7 +155,7 @@
                     @include('public.partials.compare-toggle', ['product' => $product, 'large' => true])
                     @include('public.partials.enquiry-list-toggle', ['product' => $product, 'large' => true])
                     @if ($images->count())
-                        <button type="button" @click="i = 0; lightbox = true" class="btn-ghost">
+                        <button type="button" @click="lightbox = true" class="btn-ghost">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5a1.5 1.5 0 0 0 1.5-1.5V5.25a1.5 1.5 0 0 0-1.5-1.5H3.75a1.5 1.5 0 0 0-1.5 1.5v14.25c0 .828.672 1.5 1.5 1.5Z"/></svg>
                             Show Image{{ $images->count() > 1 ? 's' : '' }}
                         </button>
@@ -353,13 +402,15 @@
                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12"/></svg>
             </button>
             <template x-if="imgs.length > 1">
-                <button type="button" @click="i = (i - 1 + imgs.length) % imgs.length" aria-label="Previous" class="absolute left-4 flex h-11 w-11 items-center justify-center rounded-full bg-white text-navy shadow-lg hover:bg-cyan">
+                <button type="button" @click="prev()" aria-label="Previous" class="absolute left-4 flex h-11 w-11 items-center justify-center rounded-full bg-white text-navy shadow-lg hover:bg-cyan">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/></svg>
                 </button>
             </template>
-            <img :src="imgs[i]" :alt="@js($product->name) + ' image ' + (i + 1)" class="max-h-[85vh] max-w-full rounded-xl bg-white object-contain p-4 shadow-2xl">
+            <img :src="imgs[i]" :alt="@js($product->name) + ' image ' + (i + 1)" class="max-h-[85vh] max-w-full rounded-xl bg-white object-contain p-4 shadow-2xl"
+                 @touchstart.passive="sx = $event.changedTouches[0].clientX" @touchend.passive="swipe($event.changedTouches[0].clientX)">
+            <p x-show="imgs.length > 1" class="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-full bg-white/90 px-3 py-1 font-mono text-xs tracking-wider text-navy"><span x-text="i + 1"></span> / <span x-text="imgs.length"></span></p>
             <template x-if="imgs.length > 1">
-                <button type="button" @click="i = (i + 1) % imgs.length" aria-label="Next" class="absolute right-4 flex h-11 w-11 items-center justify-center rounded-full bg-white text-navy shadow-lg hover:bg-cyan">
+                <button type="button" @click="next()" aria-label="Next" class="absolute right-4 flex h-11 w-11 items-center justify-center rounded-full bg-white text-navy shadow-lg hover:bg-cyan">
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></svg>
                 </button>
             </template>

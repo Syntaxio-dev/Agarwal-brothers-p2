@@ -179,7 +179,7 @@
                             @foreach ($items as $client)
                                 @php $categoryLabel = optional($client->category)?->is_active ? $client->category->name : null; @endphp
                                 <div role="img" aria-label="{{ $client->name }}{{ $categoryLabel ? ', ' . $categoryLabel : '' }}" title="{{ $client->name }}"
-                                     class="flex h-16 items-center justify-center rounded-xl border border-gray-200 bg-white p-2.5 transition-all duration-300 hover:-translate-y-1 hover:border-cyan/50 hover:shadow-lg sm:h-[4.5rem]">
+                                     class="flex h-24 items-center justify-center rounded-xl border border-gray-200 bg-white p-2 transition-all duration-300 hover:-translate-y-1 hover:border-cyan/50 hover:shadow-lg sm:h-28">
                                     @if ($client->logo)
                                         <img src="{{ asset('storage/' . $client->logo) }}" alt="" class="img-load max-h-full max-w-full object-contain"
                                              loading="lazy" decoding="async" {!! \App\Support\Img::attrs($client->logo) !!} onload="this.classList.add('is-loaded')">
@@ -191,11 +191,6 @@
                         </div>
                     @endforeach
                 </div>
-                @if ($moreCount)
-                    <div class="mt-2 flex h-10 items-center justify-center rounded-xl bg-ice font-mono text-[11px] uppercase tracking-widest text-cyan-ink">
-                        +{{ $moreCount }} more {{ \Illuminate\Support\Str::plural('client', $moreCount) }}
-                    </div>
-                @endif
             </div>
 
             {{-- Full review popup: the page behind it is blurred; closes with the X, a click outside or Escape --}}

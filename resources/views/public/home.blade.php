@@ -8,15 +8,15 @@
         'logo' => \App\Support\Seo::absolute('sidebar-logo.png'),
         'description' => $siteSeo?->seo_description ?: \App\Support\Seo::defaultDescription(),
         'foundingDate' => (string) \App\Support\Company::foundedYear(),
-        'email' => config('contact.mail_24x7'),
         'telephone' => config('contact.call'),
+        'email' => config('contact.departments.0.email'),
         'taxID' => config('contact.gstin'),
         'address' => [
             '@type' => 'PostalAddress',
             'streetAddress' => config('contact.head_office.street'),
             'addressLocality' => config('contact.head_office.city'),
-            'postalCode' => config('contact.head_office.postal_code'),
             'addressRegion' => 'Rajasthan',
+            'postalCode' => config('contact.head_office.postal_code'),
             'addressCountry' => 'IN',
         ],
     ]);
@@ -45,20 +45,21 @@
         <div class="relative w-full aspect-video 2xl:h-[600px] rounded-xl overflow-hidden bg-navy">
 
             @forelse ($slides as $i => $slide)
-                @php
-                    $slideLink = $slide->linkTarget();          // product page, else the button link, else null
-                    $slideTag = $slideLink ? 'a' : 'div';       // the whole slide is clickable when it has a link
-                    $slideProduct = $slide->resolvedProduct();
-                @endphp
-                <{{ $slideTag }} x-show="active === {{ $i }}"
+                @php $slideLink = $slide->linkTarget(); $slideProd = $slide->resolvedProduct(); @endphp
+
+                @if ($slideLink)
+                <a href="{{ $slideLink }}" @if ($slideProd) aria-label="View {{ $slideProd->name }}" @endif
+                @else
+                <div
+                @endif
+                    x-show="active === {{ $i }}"
                     x-transition:enter="transition-opacity ease-in-out duration-700"
                     x-transition:enter-start="opacity-0"
                     x-transition:enter-end="opacity-100"
                     x-transition:leave="transition-opacity ease-in-out duration-700"
                     x-transition:leave-start="opacity-100"
                     x-transition:leave-end="opacity-0"
-                    @if ($slideLink) href="{{ $slideLink }}" aria-label="{{ $slideProduct ? 'View ' . $slideProduct->name : ($slide->title ?: 'Open link') }}" @endif
-                    class="absolute inset-0 @if ($slideLink) block cursor-pointer @endif">
+                    class="absolute inset-0 block">
 
                     @if ($slide->video)
                         <video autoplay muted loop playsinline preload="auto" @if ($slide->image) poster="{{ asset('storage/' . $slide->image) }}" @endif class="absolute inset-0 h-full w-full object-cover">
@@ -71,21 +72,18 @@
 
                     <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10"></div>
 
-                    @if ($slide->title || $slide->subtitle || ($slideLink && $slideProduct))
+                    @if ($slide->title || $slide->subtitle || $slideProd)
                         <div class="absolute inset-0 flex items-center">
                             <div class="w-full px-8 sm:px-12 lg:px-20">
                                 <div class="max-w-xl">
-                                    @if ($slideProduct && ! $slide->title)
-                                        <p class="font-mono text-xs uppercase tracking-[0.2em] text-cyan drop-shadow">Featured product</p>
-                                    @endif
-                                    @if ($slide->title)
+                                    @if (! $slide->title && $slideProd)
+                                        <span class="section-badge">Featured product</span>
+                                        <h2 class="mt-2 text-2xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight drop-shadow-lg">
+                                            {{ $slideProd->name }}
+                                        </h2>
+                                    @elseif ($slide->title)
                                         <h2 class="text-2xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight drop-shadow-lg">
                                             {{ $slide->title }}
-                                        </h2>
-                                    @endif
-                                    @if ($slideProduct && ! $slide->title)
-                                        <h2 class="text-2xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight drop-shadow-lg">
-                                            {{ $slideProduct->name }}
                                         </h2>
                                     @endif
                                     @if ($slide->subtitle)
@@ -94,7 +92,6 @@
                                         </p>
                                     @endif
                                     @if ($slideLink)
-                                        {{-- a span, not a link: the whole slide is already the link, so this stays a visual button --}}
                                         <span class="btn-glass mt-6 px-7 py-3">
                                             {{ $slide->linkLabel() }}
                                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -106,7 +103,7 @@
                             </div>
                         </div>
                     @endif
-                </{{ $slideTag }}>
+                @if ($slideLink) </a> @else </div> @endif
             @empty
                 <div class="absolute inset-0 flex items-center justify-center bg-navy">
                     <span class="text-white/50 text-lg">No slides added yet</span>
@@ -303,13 +300,13 @@
                             @foreach ($half_set as $brand)
                                 <a href="{{ route('brand.show', $brand->slug) }}"
                                     @if ($copy) aria-hidden="true" tabindex="-1" @endif
-                                    class="shrink-0 flex items-center justify-center h-24 w-40 sm:w-48 rounded-xl
-                                           bg-white border border-gray-100 p-4 shadow-sm
+                                    class="shrink-0 flex items-center justify-center h-28 w-40 sm:w-48 rounded-xl
+                                           bg-white border border-gray-100 p-2.5 shadow-sm
                                            hover:-translate-y-2 hover:scale-110 hover:shadow-2xl hover:border-cyan/50 hover:z-20
                                            transition-all duration-300 group relative">
                                     @if ($brand->logo)
                                         <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}"
-                                            class="img-load max-h-14 max-w-full object-contain transition-transform duration-300 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($brand->logo) !!} onload="this.classList.add('is-loaded')">
+                                            class="img-load max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($brand->logo) !!} onload="this.classList.add('is-loaded')">
                                     @else
                                         <span class="text-sm font-bold text-navy text-center">{{ $brand->name }}</span>
                                     @endif

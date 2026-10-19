@@ -5,7 +5,7 @@
 | Contact page content
 |--------------------------------------------------------------------------
 | The real company details (email, phones, address, GSTIN) given by the owner on 15 Oct.
-| The BRANCH office and the working hours are still placeholders. Edit here and every page
+| There is no branch office on the site any more (add one to 'branches' to show it again). Edit here and every page
 | (footer, Contact Us, spec sheet, emails, 404 pages, Google company data) follows.
 */
 
@@ -25,13 +25,8 @@ return [
     // GST registration number (footer, Contact Us, spec sheets and the Google company data)
     'gstin' => '08ABYPA8087G1Z2',
 
-    'branches' => [
-        [
-            'city' => 'Jodhpur',
-            'label' => 'Branch Office',
-            'address' => 'Plot No. 00, Industrial Area, Jodhpur, Rajasthan - 342001',
-        ],
-    ],
+    // Branch offices shown on the Contact Us page. Empty on purpose: only the head office is shown for now.
+    'branches' => [],
 
     // The people customers can call, most important first. The first one is the PRIMARY contact
     // (footer, emails, spec sheet, 404 pages, Google data and the WhatsApp button all lead with it);
@@ -61,9 +56,9 @@ return [
     // The floating WhatsApp button opens a chat with this number (digits with country code) when Site Settings has none.
     'whatsapp' => '919829015024',
 
+    // Office hours. Line 1 is the one used in emails ({hours}) and on the 404 pages, so it holds the days and the time.
     'working_days' => [
-        'Mon-Fri: 09:30 am - 05:30 pm',
-        '1st & 3rd Sat: 09:30 am - 01:30 pm',
-        '2nd & 4th Saturday and Sunday: Holiday',
+        'Monday to Saturday: 10:00 am - 7:00 pm',
+        'Closed on festive holidays',
     ],
 ];

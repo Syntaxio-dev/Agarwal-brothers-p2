@@ -127,7 +127,7 @@ class ScrollRevealTest extends TestCase
 
         $this->assertGreaterThanOrEqual(14, substr_count($html, 'data-reveal'));
         $this->assertStringContainsString('class="crumbs"', $html);
-        $this->assertSame(2, substr_count($html, 'class="map-pin'));              // head office + Jodhpur drop onto the map
+        $this->assertSame(1, substr_count($html, 'class="map-pin'));              // the head office pin drops onto the map (no branch for now)
         $this->assertStringContainsString('href="#contact-form"', $html);         // header button jumps to the form
         $this->assertStringContainsString('edge-top', $html);
         $this->assertStringContainsString('pop-icon', $html);
