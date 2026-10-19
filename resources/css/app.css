@@ -820,3 +820,20 @@ html.nav-compact .site-nav { box-shadow: 0 8px 22px -14px rgb(11 37 69 / 0.4); }
     .fab-pill, .fab-label { transition: none; }
 }
 
+/* ------------------------------------------------------------------
+   Navbar catalogue button: "Catalogue" + document icon, swaps to "Download" + download icon on hover / focus.
+   Both versions sit in the same grid cell, so the button keeps one width and nothing around it moves.
+------------------------------------------------------------------- */
+.cat-swap { display: inline-grid; align-items: center; justify-items: start; }
+.cat-swap > * { grid-area: 1 / 1; transition: opacity 0.25s ease, transform 0.25s ease; }
+.cat-swap > .cat-b { opacity: 0; transform: translateY(55%); }
+.nav-cat:focus-visible .cat-swap > .cat-a { opacity: 0; transform: translateY(-55%); }
+.nav-cat:focus-visible .cat-swap > .cat-b { opacity: 1; transform: none; }
+@media (hover: hover) {
+    .nav-cat:hover .cat-swap > .cat-a { opacity: 0; transform: translateY(-55%); }
+    .nav-cat:hover .cat-swap > .cat-b { opacity: 1; transform: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .cat-swap > * { transition: none; }
+}
+

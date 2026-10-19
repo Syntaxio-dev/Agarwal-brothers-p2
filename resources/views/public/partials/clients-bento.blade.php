@@ -17,7 +17,7 @@
         $pages[] = $items;
     }
     $moreCount = max(0, $clientCount - $perPage);
-    $statNumber = filled(optional($siteSetting)->clients_stat_number) ? $siteSetting->clients_stat_number : $clientCount . '+';
+    $statNumber = filled(optional($siteSetting)->clients_stat_number) ? $siteSetting->clients_stat_number : \App\Support\Company::plus('clients');   // 340+
     $statLabel = filled(optional($siteSetting)->clients_stat_label) ? $siteSetting->clients_stat_label : 'Active clients';
     $reviewCount = $featuredReviews->count();
     $wheelCount = $categoryWheel->count();

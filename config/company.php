@@ -14,4 +14,5 @@ return [
     'customers' => 1000,   // customers all over India
     'industries' => 70,    // industry categories served (the client category list has 71)
     'brands' => 50,        // brands across the world
+    'clients' => 340,      // "active clients" tile in the Our Clients section (fixed, NOT the count of client rows)
 ];

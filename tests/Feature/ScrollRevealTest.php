@@ -390,4 +390,23 @@ class ScrollRevealTest extends TestCase
         $this->assertStringContainsString("import './nav-compact'", file_get_contents(resource_path('js/app.js')));
         $this->assertStringContainsString('site-nav-row', $html);
     }
+
+    public function test_the_navbar_catalogue_button_says_catalogue_and_swaps_to_download_on_hover(): void
+    {
+        \App\Models\SiteSetting::create(['catalogue_file' => 'catalogue/brochure.pdf']);
+
+        $html = $this->get('/')->assertOk()->getContent();
+        // start at the button itself (it sits late in the header) and read its markup
+        $nav = preg_replace('/\s+/', ' ', substr($html, (int) strrpos(substr($html, 0, (int) strpos($html, 'nav-cat')), '<a '), 2500));
+
+        $this->assertMatchesRegularExpression('/<a href="[^"]*catalogue\/brochure\.pdf" download[^>]*class="nav-cat btn-primary/s', $nav);
+        $this->assertStringContainsString('<span class="cat-a">Catalogue</span>', $nav);
+        $this->assertStringContainsString('<span class="cat-b">Download</span>', $nav);
+        $this->assertStringContainsString('aria-label="Download product catalogue (PDF)"', $nav);
+        $this->assertStringNotContainsString('xl:max-2xl:hidden', $html);        // the word is shown at every desktop width now
+
+        $css = file_get_contents(resource_path('css/app.css'));
+        $this->assertStringContainsString('.nav-cat:hover .cat-swap > .cat-b', $css);
+        $this->assertStringContainsString('.nav-cat:focus-visible .cat-swap > .cat-b', $css);
+    }
 }

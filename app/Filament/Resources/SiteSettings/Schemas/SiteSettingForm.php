@@ -33,14 +33,14 @@ class SiteSettingForm
                     ]),
 
                 Section::make('Our Clients: number tile')
-                    ->description('The big number next to the client logos on the home page. Leave empty to show the number of active clients automatically.')
+                    ->description('The big number next to the client logos on the home page. Leave empty to show the fixed company number (340+).')
                     ->columnSpanFull()
                     ->columns(2)
                     ->schema([
                         TextInput::make('clients_stat_number')
                             ->label('Number')
                             ->maxLength(20)
-                            ->placeholder('300+'),
+                            ->placeholder('340+'),
                         TextInput::make('clients_stat_label')
                             ->label('Label')
                             ->maxLength(40)

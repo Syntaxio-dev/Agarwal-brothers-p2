@@ -32,7 +32,8 @@ class ClientShowcaseTest extends TestCase
         $this->assertStringContainsString('The labs that rely', $html);
         $this->assertStringContainsString('Fast service and honest advice.', $html);
         $this->assertStringContainsString('QC Head · Sun Pharma', $html);
-        $this->assertStringContainsString('7+', $html);                    // automatic number = active clients
+        $this->assertStringContainsString('340+', $html);                  // the fixed company number, not the 7 client rows
+        $this->assertStringNotContainsString('>7+<', $html);
         $this->assertStringContainsString('Active clients', $html);
         $this->assertStringContainsString('+3 more clients', $html);       // 7 clients, 4 on show
         $this->assertStringContainsString('aria-label="Lab 1', $html);
