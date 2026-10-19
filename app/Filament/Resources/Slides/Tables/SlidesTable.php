@@ -24,6 +24,12 @@ class SlidesTable
                     ->searchable()
                     ->description(fn ($record) => $record->subtitle)
                     ->placeholder('Untitled slide'),
+                TextColumn::make('product.name')
+                    ->label('Links to')
+                    ->badge()
+                    ->color('info')
+                    ->placeholder('Button link / none')
+                    ->toggleable(),
                 TextColumn::make('video')
                     ->label('Media')
                     ->state(fn ($record) => $record->video ? 'Video' : 'Image')

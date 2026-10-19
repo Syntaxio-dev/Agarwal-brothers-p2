@@ -21,7 +21,7 @@
     $statLabel = filled(optional($siteSetting)->clients_stat_label) ? $siteSetting->clients_stat_label : 'Active clients';
     $reviewCount = $featuredReviews->count();
     $wheelCount = $categoryWheel->count();
-    $longReview = 170;                              // reviews longer than this get "Read full review"
+    $longReview = 230;                              // reviews longer than this get "Read full review"
     $reviewData = $featuredReviews->map(fn ($r) => [
         'name' => $r->name,
         'meta' => collect([$r->designation, $r->organization])->filter()->implode(' · '),
@@ -81,21 +81,31 @@
 
             {{-- Quote card (featured reviews, taking turns when there are several) --}}
             @if ($reviewCount)
-                <div data-reveal="left" class="rounded-2xl bg-navy p-6 text-white sm:p-7 lg:row-span-2">
-                    <div class="grid h-full">
+                <div data-reveal="left" class="relative overflow-hidden rounded-2xl bg-navy p-6 text-white sm:p-8 lg:row-span-2">
+                    <svg class="pointer-events-none absolute -right-4 -top-4 h-44 w-44 text-white/[0.04]" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                        <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10H0z"/>
+                    </svg>
+                    <div class="relative grid h-full">
                         @foreach ($featuredReviews as $i => $review)
                             <figure :class="rev === {{ $i }} ? 'opacity-100' : 'pointer-events-none opacity-0'"
                                     @if ($i > 0) :aria-hidden="rev !== {{ $i }}" @endif
-                                    class="flex flex-col justify-between gap-6 transition-opacity duration-[400ms] [grid-area:1/1]">
-                                <div>
-                                    <svg class="h-8 w-8 text-cyan" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                    class="flex h-full flex-col gap-6 transition-opacity duration-[400ms] [grid-area:1/1]">
+                                <div class="flex flex-1 flex-col justify-center">
+                                    <svg class="h-10 w-10 text-cyan" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                                         <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10H0z"/>
                                     </svg>
                                     @php $isLong = mb_strlen($review->content) > $longReview; @endphp
-                                    <blockquote class="mt-4 text-base font-medium leading-relaxed sm:text-[17px] {{ $isLong ? 'line-clamp-4' : '' }}">{{ $review->content }}</blockquote>
+                                    <blockquote class="mt-5 text-xl font-medium leading-snug sm:text-2xl {{ $isLong ? 'line-clamp-6' : '' }}">{{ $review->content }}</blockquote>
+                                    @if ($review->rating)
+                                        <div class="mt-5 flex gap-1" role="img" aria-label="Rated {{ $review->rating }} out of 5">
+                                            @for ($star = 1; $star <= 5; $star++)
+                                                <svg class="h-4 w-4 {{ $star <= $review->rating ? 'text-cyan' : 'text-white/20' }}" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+                                            @endfor
+                                        </div>
+                                    @endif
                                     @if ($isLong)
                                         <button type="button" @click="openReview({{ $i }})"
-                                                class="mt-3 inline-flex items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-cyan transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan">
+                                                class="mt-4 inline-flex w-fit items-center gap-1.5 font-mono text-[11px] uppercase tracking-widest text-cyan transition-colors hover:text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan">
                                             Read full review
                                             <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></svg>
                                         </button>

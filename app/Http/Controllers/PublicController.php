@@ -36,6 +36,7 @@ class PublicController extends Controller
             ->get();
 
         $slides = Slide::where('is_active', true)
+            ->with('product.category.brand')
             ->orderBy('sort_order')
             ->get();
 

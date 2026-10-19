@@ -45,14 +45,20 @@
         <div class="relative w-full aspect-video 2xl:h-[600px] rounded-xl overflow-hidden bg-navy">
 
             @forelse ($slides as $i => $slide)
-                <div x-show="active === {{ $i }}"
+                @php
+                    $slideLink = $slide->linkTarget();          // product page, else the button link, else null
+                    $slideTag = $slideLink ? 'a' : 'div';       // the whole slide is clickable when it has a link
+                    $slideProduct = $slide->resolvedProduct();
+                @endphp
+                <{{ $slideTag }} x-show="active === {{ $i }}"
                     x-transition:enter="transition-opacity ease-in-out duration-700"
                     x-transition:enter-start="opacity-0"
                     x-transition:enter-end="opacity-100"
                     x-transition:leave="transition-opacity ease-in-out duration-700"
                     x-transition:leave-start="opacity-100"
                     x-transition:leave-end="opacity-0"
-                    class="absolute inset-0">
+                    @if ($slideLink) href="{{ $slideLink }}" aria-label="{{ $slideProduct ? 'View ' . $slideProduct->name : ($slide->title ?: 'Open link') }}" @endif
+                    class="absolute inset-0 @if ($slideLink) block cursor-pointer @endif">
 
                     @if ($slide->video)
                         <video autoplay muted loop playsinline preload="auto" @if ($slide->image) poster="{{ asset('storage/' . $slide->image) }}" @endif class="absolute inset-0 h-full w-full object-cover">
@@ -65,13 +71,21 @@
 
                     <div class="absolute inset-0 bg-gradient-to-t from-black/40 via-transparent to-black/10"></div>
 
-                    @if ($slide->title || $slide->subtitle)
+                    @if ($slide->title || $slide->subtitle || ($slideLink && $slideProduct))
                         <div class="absolute inset-0 flex items-center">
                             <div class="w-full px-8 sm:px-12 lg:px-20">
                                 <div class="max-w-xl">
+                                    @if ($slideProduct && ! $slide->title)
+                                        <p class="font-mono text-xs uppercase tracking-[0.2em] text-cyan drop-shadow">Featured product</p>
+                                    @endif
                                     @if ($slide->title)
                                         <h2 class="text-2xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight drop-shadow-lg">
                                             {{ $slide->title }}
+                                        </h2>
+                                    @endif
+                                    @if ($slideProduct && ! $slide->title)
+                                        <h2 class="text-2xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight drop-shadow-lg">
+                                            {{ $slideProduct->name }}
                                         </h2>
                                     @endif
                                     @if ($slide->subtitle)
@@ -79,20 +93,20 @@
                                             {{ $slide->subtitle }}
                                         </p>
                                     @endif
-                                    @if (\App\Rules\SafeLink::passes($slide->link_url))
-                                        <a href="{{ $slide->link_url }}"
-                                            class="btn-glass mt-6 px-7 py-3">
-                                            Explore
+                                    @if ($slideLink)
+                                        {{-- a span, not a link: the whole slide is already the link, so this stays a visual button --}}
+                                        <span class="btn-glass mt-6 px-7 py-3">
+                                            {{ $slide->linkLabel() }}
                                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 9h6V5l7 7-7 7v-4H6V9z"/>
                                             </svg>
-                                        </a>
+                                        </span>
                                     @endif
                                 </div>
                             </div>
                         </div>
                     @endif
-                </div>
+                </{{ $slideTag }}>
             @empty
                 <div class="absolute inset-0 flex items-center justify-center bg-navy">
                     <span class="text-white/50 text-lg">No slides added yet</span>

@@ -212,7 +212,7 @@ class HelpGuide
                 'url' => 'admin/slides',
                 'intro' => 'These items appear on the homepage. Active items show; inactive ones are hidden.',
                 'steps' => [
-                    'Hero Slides: add a title and subtitle if the image does not already contain text. Upload an image or a video. The optional button link must be a page on this site (for example /verticals) or a full https:// link.',
+                    'Hero Slides: add a title and subtitle if the image does not already contain text. Upload an image or a video. To feature a product (for example your Analytical Balance), pick it in "Feature a product" - the whole slide then links to that product page. Otherwise the optional button link must be a page on this site (for example /verticals) or a full https:// link.',
                     'Clients: add the logo, pick the category (Pharma, Dairy, Universities ... use the search box in the dropdown, or the + button to add a new one; "Client categories" lets you rename, reorder or hide them), the city, the year they joined and what you supply them. All active clients appear on the homepage as a logo wall, grouped by industry. "Top client" puts a client first. Drag rows to set the order.',
                     'Reviews: add the reviewer name, role, company and the review text. Switch on "Show in the big quote card" for the review that sits in the navy card of the Our Clients section (several = they take turns). Rating is 1 to 5. If there are more than three active reviews, the homepage carousel slides automatically.',
                     'Precision Picks (homepage products) are chosen on each product with "Show in Precision Picks".',

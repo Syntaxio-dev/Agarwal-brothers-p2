@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Slides\Schemas;
 
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
@@ -22,12 +23,21 @@ class SlideForm
                     ->schema([
                         TextInput::make('title'),
                         TextInput::make('subtitle'),
+                        Select::make('product_id')
+                            ->label('Feature a product (optional)')
+                            ->relationship('product', 'name', modifyQueryUsing: fn ($query) => $query->where('is_active', true)->with('category.brand')->orderBy('name'))
+                            ->getOptionLabelFromRecordUsing(fn ($record) => $record->name . ($record->category?->brand ? ' - ' . $record->category->brand->name : ''))
+                            ->searchable()
+                            ->preload()
+                            ->placeholder('Search a product, e.g. Analytical Balance')
+                            ->helperText('Pick a top product to show it in the hero. The whole slide then links to that product page. This takes priority over the button link below.')
+                            ->columnSpanFull(),
                         TextInput::make('link_url')
                             ->label('Button link (optional)')
                             ->placeholder('/verticals')
                             ->maxLength(255)
                             ->rule(new \App\Rules\SafeLink)
-                            ->helperText('A page on this site (e.g. /verticals) or a full https:// link.')
+                            ->helperText('Used only when no product is picked above. A page on this site (e.g. /verticals) or a full https:// link.')
                             ->columnSpanFull(),
                     ]),
 

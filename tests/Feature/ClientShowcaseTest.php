@@ -124,7 +124,7 @@ class ClientShowcaseTest extends TestCase
 
         $html = $this->get('/')->assertOk()->getContent();
 
-        $this->assertStringContainsString('line-clamp-4', $html);
+        $this->assertStringContainsString('line-clamp-6', $html);
         $this->assertStringContainsString('Read full review', $html);
         $this->assertStringContainsString('backdrop-blur-md', $html);
         $this->assertStringContainsString('aria-label="Close review"', $html);
@@ -134,7 +134,7 @@ class ClientShowcaseTest extends TestCase
         Review::query()->delete();
         Review::create(['name' => 'Dr. Short', 'content' => 'Great service.', 'rating' => 5, 'is_active' => true, 'is_featured' => true]);
         $short = $this->get('/')->assertOk()->getContent();
-        $this->assertStringNotContainsString('line-clamp-4', $short);
+        $this->assertStringNotContainsString('line-clamp-6', $short);
         $this->assertStringNotContainsString('>Read full review', $short);
     }
 
