@@ -192,6 +192,70 @@
             </div>
         </div>
 
+        {{-- ===== 6. Leadership blocks ===== --}}
+        @if ($leaders->count())
+            @php $leadBg = $img('leadership_bg'); @endphp
+            <div class="mt-20 sm:mt-24">
+                <div data-reveal class="text-center flex flex-col items-center gap-3 mb-10">
+                    <span class="section-badge">Meet our leadership</span>
+                    <h2 class="text-2xl sm:text-3xl font-bold text-navy leading-tight">The people <span class="text-cyan-ink">behind the company</span></h2>
+                </div>
+
+                <div class="flex flex-col gap-8 sm:gap-10">
+                    @foreach ($leaders as $i => $leader)
+                        @php $flip = $i % 2 === 1; @endphp
+                        <div class="relative overflow-hidden rounded-3xl shadow-xl ring-1 ring-black/5 bg-gradient-to-br from-navy to-link">
+                            @if ($leadBg)
+                                <img src="{{ $leadBg }}" alt="" class="img-load absolute inset-0 h-full w-full scale-105 object-cover blur-[3px]" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
+                                <div class="absolute inset-0 bg-gradient-to-br from-navy/70 via-navy/45 to-link/40"></div>
+                            @else
+                                <div class="absolute inset-0 bg-[radial-gradient(520px_280px_at_{{ $flip ? '15%' : '85%' }}_10%,rgba(0,180,216,0.38),transparent_70%)]"></div>
+                                <div class="pointer-events-none absolute -bottom-24 {{ $flip ? '-right-16' : '-left-16' }} h-72 w-72 rounded-full border-[28px] border-white/5"></div>
+                            @endif
+
+                            <div class="relative grid grid-cols-1 md:grid-cols-2 items-center gap-2 md:gap-6 px-5 pt-8 pb-6 md:py-0 md:px-12">
+                                {{-- Portrait --}}
+                                <div data-reveal="{{ $flip ? 'right' : 'left' }}" class="{{ $flip ? 'md:order-2' : '' }} flex h-[260px] items-end justify-center md:h-[400px] lg:h-[430px]">
+                                    @if ($leader->photo)
+                                        <img src="{{ asset('storage/' . $leader->photo) }}" alt="{{ $leader->name }}"
+                                             class="img-load h-full w-auto max-w-full object-contain object-bottom drop-shadow-2xl" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($leader->photo) !!} onload="this.classList.add('is-loaded')">
+                                    @else
+                                        <svg viewBox="0 0 200 240" class="h-full w-auto text-white/25" fill="currentColor" role="img" aria-label="Photo placeholder">
+                                            <circle cx="100" cy="78" r="46"/>
+                                            <path d="M10 240c0-58 40-92 90-92s90 34 90 92z"/>
+                                        </svg>
+                                    @endif
+                                </div>
+
+                                {{-- Quote card (glass) --}}
+                                <div data-reveal="{{ $flip ? 'left' : 'right' }}" data-reveal-delay="150" class="{{ $flip ? 'md:order-1' : '' }} md:py-12">
+                                    <div class="rounded-2xl border border-gray-100 bg-white/95 p-6 shadow-lg sm:p-8">
+                                        <svg class="quote-pop h-7 w-7 text-cyan/60" fill="currentColor" viewBox="0 0 24 24">
+                                            <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10H0z"/>
+                                        </svg>
+                                        <p class="mt-2 text-base leading-relaxed text-navy sm:text-lg">
+                                            {{ $leader->quote ?: 'A message from our leadership will appear here.' }}
+                                        </p>
+                                        <p class="mt-5 text-lg font-semibold text-link">
+                                            {{ $leader->name }}@if ($leader->designation), <span class="font-medium text-navy/80">{{ $leader->designation }}</span>@endif
+                                        </p>
+                                        @if ($leader->linkedin_url)
+                                            <a href="{{ $leader->linkedin_url }}" target="_blank" rel="noopener" aria-label="{{ $leader->name }} on LinkedIn"
+                                               class="mt-4 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-navy text-white transition duration-200 hover:scale-110 hover:bg-link">
+                                                <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
+                                                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+                                                </svg>
+                                            </a>
+                                        @endif
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    @endforeach
+                </div>
+            </div>
+        @endif
+
         {{-- ===== 4. Journey ===== --}}
         <div class="mt-20 sm:mt-24">
             <div data-reveal class="text-center flex flex-col items-center gap-3 mb-10">
@@ -283,70 +347,6 @@
                 @endforeach
             </div>
         </div>
-
-        {{-- ===== 6. Leadership blocks ===== --}}
-        @if ($leaders->count())
-            @php $leadBg = $img('leadership_bg'); @endphp
-            <div class="mt-20 sm:mt-24">
-                <div data-reveal class="text-center flex flex-col items-center gap-3 mb-10">
-                    <span class="section-badge">Meet our leadership</span>
-                    <h2 class="text-2xl sm:text-3xl font-bold text-navy leading-tight">The people <span class="text-cyan-ink">behind the company</span></h2>
-                </div>
-
-                <div class="flex flex-col gap-8 sm:gap-10">
-                    @foreach ($leaders as $i => $leader)
-                        @php $flip = $i % 2 === 1; @endphp
-                        <div class="relative overflow-hidden rounded-3xl shadow-xl ring-1 ring-black/5 bg-gradient-to-br from-navy to-link">
-                            @if ($leadBg)
-                                <img src="{{ $leadBg }}" alt="" class="img-load absolute inset-0 h-full w-full scale-105 object-cover blur-[3px]" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
-                                <div class="absolute inset-0 bg-gradient-to-br from-navy/70 via-navy/45 to-link/40"></div>
-                            @else
-                                <div class="absolute inset-0 bg-[radial-gradient(520px_280px_at_{{ $flip ? '15%' : '85%' }}_10%,rgba(0,180,216,0.38),transparent_70%)]"></div>
-                                <div class="pointer-events-none absolute -bottom-24 {{ $flip ? '-right-16' : '-left-16' }} h-72 w-72 rounded-full border-[28px] border-white/5"></div>
-                            @endif
-
-                            <div class="relative grid grid-cols-1 md:grid-cols-2 items-center gap-2 md:gap-6 px-5 pt-8 pb-6 md:py-0 md:px-12">
-                                {{-- Portrait --}}
-                                <div data-reveal="{{ $flip ? 'right' : 'left' }}" class="{{ $flip ? 'md:order-2' : '' }} flex h-[260px] items-end justify-center md:h-[400px] lg:h-[430px]">
-                                    @if ($leader->photo)
-                                        <img src="{{ asset('storage/' . $leader->photo) }}" alt="{{ $leader->name }}"
-                                             class="img-load h-full w-auto max-w-full object-contain object-bottom drop-shadow-2xl" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($leader->photo) !!} onload="this.classList.add('is-loaded')">
-                                    @else
-                                        <svg viewBox="0 0 200 240" class="h-full w-auto text-white/25" fill="currentColor" role="img" aria-label="Photo placeholder">
-                                            <circle cx="100" cy="78" r="46"/>
-                                            <path d="M10 240c0-58 40-92 90-92s90 34 90 92z"/>
-                                        </svg>
-                                    @endif
-                                </div>
-
-                                {{-- Quote card (glass) --}}
-                                <div data-reveal="{{ $flip ? 'left' : 'right' }}" data-reveal-delay="150" class="{{ $flip ? 'md:order-1' : '' }} md:py-12">
-                                    <div class="rounded-2xl border border-gray-100 bg-white/95 p-6 shadow-lg sm:p-8">
-                                        <svg class="quote-pop h-7 w-7 text-cyan/60" fill="currentColor" viewBox="0 0 24 24">
-                                            <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10H0z"/>
-                                        </svg>
-                                        <p class="mt-2 text-base leading-relaxed text-navy sm:text-lg">
-                                            {{ $leader->quote ?: 'A message from our leadership will appear here.' }}
-                                        </p>
-                                        <p class="mt-5 text-lg font-semibold text-link">
-                                            {{ $leader->name }}@if ($leader->designation), <span class="font-medium text-navy/80">{{ $leader->designation }}</span>@endif
-                                        </p>
-                                        @if ($leader->linkedin_url)
-                                            <a href="{{ $leader->linkedin_url }}" target="_blank" rel="noopener" aria-label="{{ $leader->name }} on LinkedIn"
-                                               class="mt-4 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-navy text-white transition duration-200 hover:scale-110 hover:bg-link">
-                                                <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
-                                                    <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
-                                                </svg>
-                                            </a>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
-            </div>
-        @endif
 
         {{-- ===== 6b. Team grid ===== --}}
         @if ($team->count())

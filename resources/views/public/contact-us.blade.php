@@ -3,9 +3,35 @@
     $input = 'h-11 w-full rounded-full border border-gray-200 bg-white px-5 text-sm text-navy placeholder:text-slate outline-none focus:border-cyan focus:ring-2 focus:ring-cyan/20 transition';
     $card = 'edge-top group relative overflow-hidden w-full min-w-0 sm:w-[calc(50%-0.625rem)] lg:w-[calc(25%-0.9375rem)] lg:px-3 xl:px-6 rounded-2xl bg-white border border-gray-100 shadow-sm p-6 text-center hover:shadow-lg hover:border-cyan/40 hover:-translate-y-1 transition-all duration-300';
     $icon = 'pop-icon mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-navy text-white shadow-md transition-all duration-300 group-hover:bg-link group-hover:scale-110';
+
+    // ?topic=quote opens the form with the subject already filled (only the topics listed in config/contact.php)
+    $prefill = $c['topics'][request('topic')] ?? null;
+    $catalogueFile = optional(\App\Models\SiteSetting::latest()->first())->catalogue_file;
+    $enq = $c['departments'][1] ?? $c['departments'][0];
+    $waNumber = preg_replace('/\D/', '', (string) (optional(\App\Models\SiteSetting::latest()->first())->whatsapp_number ?: $c['whatsapp']));
+
+    $faqs = array_values(array_filter([
+        ['How can I get a quotation?', 'Send us the form on this page with the product or application you need, or call ' . $enq['person'] . ' (' . $enq['title'] . ') on ' . $enq['phone'] . '. You can also add several products to your enquiry list on the site and send them together.'],
+        ['Which brands do you work with?', 'We are an authorised partner of ' . \App\Support\Company::plus('brands') . ' global brands. You can browse them from the Verticals and Brands pages of this website.'],
+        ['Where is your office and when are you open?', 'Our ' . strtolower($c['head_office']['label']) . ' is at ' . $c['head_office']['address'] . '. ' . implode('. ', $c['working_days']) . '.'],
+        $catalogueFile ? ['Do you have a product catalogue?', 'Yes. Use the Catalogue button in the top bar of any page to download it as a PDF.'] : null,
+        ['Can I ask about more than one product at the same time?', 'Yes. Add products to your enquiry list with the cart button on any product card, then send the whole list as a single enquiry.'],
+        ['Can I apply for a job with you?', 'Yes. Open roles are on our Careers page, and you can also share your profile through the general application form there.'],
+        ! empty($c['gstin']) ? ['What is your GST number?', 'Our GSTIN is ' . $c['gstin'] . '.'] : null,
+    ]));
+
+    $faqSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'FAQPage',
+        'mainEntity' => array_map(fn ($f) => [
+            '@type' => 'Question',
+            'name' => $f[0],
+            'acceptedAnswer' => ['@type' => 'Answer', 'text' => $f[1]],
+        ], $faqs),
+    ];
 @endphp
 
-<x-layouts.app title="Contact Us" description="Contact Agarwal Brothers in Jaipur for laboratory equipment quotes, service and technical support. Send an enquiry and our team will respond.">
+<x-layouts.app title="Contact Us" description="Contact Agarwal Brothers in Jaipur for laboratory equipment quotes, service and technical support. Send an enquiry and our team will respond." :schema="$faqSchema">
   <div class="relative overflow-hidden">
     <div class="pointer-events-none absolute inset-x-0 top-0 h-[620px]
                 bg-[radial-gradient(900px_420px_at_50%_-8%,rgba(0,180,216,0.20),transparent_70%),radial-gradient(700px_380px_at_8%_12%,rgba(0,119,182,0.10),transparent_70%),radial-gradient(700px_380px_at_95%_18%,rgba(0,180,216,0.12),transparent_70%),linear-gradient(to_bottom,rgba(244,249,251,1),rgba(255,255,255,0))]"></div>
@@ -168,6 +194,66 @@
             </div>
         </div>
 
+        {{-- ===== How we work with you ===== --}}
+        <div class="mt-20">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-8">
+                <span class="section-badge">How it works</span>
+                <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
+                    From enquiry to <span class="text-cyan-ink">delivery</span>
+                </h2>
+                <p class="max-w-2xl text-sm text-slate">Four simple steps once you reach out to us.</p>
+            </div>
+
+            <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+                @foreach ($c['steps'] as $step)
+                    <div data-reveal class="edge-top group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-cyan/40 hover:shadow-lg">
+                        <div class="flex items-center justify-between">
+                            <div class="{{ str_replace('mx-auto ', '', $icon) }}">
+                                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="{{ $step['icon'] }}"/>
+                                </svg>
+                            </div>
+                            <span class="font-mono text-2xl font-semibold text-cyan-ink/40">{{ str_pad($loop->iteration, 2, '0', STR_PAD_LEFT) }}</span>
+                        </div>
+                        <h3 class="mt-4 text-base font-bold leading-snug text-navy">{{ $step["title"] }}</h3>
+                        <p class="mt-2 text-sm leading-relaxed text-slate">{{ $step['text'] }}</p>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        {{-- ===== What can we help you with ===== --}}
+        @php
+            $tiles = array_values(array_filter([
+                ['Product enquiry', 'Tell us which instrument or brand you need.', route('contact', ['topic' => 'product']) . '#contact-form', 'm21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9', false],
+                ['Request a quote', 'Get a quotation for the models you have shortlisted.', route('contact', ['topic' => 'quote']) . '#contact-form', 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z', false],
+                ['Service & spare parts', 'Ask about service, repair or spare parts.', route('contact', ['topic' => 'service']) . '#contact-form', 'M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437 1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008Z', false],
+                $catalogueFile ? ['Product catalogue', 'Download our catalogue as a PDF.', asset('storage/' . $catalogueFile), 'M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3', true] : null,
+            ]));
+        @endphp
+        <div class="mt-20">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-8">
+                <span class="section-badge">Quick links</span>
+                <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
+                    What can we <span class="text-cyan-ink">help you with?</span>
+                </h2>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-5">
+                @foreach ($tiles as [$tTitle, $tText, $tHref, $tIcon, $tDownload])
+                    <a data-reveal href="{{ $tHref }}" @if ($tDownload) download @endif class="{{ $card }} block">
+                        <div class="{{ $icon }}">
+                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="{{ $tIcon }}"/>
+                            </svg>
+                        </div>
+                        <h3 class="mt-4 text-base font-bold text-navy transition group-hover:text-link">{{ $tTitle }}</h3>
+                        <p class="mt-2 text-sm leading-relaxed text-slate">{{ $tText }}</p>
+                    </a>
+                @endforeach
+            </div>
+        </div>
+
         {{-- ===== Quick response form ===== --}}
         <div id="contact-form" class="mt-20 scroll-mt-6 max-w-4xl mx-auto">
             <div data-reveal class="rounded-3xl bg-gradient-to-br from-ice to-cyan/10 border border-cyan/20 p-3 sm:p-4">
@@ -216,7 +302,7 @@
                                 <input name="city" type="text" value="{{ old('city') }}" placeholder="City" class="{{ $input }}">
                             </div>
                             <div>
-                                <input name="subject" type="text" value="{{ old('subject') }}" placeholder="Application / Product" class="{{ $input }}">
+                                <input name="subject" type="text" value="{{ old('subject', $prefill) }}" placeholder="Application / Product" class="{{ $input }}">
                             </div>
                             <div class="md:col-span-2">
                                 <textarea name="message" rows="4" placeholder="Please elaborate your requirement *" required data-rule="required" data-label="Message" @input="clean($el)" @blur="check($el)"
@@ -230,6 +316,55 @@
                         </div>
                     </form>
                 </div>
+            </div>
+        </div>
+
+        {{-- ===== FAQ ===== --}}
+        <div class="mt-20 max-w-3xl mx-auto" x-data="{ open: null }">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-8">
+                <span class="section-badge">FAQ</span>
+                <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
+                    Common <span class="text-cyan-ink">questions</span>
+                </h2>
+            </div>
+
+            <div class="space-y-3">
+                @foreach ($faqs as $i => [$q, $a])
+                    <div data-reveal class="overflow-hidden rounded-2xl border border-gray-100 bg-white shadow-sm transition-colors duration-300 hover:border-cyan/40">
+                        <h3>
+                            <button type="button" @click="open = open === {{ $i }} ? null : {{ $i }}" :aria-expanded="open === {{ $i }}" aria-controls="faq-{{ $i }}"
+                                    class="flex w-full items-center justify-between gap-4 px-5 py-4 text-left text-sm font-semibold text-navy transition hover:text-link focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan sm:text-base">
+                                {{ $q }}
+                                <svg class="h-5 w-5 shrink-0 text-cyan-ink transition-transform duration-300" :class="open === {{ $i }} ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"/></svg>
+                            </button>
+                        </h3>
+                        <div id="faq-{{ $i }}" x-cloak x-show="open === {{ $i }}" x-transition.opacity.duration.200ms>
+                            <p class="px-5 pb-5 text-sm leading-relaxed text-slate">{{ $a }}</p>
+                        </div>
+                    </div>
+                @endforeach
+            </div>
+        </div>
+
+        {{-- ===== Prefer to talk? ===== --}}
+        <div data-reveal="zoom" class="relative mt-20 overflow-hidden rounded-3xl bg-gradient-to-br from-navy to-link px-8 py-10 sm:px-12 sm:py-12
+                    flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div class="pointer-events-none absolute -right-10 -top-16 h-56 w-56 rounded-full border-[26px] border-white/5"></div>
+            <div class="relative text-center sm:text-left">
+                <h3 class="text-xl sm:text-2xl font-bold text-white">Prefer to talk?</h3>
+                <p class="mt-2 max-w-md text-sm text-white/75">Call {{ $c['departments'][0]['person'] }} directly, or message us on WhatsApp.</p>
+            </div>
+            <div class="relative flex shrink-0 flex-col items-center gap-3 sm:flex-row">
+                <a href="tel:{{ preg_replace('/\s+/', '', $c['call']) }}" class="btn-glass px-7 py-3">
+                    {{ $c['call'] }}
+                    <svg class="arrow-nudge h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
+                    </svg>
+                </a>
+                <a href="https://wa.me/{{ $waNumber }}" target="_blank" rel="noopener noreferrer"
+                   class="inline-flex items-center justify-center gap-2 rounded-full border border-white/40 px-7 py-3 text-sm font-semibold text-white transition hover:bg-white hover:text-navy">
+                    WhatsApp
+                </a>
             </div>
         </div>
 

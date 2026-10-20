@@ -36,7 +36,8 @@ class ContactDetailsTest extends TestCase
                   'Vishwakarma Industrial Area', '302013', '08ABYPA8087G1Z2'] as $text) {
             $this->assertStringContainsString($text, $html, $text);
         }
-        $this->assertLessThan(strpos($html, 'Rupa Maheshwari'), strpos($html, 'Mukesh Kumar Agarwal'));   // primary first
+        $body = substr($html, (int) strpos($html, '</head>'));   // the FAQ data in <head> names the sales contact first
+        $this->assertLessThan(strpos($body, 'Rupa Maheshwari'), strpos($body, 'Mukesh Kumar Agarwal'));   // primary first
         $this->assertStringContainsString('href="tel:+919829015024"', $html);
         $this->assertStringContainsString('href="tel:+919352935901"', $html);
         $this->assertStringContainsString('href="mailto:office@agarwalbrothers.com"', $html);
@@ -121,5 +122,43 @@ class ContactDetailsTest extends TestCase
         $this->assertSame('Monday to Saturday: 10:00 am - 7:00 pm', \App\Support\HelpLinks::hours());
         $this->assertSame('Monday to Saturday: 10:00 am - 7:00 pm', config('contact.working_days.0'));
         $this->assertSame([], config('contact.branches'));
+    }
+
+    public function test_the_contact_page_has_steps_quick_links_faq_and_a_call_band_in_order(): void
+    {
+        $html = $this->get(route('contact'))->assertOk()->getContent();
+
+        $order = array_map(fn ($n) => strpos($html, $n), [
+            'For Support', 'From enquiry to', 'What can we', 'Contact Our', 'Common', 'Prefer to talk?',
+        ]);
+
+        $this->assertNotContains(false, $order);
+        $sorted = $order;
+        sort($sorted);
+        $this->assertSame($sorted, $order);
+
+        $this->assertStringContainsString('href="https://wa.me/919829015024"', $html);
+        $this->assertStringContainsString('tel:+919829015024', $html);
+        $this->assertStringNotContainsString('{$', $html);
+    }
+
+    public function test_the_faq_is_also_sent_to_google_as_valid_faq_page_data(): void
+    {
+        $html = $this->get(route('contact'))->assertOk()->getContent();
+
+        preg_match_all('#<script type="application/ld\+json">(.*?)</script>#s', $html, $m);
+        $faq = collect($m[1])->map(fn ($j) => json_decode($j, true))->firstWhere('@type', 'FAQPage');
+
+        $this->assertNotNull($faq);
+        $this->assertGreaterThanOrEqual(5, count($faq['mainEntity']));
+        $this->assertStringContainsString('08ABYPA8087G1Z2', json_encode($faq));
+    }
+
+    public function test_a_quick_link_topic_fills_the_subject_and_unknown_topics_are_ignored(): void
+    {
+        $this->get(route('contact', ['topic' => 'quote']))->assertOk()->assertSee('value="Request for quotation"', false);
+
+        $this->get(route('contact', ['topic' => '"><script>alert(1)</script>']))->assertOk()
+            ->assertDontSee('<script>alert(1)</script>', false);
     }
 }

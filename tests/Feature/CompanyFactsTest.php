@@ -81,4 +81,21 @@ class CompanyFactsTest extends TestCase
             $this->assertStringNotContainsString('{{ $', preg_replace('/<script.*?<\/script>/s', '', $html), "raw blade on {$url}");
         }
     }
+
+    public function test_our_story_sections_are_in_the_owners_order(): void
+    {
+        \App\Models\TeamMember::create(['name' => 'Lead One', 'is_leader' => true, 'is_active' => true]);
+        \App\Models\TeamMember::create(['name' => 'Team One', 'is_leader' => false, 'is_active' => true]);
+
+        $html = $this->get('/our-story')->assertOk()->getContent();
+
+        $order = array_map(fn ($needle) => strpos($html, $needle), [
+            'Mission', 'Meet our leadership', 'Our Journey', 'Our Values', 'Our people',
+        ]);
+
+        $this->assertNotContains(false, $order);
+        $sorted = $order;
+        sort($sorted);
+        $this->assertSame($sorted, $order, 'About/Mission, then Leadership, Journey, Values, People');
+    }
 }
