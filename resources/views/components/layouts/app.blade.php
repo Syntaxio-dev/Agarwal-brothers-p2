@@ -377,7 +377,7 @@
 
                             {{-- Bottom bar --}}
                             <div class="mt-6 flex flex-col items-center justify-between gap-3 rounded-3xl bg-white/5 px-6 py-3.5 ring-1 ring-white/10 sm:flex-row sm:rounded-full">
-                                <p class="text-center text-xs text-white/60">&copy; {{ date('Y') }} Agarwal Brothers. All rights reserved.@if (! empty($fc['gstin'])) <span class="whitespace-nowrap sm:ml-2">GSTIN: {{ $fc['gstin'] }}</span>@endif</p>
+                                <p class="text-center text-xs text-white/60">&copy; {{ date('Y') }} Agarwal Brothers. All rights reserved.@if (! empty($fc['gstin'])) <span class="whitespace-nowrap sm:ml-2">GSTIN: {{ $fc['gstin'] }}</span>@endif <span class="whitespace-nowrap sm:ml-2">Developed by <span class="font-semibold text-white/80">Ayush Sharma</span></span></p>
                                 <div class="flex flex-wrap items-center justify-center gap-x-5 gap-y-2">
                                     <a href="{{ route('privacy') }}" class="text-xs text-white/60 transition hover:text-white">Privacy Policy</a>
                                     <button type="button" x-data @click="$store.consent.reopen()" class="text-xs text-white/60 transition hover:text-white">Cookie settings</button>

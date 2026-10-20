@@ -253,6 +253,8 @@ main:focus {
     .btn-primary:hover .arrow-nudge,
     .btn-glass:hover .arrow-nudge,
     .btn-ghost:hover .arrow-nudge { translate: 3px 0; }
+    .row-link:hover .arrow-nudge,
+    .row-link:focus-visible .arrow-nudge { translate: 3px 0; }
     .arrow-nudge-down { transition: translate 0.25s ease; }
     .group:hover .btn-primary .arrow-nudge { translate: 3px 0; }
     .group:hover .btn-primary .arrow-nudge-down { translate: 0 3px; }
@@ -545,6 +547,12 @@ select[aria-invalid="true"] {
 @keyframes tl-stem { from { transform: scaleY(0); } }
 @keyframes icon-pop { 0% { opacity: 0; transform: scale(0.6); } 65% { opacity: 1; transform: scale(1.08); } 100% { transform: scale(1); } }
 @keyframes bar-grow { from { transform: scaleX(0); } }
+@keyframes flow-check { from { stroke-dashoffset: 1; } }
+@keyframes flow-pulse {
+    0%   { box-shadow: 0 0 0 8px #fff, 0 0 0 8px rgba(0, 180, 216, 0.45), 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+    100% { box-shadow: 0 0 0 8px #fff, 0 0 0 24px rgba(0, 180, 216, 0), 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1); }
+}
+.flow-check { stroke-dasharray: 1; }
 @keyframes pin-drop { from { opacity: 0; transform: translate3d(0, -24px, 0); } }
 @keyframes hero-zoom { from { transform: scale(1.07); } }
 @keyframes hero-rise { from { opacity: 0; transform: translate3d(0, 18px, 0); } }
@@ -576,6 +584,26 @@ select[aria-invalid="true"] {
     }
     [data-reveal="draw"].is-revealed .tl-card {
         animation: reveal-up 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94) calc(var(--reveal-delay, 0ms) + var(--tl-delay, 0ms)) backwards;
+    }
+
+    /* Contact Us "How it works": the dashed line draws left to right (700 ms) and each icon pops as the line reaches it
+       (--flow-delay = 230 ms per step); the last tile draws its check mark and gives one soft pulse */
+    [data-reveal="draw"].is-revealed .flow-line {
+        transform-origin: left;
+        animation: bar-grow 700ms linear calc(var(--reveal-delay, 0ms) + 100ms) backwards;
+    }
+    [data-reveal="draw"].is-revealed .flow-tile {
+        animation: icon-pop 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94) calc(var(--reveal-delay, 0ms) + 100ms + var(--flow-delay, 0ms)) backwards;
+    }
+    [data-reveal="draw"].is-revealed .flow-tile.flow-pulse {
+        animation: icon-pop 500ms cubic-bezier(0.25, 0.46, 0.45, 0.94) calc(var(--reveal-delay, 0ms) + 100ms + var(--flow-delay, 0ms)) backwards,
+                   flow-pulse 1100ms ease-out calc(var(--reveal-delay, 0ms) + 700ms + var(--flow-delay, 0ms)) 1;
+    }
+    [data-reveal="draw"].is-revealed .flow-text {
+        animation: reveal-up 600ms cubic-bezier(0.25, 0.46, 0.45, 0.94) calc(var(--reveal-delay, 0ms) + 150ms + var(--flow-delay, 0ms)) backwards;
+    }
+    [data-reveal="draw"].is-revealed .flow-check {
+        animation: flow-check 700ms ease-out calc(var(--reveal-delay, 0ms) + 400ms + var(--flow-delay, 0ms)) backwards;
     }
 
     /* rows that Alpine builds on the page (enquiry list) cannot use data-reveal, so they simply rise in as they are created */

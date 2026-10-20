@@ -279,7 +279,7 @@ class HelpGuide
                 'url' => 'admin/job-openings',
                 'intro' => 'Each opening gets its own page with an application form. Applications arrive in the admin panel.',
                 'steps' => [
-                    'Careers, then Job Openings, then New. Add the title, location, type and department.',
+                    'Careers, then Job Openings, then New. Add the title, location, type and department. Experience and salary are optional: when filled they show as tags on the role card. Roles are grouped and filtered by department on the careers page.',
                     'Write a short summary (shown in the list) and the role description.',
                     'Application questions: add extra questions for this role. Choose the answer type (short text, long text, dropdown, yes or no) and whether it is required. Name, email, phone and resume are always asked.',
                     'Turn "Open for hiring" off when the role is filled. The role disappears from the careers page but is kept.',

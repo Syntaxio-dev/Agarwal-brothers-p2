@@ -9,7 +9,7 @@ class JobOpening extends Model
 {
     use LogsActivity;
     protected $fillable = [
-        'title', 'slug', 'location', 'employment_type', 'department',
+        'title', 'slug', 'location', 'employment_type', 'department', 'experience', 'salary',
         'summary', 'description', 'questions', 'is_active', 'sort_order',
     ];
 

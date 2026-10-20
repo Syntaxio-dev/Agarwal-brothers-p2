@@ -91,19 +91,22 @@ class ContactDetailsTest extends TestCase
         $this->assertSame(['+91 98290 15024', '+91 93529 35901'], $phones);
     }
 
-    public function test_the_contact_page_has_four_cards_no_branch_and_the_new_office_timings(): void
+    public function test_the_contact_page_has_two_people_cards_no_branch_and_the_office_timings_beside_the_map(): void
     {
         $html = $this->get('/contact-us')->assertOk()->getContent();
 
-        // exactly four cards: Founder, Enquiries & Sales, Head Office, Office Timings
+        // two people cards (the head office and the timings now sit beside the map)
         preg_match_all('/<h3 class="mt-4 text-base font-bold text-navy">([^<]+)<\/h3>/', $html, $m);
-        $this->assertSame(['Founder', 'Enquiries & Sales', 'Head Office - Jaipur', 'Office Timings'], array_map('html_entity_decode', $m[1]));
+        $this->assertSame(['Founder', 'Enquiries & Sales'], array_map('html_entity_decode', $m[1]));
 
-        // the Jodhpur branch is gone everywhere on the page (card, map pin, texts)
-        $this->assertStringNotContainsString('Jodhpur', $html);
+        // Jodhpur is only a pin on the map (no branch card, no address, no 'Branch Office' label)
+        $this->assertSame(2, substr_count($html, 'class="map-pin absolute"'));
+        $this->assertSame(1, substr_count($html, 'Jodhpur'));
         $this->assertStringNotContainsString('Branch Office', $html);
         $this->assertStringNotContainsString('Plot No. 00', $html);
-        $this->assertStringContainsString('Tap into our local team in Jaipur', $html);
+        $this->assertStringContainsString('Headquartered in Jaipur', $html);
+        $this->assertStringContainsString('Head Office - Jaipur', $html);
+        $this->assertStringContainsString('Office Timings', $html);
 
         // the timings card says only what the owner asked for
         $this->assertStringContainsString('Monday to Saturday: 10:00 am - 7:00 pm', $html);
@@ -111,8 +114,8 @@ class ContactDetailsTest extends TestCase
         $this->assertStringNotContainsString('09:30 am', $html);
         $this->assertStringNotContainsString('Holiday</p>', $html);
 
-        // four across on desktop, two on tablets, one on phones
-        $this->assertStringContainsString('lg:w-[calc(25%-0.9375rem)]', $html);
+        // three across on desktop, two on tablets, one on phones
+        $this->assertStringContainsString('lg:w-[calc(33.333%-0.84rem)]', $html);
         $this->assertStringContainsString('lg:px-3 xl:px-6', $html);                // a bit tighter between 1024 and 1279px so the email fits
         $this->assertStringContainsString('sm:w-[calc(50%-0.625rem)]', $html);
     }
@@ -129,7 +132,7 @@ class ContactDetailsTest extends TestCase
         $html = $this->get(route('contact'))->assertOk()->getContent();
 
         $order = array_map(fn ($n) => strpos($html, $n), [
-            'For Support', 'From enquiry to', 'What can we', 'Contact Our', 'Common', 'Prefer to talk?',
+            'Get in', 'Years of experience', 'What can we', 'From enquiry to', 'Headquartered in', 'For Support', 'Common', 'Contact Our', 'Prefer to talk?',
         ]);
 
         $this->assertNotContains(false, $order);
@@ -140,6 +143,37 @@ class ContactDetailsTest extends TestCase
         $this->assertStringContainsString('href="https://wa.me/919829015024"', $html);
         $this->assertStringContainsString('tel:+919829015024', $html);
         $this->assertStringNotContainsString('{$', $html);
+    }
+
+    public function test_the_header_has_call_and_whatsapp_next_to_the_message_button_and_a_trust_strip(): void
+    {
+        $html = $this->get(route('contact'))->assertOk()->getContent();
+        $header = substr($html, strpos($html, 'Get in'), strpos($html, 'What can we') - strpos($html, 'Get in'));
+
+        $this->assertStringContainsString('href="#contact-form"', $header);
+        $this->assertStringContainsString('href="tel:+919829015024"', $header);
+        $this->assertStringContainsString('href="https://wa.me/919829015024"', $header);
+        foreach (['30+', '1000+', '50+', '70+'] as $n) {
+            $this->assertStringContainsString($n, $header);
+        }
+    }
+
+    public function test_the_form_keeps_company_and_city_behind_a_toggle_and_shows_the_reply_note(): void
+    {
+        $html = $this->get(route('contact'))->assertOk()->getContent();
+
+        $this->assertStringContainsString('We usually reply within one working day.', $html);
+        $this->assertStringContainsString('Add company and city (optional)', $html);
+        $this->assertGreaterThan(strpos($html, 'name="message"'), strpos($html, 'name="company"'));   // after the message
+        $this->assertStringContainsString('name="city"', $html);
+    }
+
+    public function test_the_company_and_city_toggle_opens_by_itself_when_they_were_filled(): void
+    {
+        $this->assertStringContainsString('x-data="{ more: false }"', $this->get(route('contact'))->getContent());
+
+        $html = $this->withSession(['_old_input' => ['company' => 'Acme Labs']])->get(route('contact'))->assertOk()->getContent();
+        $this->assertStringContainsString('x-data="{ more: true }"', $html);
     }
 
     public function test_the_faq_is_also_sent_to_google_as_valid_faq_page_data(): void

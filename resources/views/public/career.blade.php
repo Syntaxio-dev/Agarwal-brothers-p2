@@ -22,6 +22,12 @@
                     @if ($opening->department)
                         <span class="rounded-full bg-cyan/10 px-3 py-1 text-xs font-semibold text-link">{{ $opening->department }}</span>
                     @endif
+                    @if ($opening->experience)
+                        <span class="rounded-full bg-white border border-gray-100 px-3 py-1 text-xs font-semibold text-navy">{{ $opening->experience }}</span>
+                    @endif
+                    @if ($opening->salary)
+                        <span class="rounded-full bg-white border border-gray-100 px-3 py-1 text-xs font-semibold text-navy">{{ $opening->salary }}</span>
+                    @endif
                 </div>
 
                 @if ($opening->summary)

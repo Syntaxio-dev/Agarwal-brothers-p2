@@ -43,7 +43,16 @@ class JobOpeningForm
                             ->default('Full Time')
                             ->required(),
                         TextInput::make('department')
-                            ->placeholder('e.g. Sales, Service, Marketing'),
+                            ->placeholder('e.g. Sales, Service, Marketing')
+                            ->helperText('Roles are grouped and filtered by this on the careers page.'),
+                        TextInput::make('experience')
+                            ->maxLength(80)
+                            ->placeholder('e.g. 2-4 years, Fresher welcome')
+                            ->helperText('Optional. Shown as a tag on the role card.'),
+                        TextInput::make('salary')
+                            ->maxLength(80)
+                            ->placeholder('e.g. Rs 3-5 LPA, As per industry standards')
+                            ->helperText('Optional. Leave empty if you do not want to show it.'),
                         Textarea::make('summary')
                             ->rows(2)
                             ->maxLength(250)

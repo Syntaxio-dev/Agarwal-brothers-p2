@@ -28,6 +28,12 @@ return [
     // Branch offices shown on the Contact Us page. Empty on purpose: only the head office is shown for now.
     'branches' => [],
 
+    // Extra places marked on the Rajasthan map of the Contact Us page (a pin with the city name only: no card, no address).
+    // x / y are percentages of the map picture; 'tag' is an optional small line under the city name.
+    'map_pins' => [
+        ['city' => 'Jodhpur', 'x' => 40.28, 'y' => 55.48],
+    ],
+
     // The people customers can call, most important first. The first one is the PRIMARY contact
     // (footer, emails, spec sheet, 404 pages, Google data and the WhatsApp button all lead with it);
     // the second is the secondary enquiry line. 'phone' is shown as written.
@@ -55,6 +61,9 @@ return [
 
     // The floating WhatsApp button opens a chat with this number (digits with country code) when Site Settings has none.
     'whatsapp' => '919829015024',
+
+    // A soft line under the Contact Us form heading (not a guarantee). Set to '' to hide it.
+    'reply_note' => 'We usually reply within one working day.',
 
     // "How we work with you" steps on the Contact Us page (no promised response times on purpose).
     'steps' => [
