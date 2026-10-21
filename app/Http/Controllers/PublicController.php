@@ -230,7 +230,9 @@ class PublicController extends Controller
 
         $vertical = $this->contextVertical($request, $product->category);
 
-        return view('public.product', compact('product', 'similar', 'alsoCompared', 'vertical'));
+        $questions = \App\Models\EnquiryQuestion::forProduct($product);
+
+        return view('public.product', compact('product', 'similar', 'alsoCompared', 'vertical', 'questions'));
     }
 
     /** Print-ready specification sheet of one product (browser "Save as PDF" gives a real text PDF). */

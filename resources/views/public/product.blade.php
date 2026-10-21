@@ -181,21 +181,6 @@
             </div>
         </div>
 
-        {{-- ===== Overview ===== --}}
-        @if ($overview || $product->short_description)
-            <section data-reveal class="mt-14 text-center">
-                <span class="section-badge">Overview</span>
-                @if ($overview)
-                    <div class="mx-auto mt-5 max-w-4xl text-left leading-relaxed text-slate sm:text-center
-                                [&_p]:mb-4 [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ul]:text-left [&_ol]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_ol]:text-left [&_strong]:text-navy [&_a]:text-link [&_a]:underline">
-                        {!! \Illuminate\Support\Str::sanitizeHtml((string) $overview) !!}
-                    </div>
-                @else
-                    <p class="mx-auto mt-5 max-w-4xl leading-relaxed text-slate">{{ $product->short_description }}</p>
-                @endif
-            </section>
-        @endif
-
         {{-- ===== Technical specifications ===== --}}
         @if ($specs->count())
             <section data-reveal class="mt-14 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-10">
@@ -214,53 +199,73 @@
             </section>
         @endif
 
-        {{-- ===== Key features ===== --}}
-        @if ($features->count())
-            <section data-reveal class="mt-8 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-10">
-                <div class="text-center">
-                    <span class="section-badge">Features</span>
-                    <h2 class="mt-3 text-xl font-bold text-navy sm:text-2xl">Key Features of <span class="text-cyan-ink">{{ $product->name }}</span></h2>
-                </div>
-                <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-                    @foreach ($features as $f)
-                        <div data-reveal class="flex gap-4 rounded-xl border border-gray-100 bg-ice p-4 transition-colors hover:border-cyan/50">
-                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-navy to-link text-white">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $check }}"/></svg>
-                            </span>
-                            <div>
-                                <h3 class="text-sm font-semibold text-navy">{{ $f['title'] }}</h3>
-                                @if (filled($f['text'] ?? null))
-                                    <p class="mt-1 text-sm leading-relaxed text-slate">{{ $f['text'] }}</p>
-                                @endif
-                            </div>
+        {{-- ===== Key features & advantages (side by side from large screens) ===== --}}
+        @if ($features->count() || $advantages->count())
+            <section data-reveal class="mt-8 grid grid-cols-1 gap-8 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-10 {{ $features->count() && $advantages->count() ? 'lg:grid-cols-2 lg:gap-12' : '' }}">
+                @if ($features->count())
+                    <div>
+                        <div class="text-center lg:text-left">
+                            <span class="section-badge">Features</span>
+                            <h2 class="mt-3 text-xl font-bold text-navy sm:text-2xl">Key Features of <span class="text-cyan-ink">{{ $product->name }}</span></h2>
                         </div>
-                    @endforeach
-                </div>
+                        <div class="mt-8 grid grid-cols-1 gap-4">
+                            @foreach ($features as $f)
+                                <div data-reveal class="flex gap-4 rounded-xl border border-gray-100 bg-ice p-4 transition-colors hover:border-cyan/50">
+                                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-navy to-link text-white">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="3"><path stroke-linecap="round" stroke-linejoin="round" d="{{ $check }}"/></svg>
+                                    </span>
+                                    <div>
+                                        <h3 class="text-sm font-semibold text-navy">{{ $f['title'] }}</h3>
+                                        @if (filled($f['text'] ?? null))
+                                            <p class="mt-1 text-sm leading-relaxed text-slate">{{ $f['text'] }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
+                @if ($advantages->count())
+                    <div>
+                        <div class="text-center lg:text-left">
+                            <span class="section-badge">Advantages</span>
+                            <h2 class="mt-3 text-xl font-bold text-navy sm:text-2xl">Key Advantages of <span class="text-cyan-ink">{{ $product->name }}</span></h2>
+                        </div>
+                        <div class="mt-8 grid grid-cols-1 gap-4">
+                            @foreach ($advantages as $f)
+                                <div data-reveal class="flex gap-4 rounded-xl border border-gray-100 bg-ice p-4 transition-colors hover:border-cyan/50">
+                                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-link to-cyan text-white">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5 14.25 2.25 12 10.5h8.25L9.75 21.75 12 13.5H3.75Z"/></svg>
+                                    </span>
+                                    <div>
+                                        <h3 class="text-sm font-semibold text-navy">{{ $f['title'] }}</h3>
+                                        @if (filled($f['text'] ?? null))
+                                            <p class="mt-1 text-sm leading-relaxed text-slate">{{ $f['text'] }}</p>
+                                        @endif
+                                    </div>
+                                </div>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </section>
         @endif
 
-        {{-- ===== Key advantages ===== --}}
-        @if ($advantages->count())
-            <section data-reveal class="mt-8 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-10">
+        {{-- ===== Overview (full-width card, text in two columns on large screens so the sides are not empty) ===== --}}
+        @if ($overview || $product->short_description)
+            <section data-reveal class="mt-8 rounded-3xl border border-gray-200 bg-ice p-6 sm:p-10">
                 <div class="text-center">
-                    <span class="section-badge">Advantages</span>
-                    <h2 class="mt-3 text-xl font-bold text-navy sm:text-2xl">Key Advantages of <span class="text-cyan-ink">{{ $product->name }}</span></h2>
+                    <span class="section-badge">Overview</span>
+                    <h2 class="mt-3 text-xl font-bold text-navy sm:text-2xl">About <span class="text-cyan-ink">{{ $product->name }}</span></h2>
                 </div>
-                <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
-                    @foreach ($advantages as $f)
-                        <div data-reveal class="flex gap-4 rounded-xl border border-gray-100 bg-ice p-4 transition-colors hover:border-cyan/50">
-                            <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-link to-cyan text-white">
-                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 13.5 14.25 2.25 12 10.5h8.25L9.75 21.75 12 13.5H3.75Z"/></svg>
-                            </span>
-                            <div>
-                                <h3 class="text-sm font-semibold text-navy">{{ $f['title'] }}</h3>
-                                @if (filled($f['text'] ?? null))
-                                    <p class="mt-1 text-sm leading-relaxed text-slate">{{ $f['text'] }}</p>
-                                @endif
-                            </div>
-                        </div>
-                    @endforeach
-                </div>
+                @if ($overview)
+                    <div class="mt-8 text-left leading-relaxed text-slate lg:columns-2 lg:gap-12
+                                [&_p]:mb-4 [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-6 [&_ol]:mb-4 [&_ol]:list-decimal [&_ol]:pl-6 [&_strong]:text-navy [&_a]:text-link [&_a]:underline [&_li]:break-inside-avoid">
+                        {!! \Illuminate\Support\Str::sanitizeHtml((string) $overview) !!}
+                    </div>
+                @else
+                    <p class="mt-8 leading-relaxed text-slate">{{ $product->short_description }}</p>
+                @endif
             </section>
         @endif
 
@@ -305,10 +310,10 @@
 
         @include('public.partials.faq', ['faqs' => $product->faqs, 'title' => 'Frequently Asked Questions: ' . $product->name])
 
-        {{-- ===== Enquiry form ===== --}}
+        {{-- ===== Enquiry form (wide rectangle) ===== --}}
         <section id="enquiry-form" class="mt-16 scroll-mt-6">
-            <div data-reveal class="mx-auto max-w-3xl rounded-3xl border border-cyan/20 bg-gradient-to-br from-ice to-cyan/10 p-3 sm:p-4">
-                <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-8">
+            <div data-reveal class="rounded-3xl border border-cyan/20 bg-gradient-to-br from-ice to-cyan/10 p-3 sm:p-4">
+                <div class="rounded-2xl border border-gray-100 bg-white p-6 shadow-sm sm:p-10">
                     <div class="text-center">
                         <span class="section-badge">Enquiry</span>
                         <h2 class="mt-3 text-xl font-bold text-navy sm:text-2xl">Enquire about <span class="text-cyan-ink">{{ $product->name }}</span></h2>
@@ -323,42 +328,72 @@
                         <div class="mt-5"><x-form.alert type="error">Please fix the highlighted fields and try again.</x-form.alert></div>
                     @endif
 
-                    <form method="POST" action="{{ route('enquiry.store') }}" class="mt-6 space-y-4" x-data="formGuard(@js(collect($errors->messages())->map(fn ($m) => $m[0])->all()))" @submit="submit($event)" novalidate>
+                    <form method="POST" action="{{ route('enquiry.store') }}" class="mt-8 space-y-5" x-data="formGuard(@js(collect($errors->messages())->map(fn ($m) => $m[0])->all()))" @submit="submit($event)" novalidate>
                         @csrf
                         <input type="hidden" name="product_id" value="{{ $product->id }}">
                         <div class="hidden" aria-hidden="true">
                             <input type="text" name="website" tabindex="-1" autocomplete="off">
                         </div>
 
-                        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-                            <div>
+                        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-6">
+                            <div class="lg:col-span-2">
                                 <label class="mb-1.5 block text-sm font-semibold text-navy">Name <span class="text-alert">*</span></label>
                                 <input type="text" name="name" value="{{ old('name') }}" required data-rule="required name" data-clean="name" data-label="Name" maxlength="80" autocomplete="name" @input="clean($el)" @blur="check($el)" class="{{ $input }}">
                                 <x-form.error name="name" />
                             </div>
-                            <div>
+                            <div class="lg:col-span-2">
                                 <label class="mb-1.5 block text-sm font-semibold text-navy">Email <span class="text-alert">*</span></label>
                                 <input type="email" name="email" value="{{ old('email') }}" required data-rule="required email" data-label="Email" maxlength="255" autocomplete="email" @input="clean($el)" @blur="check($el)" class="{{ $input }}">
                                 <x-form.error name="email" />
                             </div>
-                            <div>
+                            <div class="sm:col-span-2 lg:col-span-2">
                                 <label class="mb-1.5 block text-sm font-semibold text-navy">Phone</label>
                                 <x-form.phone :input="$input" rounded="rounded-xl" />
                             </div>
-                            <div>
+                            <div class="lg:col-span-3">
                                 <label class="mb-1.5 block text-sm font-semibold text-navy">Application Budget</label>
                                 <input type="text" name="budget" value="{{ old('budget') }}" class="{{ $input }}">
                             </div>
+                            <div class="lg:col-span-3">
+                                <label class="mb-1.5 block text-sm font-semibold text-navy">Where is the order coming from?</label>
+                                <input type="text" name="order_location" value="{{ old('order_location') }}" class="{{ $input }}">
+                            </div>
                         </div>
 
-                        <div>
-                            <label class="mb-1.5 block text-sm font-semibold text-navy">Where is the order coming from?</label>
-                            <input type="text" name="order_location" value="{{ old('order_location') }}" class="{{ $input }}">
-                        </div>
+                        @if ($questions->isNotEmpty())
+                            {{-- Quick questions from Admin > Enquiry questions (by vertical); all are required --}}
+                            <div class="rounded-2xl border border-cyan/20 bg-ice p-5 sm:p-6">
+                                <p class="text-sm font-semibold text-navy">A few quick questions <span class="font-normal text-slate">(they help us suggest the right model)</span></p>
+                                <div class="mt-4 grid grid-cols-1 gap-5 lg:grid-cols-2">
+                                    @foreach ($questions as $q)
+                                        @if ($q->type === 'choice')
+                                            <fieldset class="{{ count($q->optionList()) > 3 ? 'lg:col-span-2' : '' }}">
+                                                <legend class="mb-2 text-sm font-medium text-navy">{{ $q->question }} <span class="text-alert">*</span></legend>
+                                                <div class="flex flex-wrap gap-2">
+                                                    @foreach ($q->optionList() as $opt)
+                                                        <label class="cursor-pointer">
+                                                            <input type="radio" name="answers[{{ $q->id }}]" value="{{ $opt }}" class="peer sr-only" @if ($loop->first) data-rule="required" data-label="Please choose an answer" @endif @change="check($el.closest('fieldset').querySelector('[data-rule]'))" @checked(old('answers.' . $q->id) === $opt)>
+                                                            <span class="inline-block rounded-full border border-gray-200 bg-white px-4 py-2 text-sm text-navy transition-colors hover:border-cyan peer-checked:border-navy peer-checked:bg-navy peer-checked:text-white peer-focus-visible:ring-2 peer-focus-visible:ring-cyan">{{ $opt }}</span>
+                                                        </label>
+                                                    @endforeach
+                                                </div>
+                                                <x-form.error name="answers.{{ $q->id }}" />
+                                            </fieldset>
+                                        @else
+                                            <div>
+                                                <label class="mb-1.5 block text-sm font-medium text-navy">{{ $q->question }} <span class="text-alert">*</span></label>
+                                                <input type="text" name="answers[{{ $q->id }}]" value="{{ old('answers.' . $q->id) }}" maxlength="300" required data-rule="required" data-label="Please answer this" @input="clean($el)" @blur="check($el)" class="{{ $input }}">
+                                                <x-form.error name="answers.{{ $q->id }}" />
+                                            </div>
+                                        @endif
+                                    @endforeach
+                                </div>
+                            </div>
+                        @endif
 
                         <div>
                             <label class="mb-1.5 block text-sm font-semibold text-navy">Message</label>
-                            <textarea name="message" rows="3"
+                            <textarea name="message" rows="4"
                                 class="w-full resize-y rounded-xl border border-gray-200 bg-white px-4 py-3 text-sm text-navy outline-none focus:border-cyan focus:ring-2 focus:ring-cyan/20">{{ old('message') }}</textarea>
                         </div>
 

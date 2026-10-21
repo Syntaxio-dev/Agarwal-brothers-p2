@@ -48,6 +48,19 @@ class EnquiryForm
                     ->reorderable(false)
                     ->visible(fn ($record) => (bool) $record?->items()->exists())
                     ->columnSpanFull(),
+                Repeater::make('answers')
+                    ->label("Customer's answers to the quick questions")
+                    ->schema([
+                        TextInput::make('question')->disabled()->dehydrated(false),
+                        TextInput::make('answer')->disabled()->dehydrated(false),
+                    ])
+                    ->columns(2)
+                    ->addable(false)
+                    ->deletable(false)
+                    ->reorderable(false)
+                    ->dehydrated(false)   // read-only: never write the list back
+                    ->visible(fn ($record) => (bool) ($record && $record->answerList()))
+                    ->columnSpanFull(),
                 Textarea::make('message')
                     ->default(null)
                     ->columnSpanFull(),

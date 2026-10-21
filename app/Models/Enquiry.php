@@ -26,7 +26,15 @@ class Enquiry extends Model
     /** Statuses that still need someone's attention. */
     public const OPEN = ['new', 'contacted', 'quoted'];
 
-    protected $fillable = ['product_id', 'name', 'email', 'phone', 'company', 'budget', 'order_location', 'message', 'status', 'assigned_to'];
+    protected $fillable = ['product_id', 'name', 'email', 'phone', 'company', 'budget', 'order_location', 'message', 'answers', 'status', 'assigned_to'];
+
+    protected $casts = ['answers' => 'array'];
+
+    /** The visitor's answers to the quick questions, as [['question' => ..., 'answer' => ...], ...]. */
+    public function answerList(): array
+    {
+        return collect($this->answers ?? [])->filter(fn ($a) => filled($a['answer'] ?? null))->values()->all();
+    }
 
     protected static function booted(): void
     {

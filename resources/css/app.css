@@ -884,3 +884,9 @@ html.nav-compact .site-nav { box-shadow: 0 8px 22px -14px rgb(11 37 69 / 0.4); }
     .cat-swap > * { transition: none; }
 }
 
+
+/* Careers: soft decorative rings drift slowly up and down (motion only when the visitor allows it) */
+@media (prefers-reduced-motion: no-preference) {
+    .float-soft { animation: float-soft 7s ease-in-out infinite alternate; }
+}
+@keyframes float-soft { from { transform: translateY(0); } to { transform: translateY(-14px); } }

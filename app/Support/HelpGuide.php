@@ -309,6 +309,26 @@ class HelpGuide
                 ],
             ],
             [
+                'id' => 'enquiry-questions',
+                'title' => 'Quick questions on the enquiry form',
+                'area' => 'enquiries',
+                'url' => 'admin/enquiry-questions',
+                'intro' => 'You can ask the visitor a few easy questions (budget, application, what they will weigh) before they send an enquiry. The answers come to you with the enquiry, so you understand the need before you call. You choose the questions for each vertical.',
+                'steps' => [
+                    'Open Leads, then Enquiry questions. Press New enquiry question.',
+                    'Choose the vertical. Only visitors enquiring about a product in that vertical will see it. Leave it empty to ask everyone.',
+                    'Write the question in a few words, for example "What will you weigh?".',
+                    'Choose "Pick one answer" and type the choices (press Enter after each one). This is the quickest for the visitor. Choose "Short typed answer" if you want free text.',
+                    'Drag the rows to change the order. Switch a question off with the Active switch; it stops showing but is not lost.',
+                    'Open an enquiry: the answers are shown in a box above the message, and also in the notification email and in the Excel/CSV export.',
+                ],
+                'tips' => [
+                    'The form shows at most 4 questions for one product. Vertical questions come first, then the general ones.',
+                    'Every question the form shows is compulsory: the visitor cannot send the enquiry until each one is answered. So keep them few, short and easy, or visitors may leave without sending.',
+                    'If you change a question later, enquiries already received keep the words the visitor saw.',
+                ],
+            ],
+            [
                 'id' => 'workflow',
                 'title' => 'Working on enquiries as a team',
                 'area' => 'enquiries',

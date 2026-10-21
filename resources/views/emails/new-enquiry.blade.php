@@ -110,6 +110,19 @@
             </table>
         @endif
 
+        {{-- Answers to the quick questions --}}
+        @if ($enquiry->answerList())
+            <h2 style="margin:26px 0 8px; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#0077B6;">Requirement (customer's answers)</h2>
+            <table cellpadding="0" cellspacing="0" style="width:100%; border-collapse:collapse; font-size:14px;">
+                @foreach ($enquiry->answerList() as $a)
+                    <tr>
+                        <td style="width:50%; padding:7px 12px 7px 0; border-bottom:1px solid #EEF2F6; color:#6C757D;">{{ $a['question'] }}</td>
+                        <td style="padding:7px 0; border-bottom:1px solid #EEF2F6;"><strong>{{ $a['answer'] }}</strong></td>
+                    </tr>
+                @endforeach
+            </table>
+        @endif
+
         {{-- Message --}}
         @if (filled($enquiry->message))
             <h2 style="margin:26px 0 8px; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:#0077B6;">Customer message</h2>

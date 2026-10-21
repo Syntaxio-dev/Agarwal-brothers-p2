@@ -25,7 +25,7 @@ class CareersPageTest extends TestCase
     {
         $html = $this->get(route('careers'))->assertOk()->getContent();
 
-        $order = array_map(fn ($n) => strpos($html, $n), ['Life at Agarwal Brothers', 'Years of experience', 'Careers @ Agarwal Brothers']);
+        $order = array_map(fn ($n) => strpos($html, $n), ['We are hiring', 'Years of experience', 'Careers @ Agarwal Brothers']);
 
         $this->assertNotContains(false, $order);
         $this->assertSame($order, collect($order)->sort()->values()->all());
@@ -118,7 +118,7 @@ class CareersPageTest extends TestCase
         $html = $this->get(route('careers'))->assertOk()->getContent();
 
         $order = array_map(fn ($n) => strpos($html, $n), [
-            'Life at Agarwal Brothers', 'Who we are', 'Years of experience', 'Careers @ Agarwal Brothers', 'What happens after you', "Don't see a perfect role?",
+            'Years of experience', 'Life at Agarwal Brothers', 'Who we are', 'Careers @ Agarwal Brothers', 'What happens after you', "Don't see a perfect role?",
         ]);
         $this->assertNotContains(false, $order);
         $this->assertSame($order, collect($order)->sort()->values()->all());

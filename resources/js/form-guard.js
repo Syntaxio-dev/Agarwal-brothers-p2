@@ -51,7 +51,12 @@ window.formGuard = (serverErrors = {}) => ({
     message(el) {
         const rules = (el.dataset.rule || '').split(' ').filter(Boolean);
         const label = el.dataset.label || 'This field';
-        const value = (el.type === 'file' ? el.value : el.value.trim());
+        let value = (el.type === 'file' ? el.value : el.value.trim());
+        // a group of radio buttons counts as filled when any one of them is chosen
+        if (el.type === 'radio') {
+            const chosen = this.$el.querySelector('input[type=radio][name="' + el.name + '"]:checked');
+            value = chosen ? chosen.value : '';
+        }
 
         if (!value) {
             return rules.includes('required') ? label + ' is required.' : '';

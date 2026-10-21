@@ -14,7 +14,7 @@ class EnquiryExporter
 {
     public const HEADERS = [
         'Reference', 'Received (IST)', 'Name', 'Email', 'Phone', 'Company', 'Order location', 'Budget',
-        'Type', 'Products', 'Message', 'Status', 'Assigned to', 'Team notes',
+        'Type', 'Products', 'Answers', 'Message', 'Status', 'Assigned to', 'Team notes',
     ];
 
     public static function download(Builder $query, string $format = 'xlsx'): StreamedResponse
@@ -60,6 +60,7 @@ class EnquiryExporter
             (string) $e->budget,
             $isGroup ? 'Group (' . $e->items->count() . ' products)' : ($e->product ? 'Single product' : 'General'),
             $products,
+            collect($e->answerList())->map(fn ($a) => $a['question'] . ': ' . $a['answer'])->implode('; '),
             (string) $e->message,
             Enquiry::STATUSES[$e->status] ?? ucfirst((string) $e->status),
             (string) ($e->assignee?->name ?? ''),
