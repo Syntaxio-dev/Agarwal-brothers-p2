@@ -31,7 +31,11 @@ class ProductForm
                         View::make('filament.products.card-preview'),
                     ]),
 
-                Section::make('Product details')
+                Section::make('Start here')
+                    ->id('start')
+                    ->description(fn ($operation) => $operation === 'create'
+                        ? 'You only need the Category and the Name to save a product. Add a main photo too, so it looks good on the site. Everything else can be added later: use "Save as hidden draft" if the product is not ready to go live.'
+                        : 'The essentials of this product.')
                     ->columnSpanFull()
                     ->columns(2)
                     ->schema([
@@ -42,6 +46,56 @@ class ProductForm
                             ->searchable()
                             ->preload()
                             ->required()
+                            ->helperText('Not in the list? Use the + button to add the category here, without leaving this page.')
+                            ->createOptionForm([
+                                Select::make('brand_id')
+                                    ->label('Brand')
+                                    ->relationship('brand', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->required()
+                                    ->createOptionForm([
+                                        TextInput::make('name')
+                                            ->required()
+                                            ->maxLength(255)
+                                            ->live(onBlur: true)
+                                            ->afterStateUpdated(fn ($state, $set) => $set('slug', Str::slug($state))),
+                                        TextInput::make('slug')->required()->unique('brands', 'slug'),
+                                        Toggle::make('is_active')->label('Active')->default(true),
+                                    ])
+                                    ->createOptionModalHeading('Add a new brand'),
+                                TextInput::make('name')
+                                    ->label('Category name')
+                                    ->helperText('The product line, for example "Analytical Balances".')
+                                    ->required()
+                                    ->maxLength(255),
+                                Select::make('verticals')
+                                    ->label('Shown in verticals')
+                                    ->options(fn () => \App\Models\Vertical::orderBy('sort_order')->orderBy('name')->pluck('name', 'id'))
+                                    ->multiple()
+                                    ->searchable()
+                                    ->preload()
+                                    ->required(fn () => \App\Models\Vertical::exists())
+                                    ->helperText('A category is listed under the vertical(s) you pick, so visitors can find its products there. You can change this later under Catalogue, Categories.'),
+                            ])
+                            ->createOptionUsing(function (array $data) {
+                                $slug = Str::slug($data['name']);
+                                $base = $slug;
+                                $i = 2;
+                                while (\App\Models\Category::where('brand_id', $data['brand_id'])->where('slug', $slug)->exists()) {
+                                    $slug = $base . '-' . $i++;
+                                }
+
+                                $category = \App\Models\Category::create([
+                                    'brand_id' => $data['brand_id'],
+                                    'name' => $data['name'],
+                                    'slug' => $slug,
+                                ]);
+                                $category->verticals()->sync($data['verticals'] ?? []);
+
+                                return $category->getKey();
+                            })
+                            ->createOptionModalHeading('Add a new category')
                             ->columnSpanFull(),
                         TextInput::make('name')
                             ->required()
@@ -49,7 +103,28 @@ class ProductForm
                             ->afterStateUpdated(fn ($state, $set) => $set('slug', Str::slug($state))),
                         TextInput::make('slug')
                             ->required()
-                            ->unique(ignoreRecord: true),
+                            ->unique(ignoreRecord: true)
+                            ->helperText('The web address part. It is made from the name for you.'),
+                        FileUpload::make('image')
+                            ->label('Main image')
+                            ->helperText('The first photo: shown on product cards and first on the product page. A clean shot on a white or transparent background.')
+                            ->image()
+                            ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
+                            ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))
+                            ->maxSize(\App\Filament\Support\Uploads::IMAGE_MAX_KB)
+                            ->disk('public')
+                            ->visibility('public')
+                            ->directory('products'),
+                        View::make('filament.products.image-tips'),
+                    ]),
+
+                Section::make('Product details')
+                    ->id('details')
+                    ->columnSpanFull()
+                    ->columns(2)
+                    ->collapsible()
+                    ->collapsed(fn ($operation) => $operation === 'create')
+                    ->schema([
                         TextInput::make('heading')
                             ->label('Page heading (optional)')
                             ->placeholder('e.g. Hei-VAP Core Rotary Evaporator, Distributor & Service Provider in India')
@@ -67,20 +142,13 @@ class ProductForm
                             ->columnSpanFull(),
                     ]),
 
-                Section::make('Images & video')
+                Section::make('More photos & video')
+                    ->id('images')
                     ->columnSpanFull()
                     ->columns(2)
+                    ->collapsible()
+                    ->collapsed(fn ($operation) => $operation === 'create')
                     ->schema([
-                        FileUpload::make('image')
-                            ->label('Main image')
-                            ->helperText('The first photo: shown on product cards and first on the product page. A clean shot on a white or transparent background.')
-                            ->image()
-                            ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
-                            ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))
-                            ->maxSize(\App\Filament\Support\Uploads::IMAGE_MAX_KB)
-                            ->disk('public')
-                            ->visibility('public')
-                            ->directory('products'),
                         FileUpload::make('gallery')
                             ->label('More photos (optional, up to 10)')
                             ->helperText('Add as many extra photos as you need: front, side, back, accessories. On the product page visitors move through them with arrows and small pictures. Drag to change the order.')
@@ -106,8 +174,10 @@ class ProductForm
                     ]),
 
                 Section::make('Overview')
+                    ->id('overview')
                     ->columnSpanFull()
                     ->collapsible()
+                    ->collapsed(fn ($operation) => $operation === 'create')
                     ->schema([
                         RichEditor::make('overview')
                             ->helperText('A longer introduction shown under "Overview". Falls back to the short description.'),
@@ -150,8 +220,10 @@ class ProductForm
                     ]),
 
                 Section::make('Technical specifications')
+                    ->id('specs')
                     ->columnSpanFull()
                     ->collapsible()
+                    ->collapsed(fn ($operation) => $operation === 'create')
                     ->schema([
                         KeyValue::make('specs')
                             ->keyLabel('Specification')
@@ -220,11 +292,13 @@ class ProductForm
                     ]),
 
                 Section::make('Visibility')
+                    ->id('visibility')
                     ->columnSpanFull()
                     ->columns(3)
                     ->schema([
                         Toggle::make('is_active')
                             ->label('Active')
+                            ->helperText('Off keeps the product hidden from the website (a draft).')
                             ->default(true),
                         Toggle::make('is_top_pick')
                             ->label('Show in Precision Picks')

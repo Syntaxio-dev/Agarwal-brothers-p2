@@ -20,19 +20,71 @@
 
 <x-filament-panels::page>
     {{-- 1. Upload --}}
-    <form wire:submit="import" class="space-y-4">
+    <form wire:submit="check" class="space-y-4">
         {{ $this->form }}
 
         <div class="flex flex-wrap items-center gap-3">
-            <x-filament::button type="submit" icon="heroicon-o-arrow-up-tray" wire:loading.attr="disabled" wire:target="import">
-                <span wire:loading.remove wire:target="import">Import products</span>
-                <span wire:loading wire:target="import">Checking and importing...</span>
+            <x-filament::button type="submit" icon="heroicon-o-magnifying-glass" wire:loading.attr="disabled" wire:target="check">
+                <span wire:loading.remove wire:target="check">Check file</span>
+                <span wire:loading wire:target="check">Checking...</span>
             </x-filament::button>
             <x-filament::button type="button" color="gray" icon="heroicon-o-arrow-down-tray" wire:click="downloadSample">
                 Download sample file
             </x-filament::button>
         </div>
     </form>
+
+    {{-- 1b. Preview: what the file would do, before anything is saved --}}
+    @if ($preview)
+        <div class="rounded-xl bg-primary-50 p-5 ring-1 ring-primary-200 dark:bg-primary-500/10 dark:ring-primary-500/30" role="status" id="import-preview">
+            <p class="font-mono text-[11px] font-semibold uppercase tracking-widest text-primary-700 dark:text-primary-400">File checked: nothing is saved yet</p>
+            <p class="mt-2 text-sm text-gray-800 dark:text-gray-200">
+                {{ $preview['total'] }} {{ \Illuminate\Support\Str::plural('product', $preview['total']) }} found and no problems.
+                If you press Confirm: <strong>{{ $preview['created'] }}</strong> will be created,
+                <strong>{{ $preview['updated'] }}</strong> updated and <strong>{{ $preview['skipped'] }}</strong> skipped (already exist).
+                @if ($preview['newCategories'])
+                    <strong>{{ $preview['newCategories'] }}</strong> new {{ \Illuminate\Support\Str::plural('category', $preview['newCategories']) }} will be created.
+                @endif
+            </p>
+
+            <div class="mt-3 overflow-x-auto rounded-lg bg-white ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
+                <table class="w-full text-left text-sm">
+                    <thead>
+                        <tr class="border-b border-gray-200 dark:border-white/10">
+                            @foreach (['Row', 'Product', 'Brand', 'Category', 'What happens'] as $head)
+                                <th class="px-3 py-2 font-mono text-[11px] font-semibold uppercase tracking-wider text-gray-500">{{ $head }}</th>
+                            @endforeach
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach ($preview['preview'] as $row)
+                            <tr class="border-b border-gray-100 last:border-0 dark:border-white/5">
+                                <td class="px-3 py-2 font-mono text-gray-500">{{ $row['line'] }}</td>
+                                <td class="px-3 py-2 font-medium text-gray-900 dark:text-white">{{ $row['name'] }}</td>
+                                <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $row['brand'] }}</td>
+                                <td class="px-3 py-2 text-gray-700 dark:text-gray-300">{{ $row['category'] }}@if ($row['newCategory']) <span class="ml-1 text-xs font-semibold text-warning-600">(new)</span>@endif</td>
+                                <td class="px-3 py-2 text-gray-700 dark:text-gray-300">
+                                    {{ ['create' => 'Will be created', 'update' => 'Will be updated', 'skip' => 'Skipped (already exists)'][$row['action']] }}
+                                    @if ($row['action'] === 'create') <span class="text-xs text-gray-500">({{ $row['active'] ? 'Active' : 'draft' }})</span>@endif
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+            @if ($preview['total'] > count($preview['preview']))
+                <p class="mt-2 text-xs text-gray-500">Showing the first {{ count($preview['preview']) }} of {{ $preview['total'] }} rows.</p>
+            @endif
+
+            <div class="mt-4 flex flex-wrap gap-3">
+                <x-filament::button type="button" icon="heroicon-o-check" wire:click="import" wire:loading.attr="disabled" wire:target="import">
+                    <span wire:loading.remove wire:target="import">Confirm and import</span>
+                    <span wire:loading wire:target="import">Importing...</span>
+                </x-filament::button>
+                <x-filament::button type="button" color="gray" wire:click="cancelPreview">Cancel</x-filament::button>
+            </div>
+        </div>
+    @endif
 
     {{-- 2. Result --}}
     @if ($result)

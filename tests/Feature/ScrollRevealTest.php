@@ -393,7 +393,7 @@ class ScrollRevealTest extends TestCase
 
     public function test_the_navbar_catalogue_button_says_catalogue_and_swaps_to_download_on_hover(): void
     {
-        \App\Models\SiteSetting::create(['catalogue_file' => 'catalogue/brochure.pdf']);
+        \App\Models\SiteSetting::create(['catalogues' => [['title' => 'Product catalogue', 'file' => 'catalogue/brochure.pdf']]]);
 
         $html = $this->get('/')->assertOk()->getContent();
         // start at the button itself (it sits late in the header) and read its markup

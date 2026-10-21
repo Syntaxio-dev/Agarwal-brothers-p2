@@ -60,7 +60,7 @@
     {{-- =========================================================
         TOP NAVBAR — fixed, full width (replaces the old left sidebar)
     ========================================================== --}}
-    @php $catalogue = \App\Models\SiteSetting::latest()->first(); @endphp
+    @php $catalogue = \App\Models\SiteSetting::latest()->first(); $catList = $catalogue?->catalogueList() ?? []; @endphp
     <header class="site-nav fixed top-0 inset-x-0 z-40 border-b border-gray-200 bg-white/95 shadow-sm backdrop-blur">
         <div class="site-nav-row mx-auto flex w-[98%] items-center gap-3 px-2 sm:px-4 lg:px-8">
 
@@ -135,9 +135,9 @@
 
                 {{-- Product catalogue: says "Catalogue" with a document icon; on hover / keyboard focus the word and the icon
                      swap to "Download" with a download arrow and the button turns link-blue (same hover as every primary button) --}}
-                @if ($catalogue?->catalogue_file)
-                    <a href="{{ asset('storage/' . $catalogue->catalogue_file) }}" download
-                       aria-label="Download product catalogue (PDF)" title="Download product catalogue"
+                @if (count($catList) === 1)
+                    <a href="{{ $catList[0]['url'] }}" download
+                       aria-label="Download product catalogue (PDF)" title="Download {{ $catList[0]['title'] }}"
                        class="nav-cat btn-primary hidden items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-white sm:inline-flex 2xl:px-4">
                         <span class="cat-swap" aria-hidden="true">
                             <span class="cat-a">Catalogue</span>
@@ -148,6 +148,45 @@
                             <svg class="cat-b h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 17V3m0 14-6-6m6 6 6-6M5 21h14"/></svg>
                         </span>
                     </a>
+                @elseif (count($catList) > 1)
+                    {{-- several catalogues (for example Equipment and Consumables): the button opens a short list --}}
+                    {{-- opens while the mouse is on the button or the list and closes shortly after it leaves (like the Insights menu);
+                         on a touch screen, and for keyboard users, the button opens and closes it --}}
+                    <div class="relative hidden sm:block"
+                         x-data="{ catOpen: false, t: null, canHover: window.matchMedia('(hover: hover)').matches,
+                                   show() { if (! this.canHover) return; clearTimeout(this.t); this.catOpen = true },
+                                   hide() { if (! this.canHover) return; clearTimeout(this.t); this.t = setTimeout(() => this.catOpen = false, 180) },
+                                   toggle() { this.catOpen = this.canHover ? true : ! this.catOpen } }"
+                         @mouseenter="show()" @mouseleave="hide()" @keydown.escape.window="catOpen = false" @click.outside="catOpen = false">
+                        <button type="button" @click="toggle()" :aria-expanded="catOpen" :class="catOpen && 'is-open'" aria-haspopup="true" aria-controls="catalogue-menu"
+                                aria-label="Catalogues: choose one to download"
+                                class="nav-cat btn-primary inline-flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-white 2xl:px-4">
+                            {{-- same word swap as the single button: "Catalogues" turns into "Download" while the list is open --}}
+                            <span class="cat-swap" aria-hidden="true">
+                                <span class="cat-a">Catalogues</span>
+                                <span class="cat-b">Download</span>
+                            </span>
+                            <span class="cat-swap h-4 w-4 shrink-0" aria-hidden="true">
+                                <svg class="cat-a h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+                                <svg class="cat-b h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 17V3m0 14-6-6m6 6 6-6M5 21h14"/></svg>
+                            </span>
+                        </button>
+                        <div id="catalogue-menu" x-cloak x-show="catOpen" x-transition.opacity.duration.150ms
+                             class="absolute right-0 top-full z-50 mt-2 w-80 rounded-xl border border-gray-100 bg-white p-1.5 shadow-xl ring-1 ring-black/5">
+                            <p class="px-3 pb-1 pt-2 font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-slate">Download a catalogue</p>
+                            @foreach ($catList as $cat)
+                                <a href="{{ $cat['url'] }}" download @click="catOpen = false"
+                                   class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-navy transition-colors hover:bg-ice hover:text-link focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan">
+                                    <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy text-white transition-colors group-hover:bg-link" aria-hidden="true">
+                                        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
+                                    </span>
+                                    <span class="min-w-0 flex-1 truncate">{{ $cat['title'] }}</span>
+                                    <span class="rounded border border-gray-200 px-1 py-px font-mono text-[9px] font-medium uppercase tracking-wider text-slate">PDF</span>
+                                    <svg class="h-4 w-4 shrink-0 text-cyan-ink" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M12 17V3m0 14-6-6m6 6 6-6M5 21h14"/></svg>
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
                 @endif
 
                 {{-- Hamburger (below xl) --}}
@@ -213,13 +252,13 @@
                     </span>
                     <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-navy px-1.5 font-mono text-[11px] font-semibold text-white" x-text="$store.enquiryList.count"></span>
                 </a>
-                @if ($catalogue?->catalogue_file)
-                    <a href="{{ asset('storage/' . $catalogue->catalogue_file) }}" download
+                @foreach ($catList as $cat)
+                    <a href="{{ $cat['url'] }}" download
                        class="btn-primary flex h-11 w-full items-center justify-between gap-2 rounded-lg px-4 py-2.5 font-medium text-white">
-                        <span class="overflow-hidden text-ellipsis whitespace-nowrap text-sm">Product Catalogue</span>
+                        <span class="overflow-hidden text-ellipsis whitespace-nowrap text-sm">{{ count($catList) > 1 ? $cat['title'] : 'Product Catalogue' }}</span>
                         <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 17V3m0 14-6-6m6 6 6-6M5 21h14"/></svg>
                     </a>
-                @endif
+                @endforeach
             </div>
         </div>
     </aside>

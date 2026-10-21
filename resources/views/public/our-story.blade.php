@@ -29,7 +29,7 @@
         [(string) $founded, 'The Beginning', 'Founded in Jaipur, Rajasthan, with a vision to bring world-class scientific instruments to Indian laboratories. Started as a small trading firm supplying lab chemicals and basic equipment.'],
         ['1990s', 'Expanding Horizons', 'Established partnerships with leading global instrument manufacturers and expanded the portfolio to analytical instruments, centrifuges, balances and chromatography systems.'],
         ['2000s', "Serving India's Pharma Boom", "As India's pharmaceutical industry grew, so did our reach. We became a preferred supplier to major pharma companies, CROs and academic institutions across Rajasthan and beyond."],
-        ['Today', "{$years}+ Years Strong", "Today Agarwal Brothers represents {$brandsPlus} brands from across the world and serves {$customersPlus} customers all over India, continuing our commitment to equipping India\'s labs with the finest scientific solutions."],
+        ['Today', "{$years}+ Years Strong", "Today Agarwal Brothers represents {$brandsPlus} brands from across the world and serves {$customersPlus} customers all over India, continuing our commitment to equipping India's labs with the finest scientific solutions."],
     ];
 
     $values = [
@@ -325,24 +325,36 @@
             </div>
         </div>
 
-        {{-- ===== 5. Values ===== --}}
-        <div class="mt-20 sm:mt-24">
-            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-10">
+        {{-- ===== 5. Values: intro on the left, compact value rows on the right ===== --}}
+        <div class="mt-20 sm:mt-24 grid grid-cols-1 items-start gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
+            <div data-reveal="left">
                 <span class="section-badge">Our Values</span>
-                <h2 class="text-2xl sm:text-3xl font-bold text-navy leading-tight">What <span class="text-cyan-ink">drives us</span></h2>
+                <h2 class="mt-3 text-2xl sm:text-3xl font-bold text-navy leading-tight">What <span class="text-cyan-ink">drives us</span></h2>
+                <p class="mt-4 max-w-md text-sm leading-relaxed text-slate sm:text-base">
+                    These are the principles we bring to every customer, every instrument and every conversation.
+                </p>
+                <a href="/contact-us"
+                   class="mt-7 inline-flex items-center gap-2 rounded-full bg-navy px-7 py-3 text-sm font-semibold text-white hover:bg-link btn-primary">
+                    Talk to our team
+                    <svg class="arrow-nudge h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
+                    </svg>
+                </a>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 gap-x-6 gap-y-5 sm:grid-cols-2">
                 @foreach ($values as [$title, $text, $icon])
-                    <div data-reveal class="value-card group relative overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm p-6 hover:shadow-xl hover:border-cyan/40 hover:-translate-y-1 transition-all duration-300">
-                        <div class="value-icon flex h-12 w-12 items-center justify-center rounded-xl bg-gradient-to-br from-navy to-link text-white shadow-md
-                                    group-hover:from-link group-hover:to-cyan group-hover:-rotate-6 group-hover:scale-110 transition-all duration-300">
-                            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                    <div data-reveal class="group flex items-start gap-3">
+                        <div class="value-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-[11px] bg-gradient-to-br from-navy to-link text-white shadow-md
+                                    group-hover:from-link group-hover:to-cyan group-hover:-rotate-6 group-hover:scale-110 transition-all duration-300" aria-hidden="true">
+                            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="{{ $icon }}"/>
                             </svg>
                         </div>
-                        <h3 class="mt-4 text-base font-bold text-navy">{{ $title }}</h3>
-                        <p class="mt-2 text-sm text-slate leading-relaxed">{{ $text }}</p>
+                        <div class="min-w-0">
+                            <h3 class="text-sm font-bold text-navy">{{ $title }}</h3>
+                            <p class="mt-1 text-xs leading-relaxed text-slate">{{ $text }}</p>
+                        </div>
                     </div>
                 @endforeach
             </div>

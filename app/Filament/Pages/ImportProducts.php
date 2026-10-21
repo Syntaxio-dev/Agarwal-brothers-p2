@@ -37,6 +37,9 @@ class ImportProducts extends Page
     /** @var array<string, mixed>|null */
     public ?array $result = null;
 
+    /** What the file would do, shown before anything is saved. @var array<string, mixed>|null */
+    public ?array $preview = null;
+
     public static function canAccess(): bool
     {
         return ProductResource::canCreate();
@@ -77,10 +80,67 @@ class ImportProducts extends Page
             ->statePath('data');
     }
 
+    /** Changing the file or a switch makes the earlier preview out of date. */
+    public function updatedData(): void
+    {
+        $this->preview = null;
+    }
+
+    /** Step 1: read the file and say what would happen. Nothing is saved yet. */
+    public function check(): void
+    {
+        abort_unless(static::canAccess(), 403);
+
+        $state = $this->form->getState();
+        $stored = is_array($state['file'] ?? null) ? reset($state['file']) : ($state['file'] ?? null);
+
+        if (! $stored || ! Storage::disk('local')->exists($stored)) {
+            Notification::make()->title('Please choose a file first')->danger()->send();
+
+            return;
+        }
+
+        $this->result = null;
+        $this->preview = ProductImporter::import(
+            Storage::disk('local')->path($stored),
+            pathinfo($stored, PATHINFO_EXTENSION),
+            (bool) ($state['update_existing'] ?? false),
+            (bool) ($state['create_categories'] ?? false),
+            dryRun: true,
+        );
+
+        if ($this->preview['fatal'] || $this->preview['errors']) {
+            // the file is not kept when it has problems: the same errors screen as before, nothing to confirm
+            Storage::disk('local')->delete($stored);
+            $this->result = $this->preview;
+            $this->preview = null;
+            $this->form->fill(['update_existing' => (bool) ($state['update_existing'] ?? false), 'create_categories' => (bool) ($state['create_categories'] ?? false)]);
+
+            Notification::make()->title('Nothing was imported')->body('Fix the points listed below and upload the file again.')->danger()->send();
+        }
+    }
+
+    /** Leave the preview without importing; the uploaded file is removed. */
+    public function cancelPreview(): void
+    {
+        abort_unless(static::canAccess(), 403);
+
+        $state = $this->form->getState();
+        $stored = is_array($state['file'] ?? null) ? reset($state['file']) : ($state['file'] ?? null);
+        if ($stored && Storage::disk('local')->exists($stored)) {
+            Storage::disk('local')->delete($stored);
+        }
+
+        $this->preview = null;
+        $this->form->fill(['update_existing' => (bool) ($state['update_existing'] ?? false), 'create_categories' => (bool) ($state['create_categories'] ?? false)]);
+    }
+
+    /** Step 2: really import (the file is checked again, so the result is always safe). */
     public function import(): void
     {
         abort_unless(static::canAccess(), 403);
 
+        $this->preview = null;
         $state = $this->form->getState();
         $stored = is_array($state['file'] ?? null) ? reset($state['file']) : ($state['file'] ?? null);
 

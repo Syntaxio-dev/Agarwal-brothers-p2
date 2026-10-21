@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Categories\Schemas;
 
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -46,14 +45,6 @@ class CategoryForm
                                 ignoreRecord: true,
                                 modifyRuleUsing: fn ($rule, $get) => $rule->where('brand_id', $get('brand_id')),
                             ),
-                        FileUpload::make('image')
-                            ->image()
-                            ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
-                            ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))
-                            ->maxSize(\App\Filament\Support\Uploads::IMAGE_MAX_KB)
-                            ->disk('public')
-                            ->visibility('public')
-                            ->directory('categories'),
                         TextInput::make('sort_order')
                             ->numeric()
                             ->default(0)

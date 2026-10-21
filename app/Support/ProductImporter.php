@@ -92,11 +92,12 @@ class ProductImporter
     }
 
     /**
-     * Check every row and, when all are fine, save them.
+     * Check every row and, when all are fine, save them. With $dryRun nothing is saved: the counts say what WOULD happen and
+     * 'preview' lists the first rows (line, name, brand, category, action, new category).
      *
-     * @return array{created: int, updated: int, skipped: int, errors: list<array{line: int, name: string, message: string}>, fatal: ?string}
+     * @return array{created: int, updated: int, skipped: int, errors: list<array{line: int, name: string, message: string}>, fatal: ?string, preview?: list<array<string, mixed>>, newCategories?: int, total?: int}
      */
-    public static function import(string $path, string $extension, bool $updateExisting = false, bool $createCategories = false): array
+    public static function import(string $path, string $extension, bool $updateExisting = false, bool $createCategories = false, bool $dryRun = false): array
     {
         $result = ['created' => 0, 'updated' => 0, 'skipped' => 0, 'errors' => [], 'fatal' => null];
 
@@ -231,6 +232,40 @@ class ProductImporter
 
         if ($result['errors']) {
             return $result;   // nothing is saved when any row is wrong
+        }
+
+        if ($dryRun) {
+            $result['preview'] = [];
+            $result['total'] = count($plan);
+            $wouldCreateCategory = [];
+
+            foreach ($plan as $row) {
+                $existing = $row['needsNewCategory']
+                    ? null
+                    : Product::where('category_id', $row['category']->id)->get()->first(fn ($p) => static::key($p->name) === static::key($row['name']));
+
+                if ($row['needsNewCategory']) {
+                    $wouldCreateCategory[$row['brand']->id . '|' . static::key($row['categoryName'])] = true;
+                }
+
+                $action = ! $existing ? 'create' : ($updateExisting ? 'update' : 'skip');
+                $result[['create' => 'created', 'update' => 'updated', 'skip' => 'skipped'][$action]]++;
+
+                if (count($result['preview']) < 5) {
+                    $result['preview'][] = [
+                        'line' => $row['line'],
+                        'name' => $row['name'],
+                        'brand' => $row['brand']->name,
+                        'category' => $row['categoryName'],
+                        'action' => $action,
+                        'newCategory' => $row['needsNewCategory'],
+                        'active' => $row['active'],
+                    ];
+                }
+            }
+            $result['newCategories'] = count($wouldCreateCategory);
+
+            return $result;
         }
 
         DB::transaction(function () use ($plan, $updateExisting, &$result, &$newCategories) {

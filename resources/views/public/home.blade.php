@@ -130,6 +130,47 @@
     </section>
 
 
+    {{-- ===== 1b. WHAT WE DO: three capabilities (the brand count comes from App\Support\Company, so it stays correct) ===== --}}
+    @php
+        $capabilities = [
+            ['01', 'Supply', 'Authorised supply of lab equipment and chemicals from ' . \App\Support\Company::plus('brands') . ' global brands.',
+             'm21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9'],
+            ['02', 'Installation', 'On-site installation and commissioning by trained engineers.',
+             'M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437 1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008Z'],
+            ['03', 'Calibration & Service', 'Calibration, repairs and genuine spares to keep labs accurate.',
+             'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z'],
+        ];
+    @endphp
+    <section class="relative mx-auto mt-4 w-[98%] rounded-3xl bg-ice px-4 py-14 sm:px-8 sm:py-16 md:px-10 lg:px-16" aria-labelledby="capabilities-heading">
+        <div data-reveal class="mb-10 flex flex-col items-center justify-center gap-3 text-center">
+            <span class="section-badge">What we do</span>
+            <h2 id="capabilities-heading" class="text-xl font-bold leading-tight text-navy sm:text-2xl">
+                One partner, <span class="text-cyan-ink">start to finish</span>
+            </h2>
+        </div>
+
+        {{-- the dashed line draws left to right behind the cards (only the bits in the gaps show), cards rise one after another --}}
+        <div data-reveal="draw" class="relative mx-auto grid max-w-6xl grid-cols-1 gap-5 md:grid-cols-3 md:gap-x-8 lg:gap-x-12 xl:gap-x-20">
+            <div aria-hidden="true" class="cap-line pointer-events-none absolute left-[16.667%] right-[16.667%] top-[92px] hidden h-[3px] rounded-full bg-[repeating-linear-gradient(to_right,#00B4D8_0_12px,transparent_12px_20px)] md:block"></div>
+
+            @foreach ($capabilities as [$num, $capTitle, $capText, $capIcon])
+                <div class="cap-card group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-7 shadow-sm transition-all duration-[350ms] hover:-translate-y-1.5 hover:border-cyan/50 hover:shadow-[0_16px_30px_-14px_rgba(11,37,69,0.35)]"
+                     style="--cap-delay: {{ 150 + $loop->index * 120 }}ms">
+                    <span aria-hidden="true" class="pointer-events-none absolute right-5 top-3 translate-y-2 select-none text-7xl font-extrabold leading-none text-navy opacity-0 transition-all duration-[350ms] group-hover:translate-y-0 group-hover:opacity-[.14]">{{ $num }}</span>
+                    <p class="relative font-mono text-sm font-medium text-link">{{ $num }}</p>
+                    <div class="relative mt-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-navy to-link text-white shadow-md transition-all duration-[350ms] ease-[cubic-bezier(.34,1.56,.64,1)] group-hover:-rotate-6 group-hover:scale-[1.08] group-hover:from-link group-hover:to-cyan" aria-hidden="true">
+                        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="{{ $capIcon }}"/>
+                        </svg>
+                    </div>
+                    <h3 class="relative mt-5 text-lg font-bold text-navy">{{ $capTitle }}</h3>
+                    <p class="relative mt-2 text-sm leading-relaxed text-slate">{{ $capText }}</p>
+                </div>
+            @endforeach
+        </div>
+    </section>
+
+
     {{-- ===== 2. WHO WE ARE ===== --}}
     @php
         $companyYears = \App\Support\Company::yearsShown();   // 33 years shows as 30+
@@ -448,10 +489,10 @@
                     @foreach ($topPicks as $i => $product)
                         <a href="{{ route('product.show', $product->slug) }}"
                            :class="active === {{ $i }} ? 'opacity-100' : 'opacity-0 pointer-events-none'"
-                           class="absolute inset-0 flex items-center justify-center p-8 sm:p-10 transition-opacity duration-500">
+                           class="absolute inset-0 flex items-center justify-center p-4 sm:p-6 transition-opacity duration-500">
                             @if ($product->image)
                                 <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
-                                    class="img-load max-h-full max-w-full object-contain drop-shadow-xl" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($product->image) !!} onload="this.classList.add('is-loaded')">
+                                    class="img-load max-h-full max-w-full mix-blend-multiply object-contain drop-shadow-xl" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($product->image) !!} onload="this.classList.add('is-loaded')">
                             @else
                                 <div class="h-24 w-24 rounded-full bg-white shadow flex items-center justify-center">
                                     <svg class="h-10 w-10 text-slate/30" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1">

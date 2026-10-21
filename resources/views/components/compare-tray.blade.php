@@ -25,7 +25,7 @@
             <template x-for="p in $store.compare.items" :key="p.slug">
                 <div class="flex items-center gap-2 rounded-lg border border-gray-200 bg-white p-1.5">
                     <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-ice p-1">
-                        <img x-show="p.image" :src="p.image" :alt="p.name" class="max-h-full max-w-full object-contain">
+                        <img x-show="p.image" :src="p.image" :alt="p.name" class="max-h-full max-w-full mix-blend-multiply object-contain">
                         <span x-show="!p.image" class="font-mono text-[10px] font-semibold text-navy" x-text="p.name.slice(0, 3).toUpperCase()"></span>
                     </div>
                     <a :href="'/products/' + p.slug" class="line-clamp-2 min-w-0 flex-1 text-xs font-semibold leading-snug text-navy hover:text-link" x-text="p.name"></a>

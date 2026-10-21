@@ -2,7 +2,6 @@
 
 namespace App\Filament\Resources\Categories\Tables;
 
-use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -12,8 +11,6 @@ class CategoriesTable
     {
         return $table
             ->columns([
-                ImageColumn::make('image')
-                    ->disk('public'),
                 TextColumn::make('brand.name')
                     ->label('Brand')
                     ->sortable()

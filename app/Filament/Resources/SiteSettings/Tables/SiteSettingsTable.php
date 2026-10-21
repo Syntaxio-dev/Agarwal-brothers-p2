@@ -14,8 +14,6 @@ class SiteSettingsTable
     {
         return $table
             ->columns([
-                TextColumn::make('catalogue_file')
-                    ->searchable(),
                 TextColumn::make('created_at')
                     ->dateTime()
                     ->sortable()

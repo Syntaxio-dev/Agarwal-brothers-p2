@@ -19,12 +19,31 @@ class SiteSettingForm
                     ->columnSpanFull()
                     ->columns(2)
                     ->schema([
-                        FileUpload::make('catalogue_file')
-                            ->label('Catalogue PDF')
-                            ->disk('public')
-                            ->visibility('public')
-                            ->directory('catalogue')
-                            ->acceptedFileTypes(['application/pdf']),
+                        Repeater::make('catalogues')
+                            ->label('Catalogues (PDF)')
+                            ->helperText('One row per catalogue, for example "Equipment catalogue" and "Consumables catalogue". With one catalogue the top bar button downloads it at once; with several, visitors pick from a short list.')
+                            ->addActionLabel('Add another catalogue')
+                            ->reorderable()
+                            ->maxItems(6)
+                            ->defaultItems(0)
+                            ->itemLabel(fn (array $state): ?string => $state['title'] ?? null)
+                            ->columns(2)
+                            ->columnSpanFull()
+                            ->schema([
+                                TextInput::make('title')
+                                    ->label('Name shown to visitors')
+                                    ->placeholder('e.g. Equipment catalogue')
+                                    ->required()
+                                    ->maxLength(60),
+                                FileUpload::make('file')
+                                    ->label('PDF file')
+                                    ->required()
+                                    ->disk('public')
+                                    ->visibility('public')
+                                    ->directory('catalogue')
+                                    ->maxSize(30720)
+                                    ->acceptedFileTypes(['application/pdf']),
+                            ]),
                         TextInput::make('whatsapp_number')
                             ->label('WhatsApp number')
                             ->tel()
@@ -48,6 +67,8 @@ class SiteSettingForm
                     ]),
 
                 Section::make('Page banners')
+                    ->collapsible()
+                    ->collapsed()
                     ->description('Large banner shown at the top of each insights page. Wide images (about 3:1, e.g. 1800x600) work best. If empty, a default banner is shown.')
                     ->columnSpanFull()
                     ->columns(3)
@@ -82,6 +103,8 @@ class SiteSettingForm
                     ]),
 
                 Section::make('Our Story page: photos')
+                    ->collapsible()
+                    ->collapsed()
                     ->description('All optional. Without a photo the page shows a designed placeholder.')
                     ->columnSpanFull()
                     ->columns(2)
@@ -137,6 +160,8 @@ class SiteSettingForm
                     ]),
 
                 Section::make('Our Story page: text')
+                    ->collapsible()
+                    ->collapsed()
                     ->description('Leave a field empty to use the default text.')
                     ->columnSpanFull()
                     ->columns(2)
@@ -167,6 +192,8 @@ class SiteSettingForm
                     ]),
 
                 Section::make('Home page SEO & sharing')
+                    ->collapsible()
+                    ->collapsed()
                     ->description('Default title and description for the home page, and the share image used when a page has none of its own.')
                     ->columnSpanFull()
                     ->columns(1)

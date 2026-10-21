@@ -8,4 +8,14 @@ use Filament\Resources\Pages\CreateRecord;
 class CreateSiteSetting extends CreateRecord
 {
     protected static string $resource = SiteSettingResource::class;
+
+    public function getTitle(): string
+    {
+        return 'Site settings';
+    }
+
+    public function getBreadcrumbs(): array
+    {
+        return [];
+    }
 }

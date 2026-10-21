@@ -24,9 +24,12 @@ class AdminAccessTest extends TestCase
     public function test_admin_can_open_the_main_areas(): void
     {
         $this->actingAs($this->user('admin'));
-        foreach (['/admin', '/admin/products', '/admin/enquiries', '/admin/users', '/admin/site-settings', '/admin/backups', '/admin/help'] as $url) {
+        foreach (['/admin', '/admin/products', '/admin/enquiries', '/admin/users', '/admin/backups', '/admin/help'] as $url) {
             $this->get($url)->assertOk();
         }
+
+        // there is one settings page: the old list address forwards to it (to the create page on a brand-new site)
+        $this->get('/admin/site-settings')->assertRedirect('/admin/site-settings/create');
     }
 
     public function test_roles_see_only_their_areas(): void

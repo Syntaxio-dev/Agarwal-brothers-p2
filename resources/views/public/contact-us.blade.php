@@ -6,7 +6,7 @@
 
     // ?topic=quote opens the form with the subject already filled (only the topics listed in config/contact.php)
     $prefill = $c['topics'][request('topic')] ?? null;
-    $catalogueFile = optional(\App\Models\SiteSetting::latest()->first())->catalogue_file;
+    $catalogueList = optional(\App\Models\SiteSetting::latest()->first())?->catalogueList() ?? [];
     $enq = $c['departments'][1] ?? $c['departments'][0];
     $waNumber = preg_replace('/\D/', '', (string) (optional(\App\Models\SiteSetting::latest()->first())->whatsapp_number ?: $c['whatsapp']));
 
@@ -14,7 +14,9 @@
         ['How can I get a quotation?', 'Send us the form on this page with the product or application you need, or call ' . $enq['person'] . ' (' . $enq['title'] . ') on ' . $enq['phone'] . '. You can also add several products to your enquiry list on the site and send them together.'],
         ['Which brands do you work with?', 'We are an authorised partner of ' . \App\Support\Company::plus('brands') . ' global brands. You can browse them from the Verticals and Brands pages of this website.'],
         ['Where is your office and when are you open?', 'Our ' . strtolower($c['head_office']['label']) . ' is at ' . $c['head_office']['address'] . '. ' . implode('. ', $c['working_days']) . '.'],
-        $catalogueFile ? ['Do you have a product catalogue?', 'Yes. Use the Catalogue button in the top bar of any page to download it as a PDF.'] : null,
+        $catalogueList ? ['Do you have a product catalogue?', count($catalogueList) > 1
+            ? 'Yes, we have ' . count($catalogueList) . ' catalogues (' . implode(', ', array_column($catalogueList, 'title')) . '). Use the Catalogues button in the top bar of any page, or the downloads on this page, to get each one as a PDF.'
+            : 'Yes. Use the Catalogue button in the top bar of any page to download it as a PDF.'] : null,
         ['Can I ask about more than one product at the same time?', 'Yes. Add products to your enquiry list with the cart button on any product card, then send the whole list as a single enquiry.'],
         ['Can I apply for a job with you?', 'Yes. Open roles are on our Careers page, and you can also share your profile through the general application form there.'],
         ! empty($c['gstin']) ? ['What is your GST number?', 'Our GSTIN is ' . $c['gstin'] . '.'] : null,
@@ -78,7 +80,7 @@
                 ['Product enquiry', 'Tell us which instrument or brand you need.', route('contact', ['topic' => 'product']) . '#contact-form', 'm21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9', false],
                 ['Request a quote', 'Get a quotation for the models you have shortlisted.', route('contact', ['topic' => 'quote']) . '#contact-form', 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z', false],
                 ['Service & spare parts', 'Ask about service, repair or spare parts.', route('contact', ['topic' => 'service']) . '#contact-form', 'M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437 1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008Z', false],
-                $catalogueFile ? ['Product catalogue', 'Download our catalogue as a PDF.', asset('storage/' . $catalogueFile), 'M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3', true] : null,
+                ...array_map(fn ($c) => [$c['title'], 'Download the catalogue as a PDF.', $c['url'], 'M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3', true], $catalogueList),
             ]));
         @endphp
         @php

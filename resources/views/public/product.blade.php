@@ -58,7 +58,7 @@
              go(n) {
                  if (this.imgs.length < 2) return;
                  this.i = (n + this.imgs.length) % this.imgs.length;
-                 const next = new Image(); next.src = this.imgs[(this.i + 1) % this.imgs.length];   // the next photo is ready before it is needed
+                 [1, -1].forEach(d => { const near = new Image(); near.src = this.imgs[(this.i + d + this.imgs.length) % this.imgs.length]; });   // the neighbours are ready before they are needed
              },
              prev() { this.go(this.i - 1); },
              next() { this.go(this.i + 1); },
@@ -84,7 +84,7 @@
         <div class="grid grid-cols-1 items-center gap-8 overflow-hidden rounded-3xl border border-cyan/20 bg-gradient-to-br from-ice via-white to-cyan/10 p-6 shadow-sm sm:p-10 lg:grid-cols-5 lg:gap-12">
             {{-- Photos: the big photo with previous / next arrows and a counter, thumbnails below; click the photo to enlarge --}}
             <div data-reveal="left" class="lg:col-span-2">
-                <div class="relative flex h-64 items-center justify-center rounded-2xl bg-white/80 p-5 shadow-inner sm:h-80"
+                <div class="relative flex h-64 items-center justify-center overflow-hidden rounded-2xl bg-white/80 shadow-inner sm:h-80"
                      @if ($images->count() > 1)
                          style="touch-action: pan-y pinch-zoom; overscroll-behavior-x: contain;"
                          tabindex="0" role="group" aria-roledescription="carousel" aria-label="{{ $product->name }} photos"
@@ -92,9 +92,16 @@
                          @touchstart.passive="sx = $event.changedTouches[0].clientX" @touchend.passive="swipe($event.changedTouches[0].clientX)"
                      @endif>
                     @if ($images->count())
-                        <img :src="imgs[i]" src="{{ $images[0] }}" :alt="@js($product->name) + ' - photo ' + (i + 1)" alt="{{ $product->name }}"
-                             @click="lightbox = true"
-                             class="img-load max-h-full max-w-full cursor-zoom-in object-contain drop-shadow-xl" decoding="async" onload="this.classList.add('is-loaded')">
+                        {{-- every photo sits side by side in a track; changing photo slides the track sideways --}}
+                        <div class="photo-track flex h-full w-full" :style="{ transform: 'translateX(' + (-i * 100) + '%)' }">
+                            @foreach ($images as $idx => $url)
+                                <div class="flex h-full w-full shrink-0 items-center justify-center p-3" @if ($idx > 0) :aria-hidden="i !== {{ $idx }}" @endif>
+                                    <img src="{{ $url }}" alt="{{ $product->name }} - photo {{ $idx + 1 }}"
+                                         @click="lightbox = true" @if ($idx > 1) loading="lazy" @endif
+                                         class="img-load max-h-full max-w-full cursor-zoom-in select-none mix-blend-multiply object-contain drop-shadow-xl" decoding="async" draggable="false" onload="this.classList.add('is-loaded')">
+                                </div>
+                            @endforeach
+                        </div>
                         @if ($images->count() > 1)
                             <button type="button" @click.stop="prev()" aria-label="Previous photo"
                                 class="absolute left-2 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white text-navy shadow-md ring-1 ring-black/5 transition hover:bg-cyan focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan sm:h-10 sm:w-10">
@@ -406,8 +413,17 @@
                     <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/></svg>
                 </button>
             </template>
-            <img :src="imgs[i]" :alt="@js($product->name) + ' image ' + (i + 1)" class="max-h-[85vh] max-w-full rounded-xl bg-white object-contain p-4 shadow-2xl"
+            <div class="h-[85vh] w-full max-w-5xl overflow-hidden"
                  @touchstart.passive="sx = $event.changedTouches[0].clientX" @touchend.passive="swipe($event.changedTouches[0].clientX)">
+                <div class="photo-track flex h-full w-full" :style="{ transform: 'translateX(' + (-i * 100) + '%)' }">
+                    <template x-for="(src, idx) in imgs" :key="idx">
+                        <div class="flex h-full w-full shrink-0 items-center justify-center">
+                            <img :src="lightbox ? src : ''" :alt="@js($product->name) + ' image ' + (idx + 1)" :aria-hidden="idx !== i" draggable="false"
+                                 class="max-h-[85vh] max-w-full select-none rounded-xl bg-white object-contain p-4 shadow-2xl">
+                        </div>
+                    </template>
+                </div>
+            </div>
             <p x-show="imgs.length > 1" class="absolute bottom-5 left-1/2 -translate-x-1/2 rounded-full bg-white/90 px-3 py-1 font-mono text-xs tracking-wider text-navy"><span x-text="i + 1"></span> / <span x-text="imgs.length"></span></p>
             <template x-if="imgs.length > 1">
                 <button type="button" @click="next()" aria-label="Next" class="absolute right-4 flex h-11 w-11 items-center justify-center rounded-full bg-white text-navy shadow-lg hover:bg-cyan">

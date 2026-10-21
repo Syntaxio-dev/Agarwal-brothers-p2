@@ -22,8 +22,8 @@
     <template x-if="p">
         <div>
             <a :href="'/products/' + p.slug" class="flex items-center gap-3 px-4 py-3">
-                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-ice p-1.5">
-                    <img x-show="p.image" :src="p.image" :alt="p.name" class="max-h-full max-w-full object-contain">
+                <span class="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-ice p-0.5">
+                    <img x-show="p.image" :src="p.image" :alt="p.name" class="max-h-full max-w-full mix-blend-multiply object-contain">
                 </span>
                 <span class="min-w-0">
                     <span x-show="p.brand" x-text="p.brand" class="block truncate font-mono text-[10px] font-medium uppercase tracking-[0.16em] text-link"></span>

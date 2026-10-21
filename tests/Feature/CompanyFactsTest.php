@@ -66,6 +66,9 @@ class CompanyFactsTest extends TestCase
     {
         $html = $this->get('/our-story')->assertOk()->getContent();
 
+        // a backslash escape left inside a double-quoted PHP string would show on the page
+        $this->assertStringNotContainsString("India\\'s", $html);
+
         $this->assertStringContainsString('Authorised partner of 50+ global brands', $html);   // was shown as {$brandsPlus}
         $this->assertStringContainsString(Company::yearsShown() . '+ years of powering', $html);
         $this->assertStringNotContainsString('Four decades', $html);                           // 1993 is three decades ago

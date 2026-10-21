@@ -57,9 +57,9 @@
                                            @click="$store.compare.remove('{{ $p->slug }}')"
                                            class="font-mono text-[11px] font-medium uppercase tracking-wider text-slate hover:text-navy">Remove &times;</a>
                                     </div>
-                                    <a href="{{ route('product.show', $p->slug) }}" class="group mt-1 flex h-32 items-center justify-center overflow-hidden rounded-xl bg-ice p-3">
+                                    <a href="{{ route('product.show', $p->slug) }}" class="group mt-1 flex h-32 items-center justify-center overflow-hidden rounded-xl bg-ice p-1.5">
                                         @if ($p->image)
-                                            <img src="{{ asset('storage/' . $p->image) }}" alt="{{ $p->name }}" class="img-load max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($p->image) !!} onload="this.classList.add('is-loaded')">
+                                            <img src="{{ asset('storage/' . $p->image) }}" alt="{{ $p->name }}" class="img-load max-h-full max-w-full mix-blend-multiply object-contain transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($p->image) !!} onload="this.classList.add('is-loaded')">
                                         @else
                                             <span class="font-mono text-xs text-slate">No image</span>
                                         @endif

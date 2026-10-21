@@ -35,9 +35,9 @@
                     <div data-reveal class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300 hover:border-cyan/50 hover:shadow-lg">
 
                         <div class="flex items-center justify-between gap-3">
-                            <a href="{{ route('brand.show', $brand->slug) }}" class="flex h-12 min-w-0 items-center" title="{{ $brand->name }}">
+                            <a href="{{ route('brand.show', $brand->slug) }}" class="flex h-12 w-40 min-w-0 items-center" title="{{ $brand->name }}">
                                 @if ($brand->logo)
-                                    <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="img-load max-h-full max-w-[160px] object-contain" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($brand->logo) !!} onload="this.classList.add('is-loaded')">
+                                    <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="img-load max-h-full max-w-full object-contain object-left" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($brand->logo) !!} onload="this.classList.add('is-loaded')">
                                 @else
                                     <span class="truncate text-lg font-bold text-navy">{{ $brand->name }}</span>
                                 @endif

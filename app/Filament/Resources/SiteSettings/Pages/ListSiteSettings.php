@@ -3,17 +3,15 @@
 namespace App\Filament\Resources\SiteSettings\Pages;
 
 use App\Filament\Resources\SiteSettings\SiteSettingResource;
-use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
+/** There is only one set of site settings, so the list address forwards straight to it. */
 class ListSiteSettings extends ListRecords
 {
     protected static string $resource = SiteSettingResource::class;
 
-    protected function getHeaderActions(): array
+    public function mount(): void
     {
-        return [
-            CreateAction::make(),
-        ];
+        $this->redirect(SiteSettingResource::settingsUrl(), navigate: false);
     }
 }

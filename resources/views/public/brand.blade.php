@@ -46,10 +46,10 @@
                 <a href="{{ route('product.show', $product->slug) }}"
                     class="w-full group flex flex-col overflow-hidden rounded-xl bg-white border border-gray-100 shadow-sm
                            group-hover:shadow-lg group-hover:border-cyan/40 transition-all duration-300">
-                    <div class="h-40 bg-ice flex items-center justify-center p-4">
+                    <div class="h-40 bg-ice flex items-center justify-center p-2">
                         @if ($product->image)
                             <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
-                                class="img-load max-h-full max-w-full object-contain transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($product->image) !!} onload="this.classList.add('is-loaded')">
+                                class="img-load max-h-full max-w-full mix-blend-multiply object-contain transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($product->image) !!} onload="this.classList.add('is-loaded')">
                         @endif
                     </div>
                     <div class="p-4">

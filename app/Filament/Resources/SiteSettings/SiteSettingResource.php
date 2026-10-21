@@ -31,12 +31,36 @@ class SiteSettingResource extends Resource
 
     protected static ?string $navigationLabel = 'Site Settings';
 
-    protected static ?string $recordTitleAttribute = 'catalogue_file';
+    protected static ?string $recordTitleAttribute = 'id';
 
     // Only one settings row is used by the site, so don't allow creating more.
     public static function canCreate(): bool
     {
         return static::roleAllows() && ! SiteSetting::exists();
+    }
+
+    // The site has exactly one settings page: no list, no delete.
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
+    }
+
+    /** The address of the one settings page (the edit page of the row the site reads, or the create page on a brand-new site). */
+    public static function settingsUrl(): string
+    {
+        $current = SiteSetting::current();
+
+        return $current ? static::getUrl('edit', ['record' => $current]) : static::getUrl('create');
+    }
+
+    public static function getNavigationUrl(): string
+    {
+        return static::settingsUrl();
     }
 
     public static function form(Schema $schema): Schema

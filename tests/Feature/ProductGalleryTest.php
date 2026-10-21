@@ -82,4 +82,28 @@ class ProductGalleryTest extends TestCase
         $this->assertStringContainsString('->reorderable()', $form);
         $this->assertStringContainsString('More photos', $form);
     }
+
+    public function test_the_photos_sit_in_a_sliding_track_and_the_slide_is_off_for_reduced_motion(): void
+    {
+        $brand = \App\Models\Brand::create(['name' => 'Sartorius', 'slug' => 'sartorius-slide', 'is_active' => true]);
+        $cat = \App\Models\Category::create(['brand_id' => $brand->id, 'name' => 'Balances', 'slug' => 'balances-slide']);
+        $product = \App\Models\Product::create([
+            'category_id' => $cat->id, 'name' => 'Slide Balance', 'slug' => 'slide-balance', 'is_active' => true,
+            'image' => 'products/main.webp', 'gallery' => ['products/gallery/side.webp', 'products/gallery/back.webp'],
+        ]);
+
+        $html = $this->get(route('product.show', $product->slug))->assertOk()->getContent();
+
+        // main photo: one track, one slide per photo, moved sideways by the current index
+        $this->assertSame(2, substr_count($html, 'class="photo-track flex h-full w-full"'));                 // photo box + big view
+        $this->assertStringContainsString("translateX(' + (-i * 100) + '%)", $html);
+        $this->assertSame(3, substr_count($html, 'flex h-full w-full shrink-0 items-center justify-center p-3'));
+        $this->assertStringContainsString('overflow-hidden rounded-2xl bg-white/80 shadow-inner', $html);    // the box clips the photos next to the current one
+        $this->assertStringContainsString(':aria-hidden="i !== 1"', $html);                                  // only the shown photo is exposed
+        $this->assertStringContainsString('x-for="(src, idx) in imgs"', $html);                              // the big view slides too
+
+        // the slide runs only when motion is allowed
+        $css = file_get_contents(resource_path('css/app.css'));
+        $this->assertMatchesRegularExpression('/@media \(prefers-reduced-motion: no-preference\) \{\s*\.photo-track \{ transition: transform 500ms/', $css);
+    }
 }
