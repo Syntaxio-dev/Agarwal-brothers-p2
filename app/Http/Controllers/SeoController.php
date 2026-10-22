@@ -16,9 +16,14 @@ class SeoController extends Controller
 {
     public function sitemap(): Response
     {
-        $xml = Cache::remember('sitemap.xml.' . md5((string) config('app.url')), 3600, fn () => $this->buildSitemap());
+        $xml = Cache::remember(static::cacheKey(), 3600, fn () => $this->buildSitemap());
 
         return response($xml, 200, ['Content-Type' => 'application/xml; charset=UTF-8']);
+    }
+
+    public static function cacheKey(): string
+    {
+        return 'sitemap.xml.' . md5((string) config('app.url'));
     }
 
     public function robots(): Response

@@ -63,8 +63,9 @@
                     $cat = $res->category;
                     $s = $style[$cat] ?? $style['appnote'];
                     $pdfUrl = $res->pdf ? asset('storage/' . $res->pdf) : null;
-                    $href = $pdfUrl ?: ($res->link_url ?: route('contact'));
-                    $cta = $pdfUrl ? 'Download PDF' : ($res->link_url ? 'Open' : 'Request');
+                    $link = \App\Rules\SafeLink::passes($res->link_url) ? $res->link_url : null;
+                    $href = $pdfUrl ?: ($link ?: route('contact'));
+                    $cta = $pdfUrl ? 'Download PDF' : ($link ? 'Open' : 'Request');
                 @endphp
 
                 <div data-reveal x-show="active === 'all' || active === '{{ $cat }}'"
@@ -98,7 +99,7 @@
 
                         <div class="mt-auto pt-4 flex items-center justify-between gap-3 border-t border-gray-100">
                             <span class="text-xs text-slate line-clamp-1">{{ $res->source }}</span>
-                            <a href="{{ $href }}" @if ($pdfUrl || $res->link_url) target="_blank" rel="noopener" @endif
+                            <a href="{{ $href }}" @if ($pdfUrl || $link) target="_blank" rel="noopener" @endif
                                class="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-navy px-4 py-2 text-xs font-semibold text-white hover:bg-link group-hover:bg-link transition-colors btn-primary">
                                 {{ $cta }}
                                 <svg class="{{ $pdfUrl ? 'arrow-nudge-down' : 'arrow-nudge' }} h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">

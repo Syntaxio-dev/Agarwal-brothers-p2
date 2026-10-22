@@ -63,7 +63,7 @@ class JobOpeningForm
                 Section::make('Role description')
                     ->columnSpanFull()
                     ->schema([
-                        RichEditor::make('description'),
+                        RichEditor::make('description')->fileAttachmentsDisk('public')->fileAttachmentsVisibility('public')->fileAttachmentsDirectory('editor'),
                     ]),
 
                 Section::make('Application questions')

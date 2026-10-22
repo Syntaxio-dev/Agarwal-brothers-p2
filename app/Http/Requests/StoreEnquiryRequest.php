@@ -50,7 +50,13 @@ class StoreEnquiryRequest extends FormRequest
     public function after(): array
     {
         return [function (\Illuminate\Validation\Validator $validator) {
-            $product = Product::with('category')->find($this->input('product_id'));
+            // a broken or hidden product already has its own error; never look it up with an array or text
+            $id = $this->input('product_id');
+            if ($validator->errors()->has('product_id') || ! is_numeric($id)) {
+                return;
+            }
+
+            $product = Product::with('category')->find((int) $id);
             if (! $product) {
                 return;
             }
@@ -58,7 +64,7 @@ class StoreEnquiryRequest extends FormRequest
             $given = (array) $this->input('answers', []);
 
             foreach (EnquiryQuestion::forProduct($product) as $q) {
-                $value = trim((string) ($given[$q->id] ?? ''));
+                $value = is_string($given[$q->id] ?? null) ? trim($given[$q->id]) : '';
 
                 if ($value === '' || ($q->type === 'choice' && ! in_array($value, $q->optionList(), true))) {
                     $validator->errors()->add('answers.' . $q->id, $q->type === 'choice' ? 'Please choose an answer.' : 'Please answer this question.');
@@ -99,10 +105,10 @@ class StoreEnquiryRequest extends FormRequest
         $given = (array) ($data['answers'] ?? []);
         unset($data['answers']);
 
-        $product = Product::with('category')->find($data['product_id'] ?? 0);
+        $product = Product::with('category')->find((int) ($data['product_id'] ?? 0));
         $answers = $product
             ? EnquiryQuestion::forProduct($product)->map(function (EnquiryQuestion $q) use ($given) {
-                $value = trim((string) ($given[$q->id] ?? ''));
+                $value = is_string($given[$q->id] ?? null) ? trim($given[$q->id]) : '';
                 if ($value === '' || ($q->type === 'choice' && ! in_array($value, $q->optionList(), true))) {
                     return null;
                 }

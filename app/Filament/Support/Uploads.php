@@ -46,4 +46,24 @@ class Uploads
 
         return $path;
     }
+
+    /** File types that may be stored on the public disk, by their real content. */
+    public const PUBLIC_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp', 'gif', 'pdf', 'mp4', 'webm'];
+
+    /**
+     * A random file name for an upload. On the public disk the extension comes from the file's real content
+     * (a PDF named .html is stored as .pdf, anything unknown as .bin, which the upload folder never serves);
+     * private uploads (the product import) keep their own extension, cleaned.
+     */
+    public static function storageName(\Symfony\Component\HttpFoundation\File\UploadedFile $file, string $disk): string
+    {
+        if ($disk === 'public') {
+            $guess = strtolower((string) $file->guessExtension());
+            $ext = in_array($guess, static::PUBLIC_EXTENSIONS, true) ? $guess : 'bin';
+        } else {
+            $ext = strtolower((string) preg_replace('/[^A-Za-z0-9]/', '', $file->getClientOriginalExtension())) ?: 'bin';
+        }
+
+        return Str::ulid() . '.' . $ext;
+    }
 }

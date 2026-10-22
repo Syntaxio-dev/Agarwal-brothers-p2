@@ -129,6 +129,7 @@ class InsightForm
                                     ->icon('heroicon-o-bars-3-bottom-left')
                                     ->schema([
                                         RichEditor::make('content')
+                                            ->fileAttachmentsDisk('public')->fileAttachmentsVisibility('public')->fileAttachmentsDirectory('editor')
                                             ->label('Text')
                                             ->required(),
                                     ]),

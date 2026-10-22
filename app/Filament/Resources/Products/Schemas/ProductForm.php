@@ -46,15 +46,18 @@ class ProductForm
                             ->searchable()
                             ->preload()
                             ->required()
-                            ->helperText('Not in the list? Use the + button to add the category here, without leaving this page.')
-                            ->createOptionForm([
+                            ->helperText(fn () => auth()->user()?->canManage('categories')
+                                ? 'Not in the list? Use the + button to add the category here, without leaving this page.'
+                                : 'Not in the list? Ask an editor or an administrator to add the category first.')
+                            // the + button only for people who may add categories (and the nested one only for those who may add brands)
+                            ->createOptionForm(fn () => ! auth()->user()?->canManage('categories') ? null : [
                                 Select::make('brand_id')
                                     ->label('Brand')
                                     ->relationship('brand', 'name')
                                     ->searchable()
                                     ->preload()
                                     ->required()
-                                    ->createOptionForm([
+                                    ->createOptionForm(fn () => ! auth()->user()?->canManage('brands') ? null : [
                                         TextInput::make('name')
                                             ->required()
                                             ->maxLength(255)
@@ -63,7 +66,8 @@ class ProductForm
                                         TextInput::make('slug')->required()->unique('brands', 'slug'),
                                         Toggle::make('is_active')->label('Active')->default(true),
                                     ])
-                                    ->createOptionModalHeading('Add a new brand'),
+                                    ->createOptionModalHeading('Add a new brand')
+                                    ->createOptionAction(fn ($action) => $action->visible(fn () => (bool) auth()->user()?->canManage('brands'))),
                                 TextInput::make('name')
                                     ->label('Category name')
                                     ->helperText('The product line, for example "Analytical Balances".')
@@ -79,6 +83,7 @@ class ProductForm
                                     ->helperText('A category is listed under the vertical(s) you pick, so visitors can find its products there. You can change this later under Catalogue, Categories.'),
                             ])
                             ->createOptionUsing(function (array $data) {
+                                abort_unless(auth()->user()?->canManage('categories'), 403);
                                 $slug = Str::slug($data['name']);
                                 $base = $slug;
                                 $i = 2;
@@ -96,6 +101,7 @@ class ProductForm
                                 return $category->getKey();
                             })
                             ->createOptionModalHeading('Add a new category')
+                            ->createOptionAction(fn ($action) => $action->visible(fn () => (bool) auth()->user()?->canManage('categories')))
                             ->columnSpanFull(),
                         TextInput::make('name')
                             ->required()
@@ -180,6 +186,7 @@ class ProductForm
                     ->collapsed(fn ($operation) => $operation === 'create')
                     ->schema([
                         RichEditor::make('overview')
+                            ->fileAttachmentsDisk('public')->fileAttachmentsVisibility('public')->fileAttachmentsDirectory('editor')
                             ->helperText('A longer introduction shown under "Overview". Falls back to the short description.'),
                     ]),
 

@@ -3,15 +3,22 @@
 
 Options -Indexes -ExecCGI
 
-# Never execute or serve server-side scripts from the upload area.
-<FilesMatch "(?i)\.(php\d?|phtml|phar|pl|py|cgi|sh|asp|aspx|jsp)$">
+# Allow-list: only the file types the admin can upload (images, PDFs, videos) may be served.
+# Everything else (php, phtml, pht, phar, shtml, html, js, txt, csv, ...) is refused, whatever its name.
+<FilesMatch ".">
     Require all denied
+</FilesMatch>
+<FilesMatch "(?i)\.(jpe?g|png|webp|gif|avif|svg|pdf|mp4|webm)$">
+    Require all granted
 </FilesMatch>
 
 <IfModule mod_php.c>
     php_flag engine off
 </IfModule>
 <IfModule mod_php7.c>
+    php_flag engine off
+</IfModule>
+<IfModule mod_php8.c>
     php_flag engine off
 </IfModule>
 

@@ -18,7 +18,7 @@
     $features = collect($product->features ?? [])->filter(fn ($f) => filled($f['title'] ?? null));
     $advantages = collect($product->advantages ?? [])->filter(fn ($f) => filled($f['title'] ?? null));
     $specs = collect($product->specs ?? []);
-    $docs = collect($product->documents ?? [])->filter(fn ($d) => filled($d['title'] ?? null) && (filled($d['file'] ?? null) || filled($d['url'] ?? null)));
+    $docs = collect($product->documents ?? [])->filter(fn ($d) => filled($d['title'] ?? null) && (filled($d['file'] ?? null) || \App\Rules\SafeLink::passes($d['url'] ?? null)));
 
     $videoId = null;
     if ($product->video_url && preg_match('~(?:youtu\.be/|youtube\.com/(?:watch\?(?:.*&)?v=|embed/|shorts/))([A-Za-z0-9_-]{11})~', $product->video_url, $m)) {

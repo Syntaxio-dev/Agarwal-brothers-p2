@@ -62,10 +62,11 @@
                     </p>
 
                     <div data-reveal class="mt-7 flex flex-wrap gap-3">
-                        <a href="{{ $next->registration_url ?: route('insights.show', $next->slug) }}"
-                           @if ($next->registration_url) target="_blank" rel="noopener" @endif
+                        @php $nextReg = \App\Rules\SafeLink::passes($next->registration_url) ? $next->registration_url : null; @endphp
+                        <a href="{{ $nextReg ?: route('insights.show', $next->slug) }}"
+                           @if ($nextReg) target="_blank" rel="noopener" @endif
                            class="btn-primary inline-flex items-center gap-2 rounded-full bg-navy px-7 py-3 text-sm font-semibold text-white hover:bg-link">
-                            {{ $next->registration_url ? 'Register now' : 'View details' }}
+                            {{ $nextReg ? 'Register now' : 'View details' }}
                             <svg class="arrow-nudge h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
                             </svg>

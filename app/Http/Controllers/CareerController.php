@@ -87,7 +87,8 @@ class CareerController extends Controller
 
         $data = $this->check($request, $this->baseRules() + [
             'position' => ['required', 'string', 'max:255', Rule::in([...$roles, $other])],
-            'position_other' => ['nullable', 'required_if:position,' . $other, 'string', 'max:100'],
+            'position_other' => ['nullable', 'required_if:position,' . $other, 'string', 'max:100',
+                'regex:/^[\p{L}\p{N} &\/(),.\'-]+$/u', 'not_regex:/(https?:|www\.|\.\w{2,}\/)/i'],
             'preferred_location' => ['required', 'string', 'max:255'],
             'department' => ['required', 'string', 'max:255'],
         ]);

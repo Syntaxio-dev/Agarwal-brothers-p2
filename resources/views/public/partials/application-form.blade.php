@@ -66,7 +66,7 @@
                 </div>
             @else
                 {{-- Position: a dropdown of the roles we hire for (grouped by department); "Other" lets the visitor type their own --}}
-                @php $chosenRole = (string) old('position', request('role', '')); @endphp
+                @php $chosenRole = old('position', request('role', '')); $chosenRole = is_string($chosenRole) ? $chosenRole : ''; @endphp
                 <div x-data="{ role: @js($chosenRole) }"
                      x-init="$nextTick(() => { const o = $refs.role.selectedOptions[0]; const dep = document.getElementById('department'); if (o && o.dataset.dept && dep && ! dep.value) dep.value = o.dataset.dept; })">
                     <label class="{{ $label }}" for="position">Position *</label>

@@ -6,16 +6,18 @@
     if ($past) {
         $when = $start ? $start->format('F j, Y') : $w->created_at->format('F j, Y');
         $chip = null;
-        $href = $w->recording_url ?: $detail;
-        $cta = $w->recording_url ? 'Watch Recording' : 'View Details';
-        $external = (bool) $w->recording_url;
+        $rec = \App\Rules\SafeLink::passes($w->recording_url) ? $w->recording_url : null;
+        $href = $rec ?: $detail;
+        $cta = $rec ? 'Watch Recording' : 'View Details';
+        $external = (bool) $rec;
     } else {
         $when = $start->format('F j') . ' | ' . ($w->time_tbd ? 'Time to be announced' : $start->format('h:i A') . ' IST');
         $days = (int) now(\App\Models\Insight::TZ)->startOfDay()->diffInDays($start->copy()->startOfDay(), false);
         $chip = $days <= 0 ? 'Today' : ($days === 1 ? 'Tomorrow' : $days . ' days left');
-        $href = $w->registration_url ?: $detail;
-        $cta = $w->registration_url ? 'Register Here' : 'View Details';
-        $external = (bool) $w->registration_url;
+        $reg = \App\Rules\SafeLink::passes($w->registration_url) ? $w->registration_url : null;
+        $href = $reg ?: $detail;
+        $cta = $reg ? 'Register Here' : 'View Details';
+        $external = (bool) $reg;
     }
 @endphp
 

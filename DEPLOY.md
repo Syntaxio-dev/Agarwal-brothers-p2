@@ -72,6 +72,7 @@ php artisan key:generate
 Important values:
 - `APP_ENV=production` for the live site, **`APP_ENV=staging` for the demo** (the site only lets Google index itself when the environment is `production`, so a demo stays invisible to Google).
 - `APP_DEBUG=false` (never `true` on a live site).
+- `SESSION_SECURE_COOKIE=true` and `LIVEWIRE_TEMPORARY_FILE_UPLOAD_DISK=local` (already in the example file). Switch on **free SSL** and **Force HTTPS** in hPanel; `public/.htaccess` also redirects http to https.
 - `APP_URL=https://demo.yourdomain.com` (exact address, with https).
 - `DB_*` = the database details from step 3 (`DB_HOST=localhost` on Hostinger).
 - Mail (`MAIL_*`) = a mailbox you create in hPanel → **Emails** (use its SMTP details) and `CONTACT_INBOX` = the office address that should receive enquiries.
@@ -80,7 +81,8 @@ Important values:
 
 ```bash
 cd ~/laravel_app
-chmod -R 775 storage bootstrap/cache
+find storage bootstrap/cache -type d -exec chmod 775 {} + && find storage bootstrap/cache -type f -exec chmod 664 {} +
+chmod 640 .env
 php artisan migrate --force            # creates all tables
 php artisan storage:link               # makes uploaded images visible
 php artisan filament:assets            # admin panel CSS/JS
@@ -91,14 +93,14 @@ php artisan config:cache && php artisan route:cache && php artisan view:cache
 If `storage:link` says the link already exists, that is fine.
 (When using the symlink way in 4B, `storage:link` makes `public/storage` inside `laravel_app/public`; that is the right place.)
 
-Create the first admin user (use a NEW strong password, not the one from your computer):
+Admin user: if you imported the database from the admin Backup, your admin users are already there (change the password after the first login). Only on an EMPTY database create one (use a NEW strong password):
 
 ```bash
 php artisan tinker
 >>> \App\Models\User::create(['name' => 'Admin', 'email' => 'you@company.com', 'password' => bcrypt('A-NEW-STRONG-PASSWORD'), 'role' => 'admin', 'is_active' => true]);
 >>> exit
+rm -f ~/.config/psysh/psysh_history   # tinker keeps a history file: delete it so the password is not left on the server
 ```
-(If your users table uses other column names, check `app/Models/User.php` / the Users resource in the admin first.)
 
 ## 8. hPanel: the cron job (mails, backups, clean-up)
 

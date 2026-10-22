@@ -154,7 +154,7 @@ class PublicController extends Controller
     public function verticalsIndex()
     {
         $verticals = Vertical::where('is_active', true)
-            ->withCount('categories')
+            ->withCount(['categories' => fn ($q) => $q->whereHas('brand', fn ($b) => $b->where('is_active', true))])
             ->orderBy('sort_order')
             ->get();
 
@@ -396,7 +396,8 @@ class PublicController extends Controller
     {
         $max = 4;
 
-        $slugs = collect(explode(',', mb_substr((string) $request->query('p', ''), 0, 400)))
+        $p = $request->query('p', '');
+        $slugs = collect(explode(',', mb_substr(is_string($p) ? $p : '', 0, 400)))
             ->map(fn ($s) => trim($s))
             ->filter(fn ($s) => preg_match('/^[A-Za-z0-9-]{1,190}$/', $s))
             ->unique()
@@ -413,7 +414,10 @@ class PublicController extends Controller
         $products = $slugs->map(fn ($s) => $found->get($s))->filter()->values();
 
         // remember which products visitors compare together (counts only; once per visitor session)
-        if ($products->count() >= 2) {
+        $set = $products->pluck('id')->sort()->implode('-');
+        if ($products->count() >= 2
+            && $request->cookies->has(config('session.cookie'))
+            && \Illuminate\Support\Facades\Cache::add('compared:' . sha1($request->ip() . '|' . $set), 1, now()->addDay())) {
             $seen = (array) $request->session()->get('compared_pairs', []);
             try {
                 SimilarProducts::recordComparison($products, $seen);
@@ -528,7 +532,8 @@ class PublicController extends Controller
     /** Live search suggestions for the search boxes (JSON). */
     public function suggest(Request $request)
     {
-        $query = mb_substr(trim((string) $request->query('q', '')), 0, 80);
+        $q = $request->query('q', '');
+        $query = mb_substr(trim(is_string($q) ? $q : ''), 0, 80);
         $rows = [];
         $corrected = null;
 
@@ -558,7 +563,8 @@ class PublicController extends Controller
 
     public function search(Request $request)
     {
-        $query = trim((string) $request->input('q', ''));
+        $q = $request->input('q', '');
+        $query = trim(is_string($q) ? $q : '');
         $query = mb_substr($query, 0, 80);
 
         $products = collect();

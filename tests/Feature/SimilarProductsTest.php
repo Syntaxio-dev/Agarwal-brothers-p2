@@ -93,20 +93,23 @@ class SimilarProductsTest extends TestCase
         $b = $this->product('Mettler Toledo', 'Analytical Balances', 'XPR205', []);
         $url = route('compare', ['p' => $a->slug . ',' . $b->slug]);
 
-        $this->get($url)->assertOk();
+        // a real visitor: has a session cookie (bots without one are not counted)
+        $visitor = fn (string $ip, string $cookie) => $this->withCookie(config('session.cookie'), $cookie)->withServerVariables(['REMOTE_ADDR' => $ip]);
+
+        $visitor('10.0.0.1', 'a')->get($url)->assertOk();
         $this->assertSame(1, ProductComparison::where('product_id', $a->id)->where('other_product_id', $b->id)->value('times'));
         $this->assertSame(1, ProductComparison::where('product_id', $b->id)->where('other_product_id', $a->id)->value('times'));
 
         // the same visitor reloading does not count again
-        $this->get($url)->assertOk();
+        $visitor('10.0.0.1', 'a')->get($url)->assertOk();
         $this->assertSame(1, ProductComparison::where('product_id', $a->id)->value('times'));
 
         // one visitor is not enough to say "customers compared"
         $this->get(route('product.show', $a->slug))->assertDontSee('Customers also compared');
 
-        // a second visitor (fresh session)
+        // a second visitor (fresh session, another address)
         $this->flushSession();
-        $this->get($url)->assertOk();
+        $visitor('10.0.0.2', 'b')->get($url)->assertOk();
         $this->assertSame(2, ProductComparison::where('product_id', $a->id)->value('times'));
         $this->get(route('product.show', $a->slug))->assertSee('Customers also compared')->assertSee('XPR205');
     }

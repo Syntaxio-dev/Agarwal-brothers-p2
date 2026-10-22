@@ -24,8 +24,8 @@ class OverviewStats extends StatsOverviewWidget
     {
         $new = DashboardCache::remember('enquiries', 'new', fn () => Enquiry::where('status', 'new')->count());
 
-        return [
-            Stat::make('New enquiries', $new)
+        return array_values(array_filter([
+            ! auth()->user()?->canManage('enquiries') ? null : Stat::make('New enquiries', $new)
                 ->description($new ? 'Waiting for a response' : 'All caught up')
                 ->color($new ? 'warning' : 'success')
                 ->extraAttributes(['class' => $new ? 'border-s-4 !border-s-danger-500' : 'border-s-4 !border-s-success-500'])
@@ -42,6 +42,6 @@ class OverviewStats extends StatsOverviewWidget
                 ->description(DashboardCache::remember('insights', 'featured', fn () => Insight::where('is_featured', true)->count()) . ' featured on homepage')
                 ->color('gray')
                 ->extraAttributes(['class' => 'border-s-4 !border-s-gray-400']),
-        ];
+        ]));
     }
 }

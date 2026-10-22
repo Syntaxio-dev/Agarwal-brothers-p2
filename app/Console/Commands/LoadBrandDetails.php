@@ -66,7 +66,9 @@ class LoadBrandDetails extends Command
             // logo: copy database/data/brand-logos/<file> into storage/app/public/brands/
             if (! empty($row['logo']) && ($overwrite || blank($brand->logo))) {
                 $src = $logoDir . '/' . $row['logo'];
-                if (is_file($src)) {
+                if (is_file($src) && ! static::safeLogo($src)) {
+                    $this->warn("Logo for {$name} skipped: the SVG contains script, event handlers or external references.");
+                } elseif (is_file($src)) {
                     $ext = strtolower(pathinfo($row['logo'], PATHINFO_EXTENSION)) ?: 'png';
                     $path = 'brands/' . $brand->slug . '.' . $ext;
                     Storage::disk('public')->put($path, file_get_contents($src), 'public');
@@ -103,5 +105,15 @@ class LoadBrandDetails extends Command
         }
 
         return $cache[$norm] = $country;
+    }
+
+    /** An SVG is only copied when it cannot run script (other image types are always fine). */
+    public static function safeLogo(string $path): bool
+    {
+        if (strtolower(pathinfo($path, PATHINFO_EXTENSION)) !== 'svg') {
+            return true;
+        }
+
+        return ! preg_match('/<script|\son[a-z]+\s*=|javascript:|<foreignObject|<!ENTITY|xlink:href\s*=\s*["\']?https?:/i', (string) file_get_contents($path));
     }
 }

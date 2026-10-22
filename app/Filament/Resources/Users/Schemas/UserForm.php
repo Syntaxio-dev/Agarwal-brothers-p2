@@ -71,7 +71,7 @@ class UserForm
                             ->live()
                             ->default('editor')
                             ->disabled(fn ($record) => $isSelf($record))
-                            ->dehydrated()
+                            ->dehydrated(fn ($record) => ! $isSelf($record))
                             ->rule(fn ($record) => $keepOneAdmin($record))
                             ->helperText(fn ($record) => $isSelf($record)
                                 ? 'You cannot change your own role.'
@@ -84,7 +84,7 @@ class UserForm
                             ->default(true)
                             ->inline(false)
                             ->disabled(fn ($record) => $isSelf($record))
-                            ->dehydrated()
+                            ->dehydrated(fn ($record) => ! $isSelf($record))
                             ->rule(fn ($record) => $keepOneAdmin($record)),
                         Placeholder::make('role_help')
                             ->label('What this role can do')

@@ -271,6 +271,7 @@ class HelpGuide
                     'Add the name, designation and photo.',
                     'Switch on "Show as leadership block" for the big quote blocks, and write the quote. Leaders alternate left and right.',
                     'People who are not leaders appear in the "Meet the team" grid.',
+                    'Contact details (optional): add a phone number and an email. They slide up over the photo when a visitor puts the mouse on the card of the person (on a phone they are always shown). Leave both empty to show nothing. They are public, so use office numbers and addresses.',
                     'The text and photos on the rest of the Our Story page are edited under Settings, then Site Settings.',
                 ],
                 'tips' => ['A portrait photo with a transparent background looks best in leadership blocks.'],

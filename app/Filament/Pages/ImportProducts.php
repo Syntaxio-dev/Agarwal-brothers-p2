@@ -73,11 +73,30 @@ class ImportProducts extends Page
                             ->label('Update products that already exist')
                             ->helperText('Off: products with the same name in the same category are skipped. On: their filled-in cells replace the saved ones.'),
                         Toggle::make('create_categories')
+                            ->visible(fn () => static::mayCreateCategories())
                             ->label('Create missing categories')
                             ->helperText('Off: a category that does not exist under the brand is reported as an error. On: it is created for you.'),
                     ]),
             ])
             ->statePath('data');
+    }
+
+    /** Only people who may add categories can let the import create them. */
+    public static function mayCreateCategories(): bool
+    {
+        return (bool) auth()->user()?->canManage('categories');
+    }
+
+    /** The stored upload, but only if it really is a file this page put in imports/ (the path comes from the browser). */
+    protected function storedFile(array $state): ?string
+    {
+        $stored = is_array($state['file'] ?? null) ? reset($state['file']) : ($state['file'] ?? null);
+
+        if (! is_string($stored) || ! preg_match('#^imports/[A-Za-z0-9._-]+$#', $stored) || str_contains($stored, '..')) {
+            return null;
+        }
+
+        return $stored;
     }
 
     /** Changing the file or a switch makes the earlier preview out of date. */
@@ -92,7 +111,7 @@ class ImportProducts extends Page
         abort_unless(static::canAccess(), 403);
 
         $state = $this->form->getState();
-        $stored = is_array($state['file'] ?? null) ? reset($state['file']) : ($state['file'] ?? null);
+        $stored = $this->storedFile($state);
 
         if (! $stored || ! Storage::disk('local')->exists($stored)) {
             Notification::make()->title('Please choose a file first')->danger()->send();
@@ -105,7 +124,7 @@ class ImportProducts extends Page
             Storage::disk('local')->path($stored),
             pathinfo($stored, PATHINFO_EXTENSION),
             (bool) ($state['update_existing'] ?? false),
-            (bool) ($state['create_categories'] ?? false),
+            (bool) ($state['create_categories'] ?? false) && static::mayCreateCategories(),
             dryRun: true,
         );
 
@@ -126,7 +145,7 @@ class ImportProducts extends Page
         abort_unless(static::canAccess(), 403);
 
         $state = $this->form->getState();
-        $stored = is_array($state['file'] ?? null) ? reset($state['file']) : ($state['file'] ?? null);
+        $stored = $this->storedFile($state);
         if ($stored && Storage::disk('local')->exists($stored)) {
             Storage::disk('local')->delete($stored);
         }
@@ -142,7 +161,7 @@ class ImportProducts extends Page
 
         $this->preview = null;
         $state = $this->form->getState();
-        $stored = is_array($state['file'] ?? null) ? reset($state['file']) : ($state['file'] ?? null);
+        $stored = $this->storedFile($state);
 
         if (! $stored || ! Storage::disk('local')->exists($stored)) {
             Notification::make()->title('Please choose a file first')->danger()->send();
@@ -157,7 +176,7 @@ class ImportProducts extends Page
                 $path,
                 pathinfo($stored, PATHINFO_EXTENSION),
                 (bool) ($state['update_existing'] ?? false),
-                (bool) ($state['create_categories'] ?? false),
+                (bool) ($state['create_categories'] ?? false) && static::mayCreateCategories(),
             );
         } finally {
             Storage::disk('local')->delete($stored);   // the file is not kept

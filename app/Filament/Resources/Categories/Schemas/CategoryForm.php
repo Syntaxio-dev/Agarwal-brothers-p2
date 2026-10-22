@@ -62,6 +62,7 @@ class CategoryForm
                             ->label('Intro paragraph')
                             ->rows(4),
                         RichEditor::make('content')
+                            ->fileAttachmentsDisk('public')->fileAttachmentsVisibility('public')->fileAttachmentsDirectory('editor')
                             ->label('Detailed content (below the models)')
                             ->helperText('Industries served, key benefits, guides, etc.'),
                     ]),

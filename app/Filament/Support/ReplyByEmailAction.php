@@ -66,6 +66,13 @@ class ReplyByEmailAction
             ->action(function (Model $record, array $data) {
                 $sender = auth()->user();
 
+                // a stolen or misused login cannot turn the company mailbox into a spam sender
+                if (! \Illuminate\Support\Facades\RateLimiter::attempt('reply-mail:' . $sender?->id, 30, fn () => true, 3600)) {
+                    Notification::make()->title('Too many emails in the last hour')->body('Please wait a little and try again.')->danger()->send();
+
+                    return;
+                }
+
                 Mail::to($record->email)->queue(new CustomerMessage($data['subject'], $data['body'], $sender?->email, $sender?->name));
 
                 if (method_exists($record, 'logActivity')) {

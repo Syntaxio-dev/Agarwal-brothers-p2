@@ -19,6 +19,8 @@ fi
 
 echo "== Maintenance mode on"
 $PHP artisan down --retry=30 || true
+# Whatever happens below (even a failed step), take the site out of maintenance mode again.
+trap '$PHP artisan up' EXIT
 
 if [ -z "$SKIP_COMPOSER" ] && command -v composer >/dev/null 2>&1; then
     echo "== Composer packages (no dev tools, optimised class loader)"
@@ -26,7 +28,10 @@ if [ -z "$SKIP_COMPOSER" ] && command -v composer >/dev/null 2>&1; then
 fi
 
 echo "== Folder permissions"
-chmod -R 775 storage bootstrap/cache
+# folders 775, files 664 (nothing in storage needs to be executable); .env readable by the owner and group only
+find storage bootstrap/cache -type d -exec chmod 775 {} +
+find storage bootstrap/cache -type f -exec chmod 664 {} +
+[ -f .env ] && chmod 640 .env
 
 echo "== Database changes"
 $PHP artisan migrate --force
@@ -38,7 +43,6 @@ $PHP artisan filament:assets
 echo "== Clear and rebuild caches"
 PHP="$PHP" bash refresh-caches.sh
 
-echo "== Maintenance mode off"
-$PHP artisan up
+echo "== Maintenance mode off (done by the trap above)"
 
 echo "Done. Open the site, send a test enquiry and look at storage/logs/laravel.log."

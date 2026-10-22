@@ -143,13 +143,13 @@
                         </dl>
 
                         <div class="mt-5 flex flex-wrap gap-3">
-                            @if ($upcoming && $insight->registration_url)
+                            @if ($upcoming && \App\Rules\SafeLink::passes($insight->registration_url))
                                 <a href="{{ $insight->registration_url }}" target="_blank" rel="noopener"
                                    class="btn-primary inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-semibold text-white">
                                     Register now
                                     <svg class="arrow-nudge h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/></svg>
                                 </a>
-                            @elseif (! $upcoming && $insight->recording_url)
+                            @elseif (! $upcoming && \App\Rules\SafeLink::passes($insight->recording_url))
                                 <a href="{{ $insight->recording_url }}" target="_blank" rel="noopener"
                                    class="btn-primary inline-flex items-center gap-2 rounded-full px-7 py-3 text-sm font-semibold text-white">
                                     Watch recording

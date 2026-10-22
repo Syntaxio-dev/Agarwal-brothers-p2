@@ -239,7 +239,7 @@
                                         <p class="mt-5 text-lg font-semibold text-link">
                                             {{ $leader->name }}@if ($leader->designation), <span class="font-medium text-navy/80">{{ $leader->designation }}</span>@endif
                                         </p>
-                                        @if ($leader->linkedin_url)
+                                        @if ($leader->linkedin_url && \App\Rules\SafeLink::passes($leader->linkedin_url))
                                             <a href="{{ $leader->linkedin_url }}" target="_blank" rel="noopener" aria-label="{{ $leader->name }} on LinkedIn"
                                                class="mt-4 inline-flex h-9 w-9 items-center justify-center rounded-lg bg-navy text-white transition duration-200 hover:scale-110 hover:bg-link">
                                                 <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24">
@@ -372,7 +372,7 @@
                     @foreach ($team as $member)
                         <div data-reveal class="group w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-1.15rem)] overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm
                                     hover:shadow-xl hover:border-cyan/40 hover:-translate-y-1 transition-all duration-300">
-                            <div class="aspect-[4/5] w-full overflow-hidden bg-gradient-to-br from-ice to-cyan/20 flex items-center justify-center">
+                            <div class="relative aspect-[4/5] w-full overflow-hidden bg-gradient-to-br from-ice to-cyan/20 flex items-center justify-center">
                                 @if ($member->photo)
                                     <img src="{{ asset('storage/' . $member->photo) }}" alt="{{ $member->name }}"
                                          class="img-load h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($member->photo) !!} onload="this.classList.add('is-loaded')">
@@ -380,6 +380,30 @@
                                     <span class="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-navy to-link text-3xl font-bold text-white shadow-lg">
                                         {{ strtoupper(mb_substr($member->name, 0, 1)) }}
                                     </span>
+                                @endif
+
+                                {{-- Contact details slide up on hover / keyboard focus (always shown on touch screens, which cannot hover) --}}
+                                @if ($member->phone || $member->email || $member->linkedin_url)
+                                    <div class="team-contact absolute inset-x-0 bottom-0 translate-y-full bg-navy/95 px-4 py-3 text-left transition-transform duration-300 ease-out group-hover:translate-y-0 group-focus-within:translate-y-0 [@media(hover:none)]:translate-y-0">
+                                        @if ($member->phone)
+                                            <a href="tel:{{ preg_replace('/[^0-9+]/', '', $member->phone) }}" class="flex items-center gap-2 py-1 text-xs font-medium text-white hover:text-cyan focus-visible:text-cyan">
+                                                <svg class="h-3.5 w-3.5 shrink-0 text-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
+                                                {{ $member->phone }}
+                                            </a>
+                                        @endif
+                                        @if ($member->email)
+                                            <a href="mailto:{{ $member->email }}" class="flex items-center gap-2 py-1 text-xs font-medium text-white hover:text-cyan focus-visible:text-cyan">
+                                                <svg class="h-3.5 w-3.5 shrink-0 text-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/></svg>
+                                                <span class="min-w-0 break-all">{{ $member->email }}</span>
+                                            </a>
+                                        @endif
+                                        @if ($member->linkedin_url && \App\Rules\SafeLink::passes($member->linkedin_url))
+                                            <a href="{{ $member->linkedin_url }}" target="_blank" rel="noopener noreferrer" class="flex items-center gap-2 py-1 text-xs font-medium text-white hover:text-cyan focus-visible:text-cyan">
+                                                <svg class="h-3.5 w-3.5 shrink-0 text-cyan" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12ZM7.12 20.45H3.56V9h3.56v11.45Z"/></svg>
+                                                LinkedIn
+                                            </a>
+                                        @endif
+                                    </div>
                                 @endif
                             </div>
                             <div class="p-5 text-center">

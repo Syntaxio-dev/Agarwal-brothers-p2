@@ -39,7 +39,7 @@ class EnquiryQuestion extends Model
      */
     public static function forProduct(Product $product): Collection
     {
-        $verticalIds = $product->category?->verticals()->pluck('verticals.id')->all() ?? [];
+        $verticalIds = $product->category?->verticals()->where('verticals.is_active', true)->pluck('verticals.id')->all() ?? [];
 
         return static::query()
             ->where('is_active', true)

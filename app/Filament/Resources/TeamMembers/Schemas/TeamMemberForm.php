@@ -39,6 +39,24 @@ class TeamMemberForm
                             ->columnSpanFull(),
                     ]),
 
+                Section::make('Contact details (optional)')
+                    ->description('Shown on the card of this person in the "Meet the team" grid when a visitor hovers it (always visible on phones). Leave both empty to show nothing. These are public, so use office numbers and addresses.')
+                    ->columnSpanFull()
+                    ->columns(2)
+                    ->schema([
+                        TextInput::make('phone')
+                            ->tel()
+                            ->maxLength(30)
+                            ->regex('/^[+0-9 ()\-]{6,30}$/')
+                            ->validationMessages(['regex' => 'Use digits, spaces, + ( ) and - only.'])
+                            ->placeholder('+91 98290 15024'),
+                        TextInput::make('email')
+                            ->label('Email')
+                            ->email()
+                            ->maxLength(255)
+                            ->placeholder('name@agarwalbrothers.com'),
+                    ]),
+
                 Section::make('Leadership block')
                     ->description('Leaders appear as large blocks with a quote, alternating left and right. Everyone else goes in the team grid.')
                     ->columnSpanFull()

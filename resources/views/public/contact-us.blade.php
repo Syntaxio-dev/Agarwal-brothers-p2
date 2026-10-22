@@ -5,7 +5,8 @@
     $icon = 'pop-icon mx-auto flex h-12 w-12 items-center justify-center rounded-xl bg-navy text-white shadow-md transition-all duration-300 group-hover:bg-link group-hover:scale-110';
 
     // ?topic=quote opens the form with the subject already filled (only the topics listed in config/contact.php)
-    $prefill = $c['topics'][request('topic')] ?? null;
+    $topic = request('topic');
+    $prefill = is_string($topic) ? ($c['topics'][$topic] ?? null) : null;
     $catalogueList = optional(\App\Models\SiteSetting::latest()->first())?->catalogueList() ?? [];
     $enq = $c['departments'][1] ?? $c['departments'][0];
     $waNumber = preg_replace('/\D/', '', (string) (optional(\App\Models\SiteSetting::latest()->first())->whatsapp_number ?: $c['whatsapp']));

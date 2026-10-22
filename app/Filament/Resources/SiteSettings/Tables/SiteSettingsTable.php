@@ -29,10 +29,6 @@ class SiteSettingsTable
             ->recordActions([
                 EditAction::make(),
             ])
-            ->toolbarActions([
-                BulkActionGroup::make([
-                    DeleteBulkAction::make(),
-                ]),
-            ]);
+            ->toolbarActions([]);   // the site has one settings row: never deleted
     }
 }
