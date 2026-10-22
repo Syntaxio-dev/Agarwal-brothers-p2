@@ -18,6 +18,7 @@ use App\Models\Insight;
 use App\Models\JobApplication;
 use App\Models\Product;
 use App\Models\Slide;
+use App\Support\DashboardCache;
 use Filament\Widgets\Widget;
 
 /**
@@ -26,7 +27,7 @@ use Filament\Widgets\Widget;
  */
 class QuickUpdates extends Widget
 {
-    protected static ?int $sort = 1;
+    protected static ?int $sort = 4;
 
     protected int|string|array $columnSpan = 'full';
 
@@ -35,6 +36,21 @@ class QuickUpdates extends Widget
     public static function canView(): bool
     {
         return auth()->check();
+    }
+
+    /** The three main buttons live in the dashboard header; the rest stay here as small shortcuts. */
+    public const PRIMARY = ['Add product', 'Import products', 'New blog / news'];
+
+    /** @param array<int, array{label:string,url:string}> $links */
+    public static function primary(array $links): array
+    {
+        return array_values(array_filter($links, fn ($l) => in_array($l['label'], self::PRIMARY, true)));
+    }
+
+    /** @param array<int, array{label:string,url:string}> $links */
+    public static function secondary(array $links): array
+    {
+        return array_values(array_filter($links, fn ($l) => ! in_array($l['label'], self::PRIMARY, true)));
     }
 
     /** Small "do something now" buttons. @return array<int, array{label:string,url:string}> */
@@ -128,7 +144,11 @@ class QuickUpdates extends Widget
                 continue;
             }
 
-            $groups[$group][] = ['area' => $area, 'label' => $label, 'hint' => $hint, 'count' => (int) $counter(), 'url' => $url(), 'tone' => $tone];
+            // Cached for a short time; "assigned to you" depends on the person, so their id is part of the key.
+            $name = \Illuminate\Support\Str::slug($label) . ($label === 'Enquiries assigned to you' ? '.u' . $user->id : '');
+            $count = DashboardCache::remember($area, $name, $counter);
+
+            $groups[$group][] = ['area' => $area, 'label' => $label, 'hint' => $hint, 'count' => $count, 'url' => $url(), 'tone' => $tone];
         }
 
         // Cards that need action first inside every group.
@@ -145,14 +165,22 @@ class QuickUpdates extends Widget
         return collect($this->getGroups())->flatten(1)->values()->all();
     }
 
+    /**
+     * Webinars starting within the next 7 days, counted by the database (no rows are loaded).
+     * starts_at holds India wall-clock time (see Insight::start_ist), so it is compared with India time strings.
+     * A webinar with "time to be decided" counts for its whole day, like Insight::isUpcoming().
+     */
     private function upcomingWebinars(): int
     {
         $now = now(Insight::TZ);
+        $fmt = 'Y-m-d H:i:s';
 
         return Insight::where('type', 'webinar')
             ->where('is_active', true)
-            ->get()
-            ->filter(fn (Insight $w) => $w->isUpcoming() && $w->start_ist->lte($now->copy()->addDays(7)->endOfDay()))
+            ->where('starts_at', '<=', $now->copy()->addDays(7)->endOfDay()->format($fmt))
+            ->where(fn ($q) => $q
+                ->where(fn ($q) => $q->where('time_tbd', false)->where('starts_at', '>=', $now->format($fmt)))
+                ->orWhere(fn ($q) => $q->where('time_tbd', true)->where('starts_at', '>=', $now->copy()->startOfDay()->format($fmt))))
             ->count();
     }
 }

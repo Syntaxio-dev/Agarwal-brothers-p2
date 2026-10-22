@@ -125,6 +125,23 @@ Open the site and test, in this order:
 2. Upload and extract over the old files (never overwrite `.env` or `storage/app` or `storage/logs`).
 3. On the server run `bash deploy.sh` (it migrates and rebuilds the caches; it also runs `filament:cache-components`).
 
+**`php artisan filament:cache-components` MUST run after every deploy.** The admin panel reads its list of pages from that cache on the live site; without it new admin pages or widgets "do not exist" and every admin page is slower. `deploy.sh` does it for you (through `refresh-caches.sh`). After changing `.env` only, run `bash refresh-caches.sh`.
+
+## 10b. Speed: what the scripts cache, and the server checklist
+
+`refresh-caches.sh` (run by `deploy.sh`) clears and rebuilds, in this order: `config:cache`, `route:cache`, `view:cache`, `event:cache`, `filament:cache-components`, `icons:cache`. If the server has Composer, `deploy.sh` first runs `composer install --optimize-autoloader --no-dev` (otherwise upload `vendor` built on your computer with the same command).
+
+The caches only help with **`APP_ENV=production`** in `.env` (`deploy.sh` warns if it is something else). On a development machine `AdminPanelProvider` deletes Filament's cached panel on every request on purpose, so new pages show at once; that happens only when `APP_ENV=local`.
+
+Server checklist (ask Hostinger support or set it in hPanel > PHP configuration):
+- [ ] PHP OPcache on: `opcache.enable=1`, and in production `opcache.validate_timestamps=0` (then PHP must be restarted, or OPcache reset in hPanel, after each deploy so it sees the new files).
+- [ ] Gzip or Brotli compression on for HTML, CSS, JS and SVG (Hostinger: usually on by default; check a page in the browser's Network tab, `content-encoding: br` or `gzip`).
+- [ ] Assets built with `npm run build` and the `public/build` folder uploaded. There must be **no `public/hot` file** on the server (it makes pages load assets from a Vite dev server that does not exist there).
+- [ ] `APP_DEBUG=false`; no Debugbar or Telescope installed in production (this project has neither).
+- [ ] If the plan offers Redis: `CACHE_STORE=redis` and `SESSION_DRIVER=redis` (the dashboard count cache and sessions then live in memory). Otherwise the default database cache is fine.
+
+What the app itself does: the dashboard counts are cached for 90 seconds (`App\Support\DashboardCache`) and cleared at once when a matching record is saved or deleted, and the columns the admin lists and counts filter on have database indexes (migration `2026_10_22_120000`).
+
 ## 11. When the client says "go live"
 
 - Replace the dummy data; the company email, phones, address and GSTIN in `config/contact.php` are already real (branch office and working hours are still placeholders); set the WhatsApp number in Site Settings, social links, the Terms page and have the privacy text checked.

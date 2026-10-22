@@ -99,7 +99,8 @@ class AdminToolsTest extends TestCase
         $this->assertStringContainsString('no_country', urldecode($cards['Brands without a country']['url']));
 
         $this->get('/admin')->assertOk();
-        Livewire::test(QuickUpdates::class)->assertSee('Add product')->assertSee('Import products')->assertSee('Tidy up')->assertSee('Needs a reply');
+        Livewire::test(QuickUpdates::class)->assertSee('Tidy up')->assertSee('Needs a reply')->assertSee('Needs attention')->assertDontSee('Import products');
+        Livewire::test(\App\Filament\Widgets\DashboardHeader::class)->assertSee('Add product')->assertSee('Import products');
     }
 
     public function test_dashboard_links_really_open_the_filtered_list(): void

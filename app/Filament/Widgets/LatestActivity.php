@@ -10,7 +10,7 @@ use Filament\Widgets\Widget;
 /** The most recent customer / candidate activity, newest first. */
 class LatestActivity extends Widget
 {
-    protected static ?int $sort = 3;
+    protected static ?int $sort = 11;
 
     protected int|string|array $columnSpan = 'full';
 

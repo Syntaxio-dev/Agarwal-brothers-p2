@@ -72,6 +72,11 @@ class ReplyByEmailAction
                     $record->logActivity("Emailed the customer. Subject: \"{$data['subject']}\"\n\n" . \Illuminate\Support\Str::limit($data['body'], 1200));
                 }
 
+                // An emailed answer is a first response even when the status is left as it was.
+                if ($record instanceof Enquiry && ! $record->first_responded_at) {
+                    $record->forceFill(['first_responded_at' => now()])->saveQuietly();
+                }
+
                 if (! empty($data['mark_contacted']) && ($record instanceof Enquiry || $record instanceof ContactMessage) && $record->status === 'new') {
                     $record->update(['status' => 'contacted']);
                 }

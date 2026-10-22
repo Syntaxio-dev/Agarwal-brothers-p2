@@ -26,9 +26,9 @@ class Enquiry extends Model
     /** Statuses that still need someone's attention. */
     public const OPEN = ['new', 'contacted', 'quoted'];
 
-    protected $fillable = ['product_id', 'name', 'email', 'phone', 'company', 'budget', 'order_location', 'message', 'answers', 'status', 'assigned_to'];
+    protected $fillable = ['product_id', 'name', 'email', 'phone', 'company', 'budget', 'order_location', 'message', 'answers', 'status', 'assigned_to', 'first_responded_at'];
 
-    protected $casts = ['answers' => 'array'];
+    protected $casts = ['answers' => 'array', 'first_responded_at' => 'datetime'];
 
     /** The visitor's answers to the quick questions, as [['question' => ..., 'answer' => ...], ...]. */
     public function answerList(): array
@@ -40,6 +40,13 @@ class Enquiry extends Model
     {
         // Keep a readable log for the team: who changed the status or the owner, and tell a new owner.
         static::updated(function (Enquiry $enquiry) {
+            // The first time somebody moves a new enquiry on is the "first response" (dashboard response-time card).
+            if ($enquiry->wasChanged('status') && $enquiry->getOriginal('status') === 'new' && ! $enquiry->first_responded_at) {
+                // plain query on purpose: saving the model again here would wipe wasChanged() for the checks below
+                static::whereKey($enquiry->id)->update(['first_responded_at' => now()]);
+                $enquiry->setAttribute('first_responded_at', now())->syncOriginalAttribute('first_responded_at');
+            }
+
             if ($enquiry->wasChanged('status')) {
                 $from = static::STATUSES[$enquiry->getOriginal('status')] ?? ucfirst((string) $enquiry->getOriginal('status'));
                 $to = static::STATUSES[$enquiry->status] ?? ucfirst((string) $enquiry->status);

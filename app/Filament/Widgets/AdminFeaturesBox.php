@@ -8,7 +8,7 @@ use Filament\Widgets\Widget;
 /** Dashboard info box: what this admin panel can do, limited to the signed-in person's role. */
 class AdminFeaturesBox extends Widget
 {
-    protected static ?int $sort = 5;
+    protected static ?int $sort = 13;
 
     protected int|string|array $columnSpan = 'full';
 

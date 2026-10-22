@@ -97,11 +97,17 @@ class AdminFeatures
                 }
 
                 $url = $target === SiteSettingResource::class ? SiteSettingResource::getNavigationUrl() : $target::getUrl();
-                $out[$group][] = ['title' => $title, 'text' => $text, 'url' => $url];
+                $out[$group][] = ['key' => \Illuminate\Support\Str::slug($title), 'title' => $title, 'text' => $text, 'url' => $url];
             }
         }
 
         return $out;
+    }
+
+    /** Flat [key => title] list of what this user can open (for the shortcut picker). @return array<string, string> */
+    public static function choices(?User $user): array
+    {
+        return collect(static::forUser($user))->flatten(1)->pluck('title', 'key')->all();
     }
 
     /** Things every signed-in person can do. */
@@ -110,7 +116,7 @@ class AdminFeatures
         return [
             ['Search everything', 'Press Ctrl+K (or click the search box at the top) to find products, brands, enquiries and How-to answers.'],
             ['Your work is protected', 'If you leave a form with unsaved changes you get a warning, and a browser-only draft can be restored for 7 days.'],
-            ['Quick updates', 'The cards on this dashboard show what needs attention (new enquiries, products without a photo...). Click one to open the list already filtered.'],
+            ['Needs attention', 'The cards on this dashboard show what needs attention (new enquiries, products without a photo...). Click one to open the list already filtered.'],
             ['How-to guide', 'Step-by-step help for every area is in the Help menu, with a search box.'],
         ];
     }

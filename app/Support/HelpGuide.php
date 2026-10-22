@@ -23,7 +23,9 @@ class HelpGuide
                 'intro' => 'This panel controls everything on the website. Anything you save here appears on the live site straight away, so read the notes below before you change something important.',
                 'steps' => [
                     'Use the menu on the left. It is grouped: Homepage, Catalogue, Content, Leads, Careers and Settings. You only see the groups your role can use.',
-                    'The Dashboard shows "Quick updates": new enquiries, messages and applications, and small to-dos such as products without a photo. Click a card to go straight to it.',
+                    'The Dashboard shows "Needs attention": new enquiries, messages and applications, and small to-dos such as products without a photo. Click a card to go straight to it.',
+                    'Under the greeting you can pin your own shortcuts (press "Edit shortcuts"). Below them, "Business pulse" shows enquiries, messages and applications with a small trend line and the change against the period before, plus the average time to the first reply. Choose 7, 30 or 90 days at the top of the page: the charts, the most asked-about products and the pulse numbers all follow it.',
+                    'Further down: "Oldest waiting" shows who has waited longest without an answer, "Team workload" shows open enquiries per person, "Catalogue health" shows how many live products are complete and which ones were not edited for 6 months. Webinars in the next 7 days appear under the greeting.',
                     'To add something, open its list and press the button at the top right (for example "New product"). To change something, click its row.',
                     'Press the blue Save (or Create) button at the bottom of the form. A green message confirms it. If you leave without saving, your changes are lost.',
                     'Many lists have an Active switch. Switching it off hides the item from the website without deleting it. Use this instead of deleting when you are unsure.',
@@ -301,7 +303,7 @@ class HelpGuide
                     'Check Leads, then Enquiries and Contact Messages every day. New ones have a "New" status.',
                     'Open one to read all the details. Call or email the customer.',
                     'Change the status to Contacted after you reply, and to Closed when it is finished.',
-                    'The Dashboard "Quick updates" card shows how many are still new.',
+                    'The Dashboard "Needs attention" card shows how many are still new.',
                 ],
                 'tips' => [
                     'If an email did not arrive, the message is still saved here. Nothing is lost.',

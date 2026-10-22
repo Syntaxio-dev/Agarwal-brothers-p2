@@ -27,6 +27,7 @@
         <env name="DB_DATABASE" value="ab_new_project_testing"/>
         <env name="DB_URL" value=""/>
         <env name="MAIL_MAILER" value="array"/>
+        <env name="CONTACT_INBOX" value="office@agarwalbrothers.com"/>
         <env name="QUEUE_CONNECTION" value="sync"/>
         <env name="APP_URL" value="http://localhost"/>
         <env name="SESSION_DRIVER" value="array"/>

@@ -122,6 +122,17 @@ html.dark .fi-header-heading {
     color: #ffffff;
 }
 
+/* Choice buttons (for example the dashboard date range): the chosen one looks like the site's primary button */
+.fi-fo-toggle-buttons-btn-ctn > label.fi-btn.fi-color-primary {
+    background-color: #0B2545;
+    color: #ffffff;
+    box-shadow: inset 0 -2px 0 rgb(0 180 216 / 0.85);
+}
+.fi-fo-toggle-buttons-btn-ctn > label.fi-btn.fi-color-primary:hover {
+    background-color: #0077B6;
+    color: #ffffff;
+}
+
 /* Other solid colours: white text */
 .fi-btn.fi-color.fi-color-danger:not(.fi-outlined):not(label),
 .fi-btn.fi-color.fi-color-success:not(.fi-outlined):not(label),

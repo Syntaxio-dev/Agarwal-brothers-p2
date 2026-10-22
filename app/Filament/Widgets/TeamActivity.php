@@ -9,7 +9,7 @@ use Filament\Widgets\Widget;
 /** Dashboard: the latest changes made by the team (administrators only). */
 class TeamActivity extends Widget
 {
-    protected static ?int $sort = 4;
+    protected static ?int $sort = 12;
 
     protected int|string|array $columnSpan = 'full';
 
