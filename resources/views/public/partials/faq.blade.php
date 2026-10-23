@@ -4,7 +4,7 @@
     <section class="mt-14" x-data="{ open: null }">
         <div class="text-center">
             <span class="section-badge">FAQs</span>
-            <h2 class="mt-3 text-xl sm:text-2xl font-bold text-navy">{{ $title ?? 'Frequently Asked Questions' }}</h2>
+            <h2 class="mt-3 text-xl sm:text-2xl font-bold text-navy">{{ $title ?? 'Frequently asked questions' }}</h2>
         </div>
 
         <div class="mx-auto mt-8 max-w-4xl space-y-3">

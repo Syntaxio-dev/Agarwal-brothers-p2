@@ -29,7 +29,7 @@ class ClientShowcaseTest extends TestCase
 
         $html = $this->get('/')->assertOk()->getContent();
 
-        $this->assertStringContainsString('The labs that rely', $html);
+        $this->assertStringContainsString('Labs that rely', $html);
         $this->assertStringContainsString('Fast service and honest advice.', $html);
         $this->assertStringContainsString('QC Head · Sun Pharma', $html);
         $this->assertStringContainsString('340+', $html);                  // the fixed company number, not the 7 client rows
@@ -84,7 +84,7 @@ class ClientShowcaseTest extends TestCase
 
     public function test_the_section_is_left_out_when_there_are_no_clients(): void
     {
-        $this->get('/')->assertOk()->assertDontSee('The labs that rely');
+        $this->get('/')->assertOk()->assertDontSee('Labs that rely');
     }
 
     public function test_the_world_map_section_is_switched_off_on_the_home_page(): void

@@ -8,7 +8,7 @@
                     Reviews
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
-                    What Our Customers <span class="text-cyan-ink">Say About Us</span>
+                    What our customers <span class="text-cyan-ink">say about us</span>
                 </h2>
             </div>
 

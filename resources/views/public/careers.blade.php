@@ -122,7 +122,7 @@
                     Careers @ Agarwal Brothers
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
-                    Let's Work <span class="text-cyan-ink">Together</span>
+                    Let's work <span class="text-cyan-ink">together</span>
                 </h2>
                 <div class="bar-grow h-0.5 w-12 bg-cyan"></div>
                 <p class="max-w-2xl text-sm text-slate">

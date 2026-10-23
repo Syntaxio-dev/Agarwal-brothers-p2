@@ -106,7 +106,7 @@ class ContactDetailsTest extends TestCase
         $this->assertStringNotContainsString('Plot No. 00', $html);
         $this->assertStringContainsString('Headquartered in Jaipur', $html);
         $this->assertStringContainsString('Head Office - Jaipur', $html);
-        $this->assertStringContainsString('Office Timings', $html);
+        $this->assertStringContainsString('Office timings', $html);
 
         // the timings card says only what the owner asked for
         $this->assertStringContainsString('Monday to Saturday: 10:00 am - 7:00 pm', $html);
@@ -132,7 +132,7 @@ class ContactDetailsTest extends TestCase
         $html = $this->get(route('contact'))->assertOk()->getContent();
 
         $order = array_map(fn ($n) => strpos($html, $n), [
-            'Get in', 'Years of experience', 'What can we', 'From enquiry to', 'Headquartered in', 'For Support', 'Common', 'Contact Our', 'Prefer to talk?',
+            'Get in', 'Years of experience', 'What can we', 'From enquiry to', 'Headquartered in', 'For support', 'Common', 'Contact our', 'Prefer to talk?',
         ]);
 
         $this->assertNotContains(false, $order);

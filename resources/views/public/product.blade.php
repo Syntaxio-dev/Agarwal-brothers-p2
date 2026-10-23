@@ -186,7 +186,7 @@
             <section data-reveal class="mt-14 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-10">
                 <div class="text-center">
                     <span class="section-badge">Specifications</span>
-                    <h2 class="mt-3 text-xl font-bold text-navy sm:text-2xl">Technical Specifications</h2>
+                    <h2 class="mt-3 text-xl font-bold text-navy sm:text-2xl">Technical specifications</h2>
                 </div>
                 <dl class="mt-8 grid grid-cols-1 gap-x-8 md:grid-cols-2">
                     @foreach ($specs as $key => $value)
@@ -206,7 +206,7 @@
                     <div>
                         <div class="text-center lg:text-left">
                             <span class="section-badge">Features</span>
-                            <h2 class="mt-3 text-xl font-bold text-navy sm:text-2xl">Key Features of <span class="text-cyan-ink">{{ $product->name }}</span></h2>
+                            <h2 class="mt-3 text-xl font-bold text-navy sm:text-2xl">Key features of <span class="text-cyan-ink">{{ $product->name }}</span></h2>
                         </div>
                         <div class="mt-8 grid grid-cols-1 gap-4">
                             @foreach ($features as $f)
@@ -229,7 +229,7 @@
                     <div>
                         <div class="text-center lg:text-left">
                             <span class="section-badge">Advantages</span>
-                            <h2 class="mt-3 text-xl font-bold text-navy sm:text-2xl">Key Advantages of <span class="text-cyan-ink">{{ $product->name }}</span></h2>
+                            <h2 class="mt-3 text-xl font-bold text-navy sm:text-2xl">Key advantages of <span class="text-cyan-ink">{{ $product->name }}</span></h2>
                         </div>
                         <div class="mt-8 grid grid-cols-1 gap-4">
                             @foreach ($advantages as $f)
@@ -274,7 +274,7 @@
             <section data-reveal class="mt-8 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-10">
                 <div class="text-center">
                     <span class="section-badge">Resources</span>
-                    <h2 class="mt-3 text-xl font-bold text-navy sm:text-2xl">Documents &amp; Research Papers</h2>
+                    <h2 class="mt-3 text-xl font-bold text-navy sm:text-2xl">Documents &amp; research papers</h2>
                 </div>
                 <div class="mt-8 grid grid-cols-1 gap-4 md:grid-cols-2">
                     @foreach ($docs as $d)
@@ -308,7 +308,7 @@
             </section>
         @endif
 
-        @include('public.partials.faq', ['faqs' => $product->faqs, 'title' => 'Frequently Asked Questions: ' . $product->name])
+        @include('public.partials.faq', ['faqs' => $product->faqs, 'title' => 'Frequently asked questions: ' . $product->name])
 
         {{-- ===== Enquiry form (wide rectangle) ===== --}}
         <section id="enquiry-form" class="mt-16 scroll-mt-6">

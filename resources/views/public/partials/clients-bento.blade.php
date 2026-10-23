@@ -2,7 +2,7 @@
      rotating 4-logo cluster (bottom right).
      Needs $clientWall (active clients, top clients first), $featuredReviews, $siteSetting and $categoryWheel.
      One 5-second timer turns the logo page and the quote together; a 2-second timer moves the category list.
-     Both pause on hover/focus and while the review popup is open, and are off for reduced motion. --}}
+     The logos and the quote pause on hover/focus and while the review popup is open; the sector wheel never waits for the mouse (it only rests while the browser tab is hidden). All are off for reduced motion. --}}
 @php
     $clientCount = $clientWall->count();
     $perPage = 4;
@@ -38,7 +38,7 @@
         <div data-reveal class="mb-6 flex flex-col items-center gap-3 text-center">
             <span class="section-badge">Our Clients</span>
             <h2 class="text-xl font-semibold leading-tight text-navy sm:text-2xl">
-                The labs that rely <span class="text-cyan-ink">on us</span>
+                Labs that rely <span class="text-cyan-ink">on us</span>
             </h2>
         </div>
 
@@ -59,7 +59,7 @@
                          }, 5000);
                      }
                      if (this.cats.length > 1) {
-                         this.wheelTimer = setInterval(() => { if (!this.busy) this.nextCat(); }, 2000);
+                         this.wheelTimer = setInterval(() => { if (!document.hidden) this.nextCat(); }, 1000);
                      }
                  },
                  nextCat() {
@@ -67,7 +67,7 @@
                      this.ci++;
                      if (this.ci === 2 * n) {
                          // the third copy has reached the same name as the middle copy: jump back without animation
-                         setTimeout(() => { this.snap = true; this.ci = n; this.$nextTick(() => requestAnimationFrame(() => { this.snap = false; })); }, 800);
+                         setTimeout(() => { this.snap = true; this.ci = n; this.$nextTick(() => requestAnimationFrame(() => { this.snap = false; })); }, 560);
                      }
                  },
                  openReview(i) { this.rev = i; this.open = true; },
@@ -152,10 +152,10 @@
                         @else
                             <div class="relative h-[5.25rem] overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,#000_28%,#000_72%,transparent)]" role="status" aria-live="off">
                                 <span class="pointer-events-none absolute inset-x-0 top-[1.75rem] z-10 h-[1.75rem] border-y border-cyan/40" aria-hidden="true"></span>
-                                <ul class="m-0 list-none p-0" :class="snap ? '' : 'transition-transform duration-700 ease-in-out'"
+                                <ul class="m-0 list-none p-0" :class="snap ? '' : 'transition-transform duration-500 ease-in-out'"
                                     :style="`transform: translateY(-${(ci - 1) * 1.75}rem)`">
                                     <template x-for="(c, i) in track" :key="i">
-                                        <li class="flex h-[1.75rem] origin-left items-center gap-2 truncate text-[15px] transition-all duration-700 ease-in-out"
+                                        <li class="flex h-[1.75rem] origin-left items-center gap-2 truncate text-[15px] transition-all duration-500 ease-in-out"
                                             :class="i === ci ? 'scale-100 font-semibold text-navy' : (Math.abs(i - ci) === 1 ? 'scale-[0.8] text-slate/70' : 'scale-[0.8] opacity-0')"
                                             :aria-hidden="i !== ci">
                                             <span class="truncate" x-text="c.label"></span>

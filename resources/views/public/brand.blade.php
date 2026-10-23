@@ -26,7 +26,7 @@
         @endif
 
         @if ($brand->categories->count())
-            <h2 data-reveal class="mt-10 text-lg font-bold text-navy">Product Categories</h2>
+            <h2 data-reveal class="mt-10 text-lg font-bold text-navy">Product categories</h2>
             <div class="mt-4 flex flex-wrap gap-3">
                 @foreach ($brand->categories as $category)
                     <a data-reveal="zoom" href="{{ route('category.show', [$brand->slug, $category->slug]) }}"

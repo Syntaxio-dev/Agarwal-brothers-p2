@@ -890,3 +890,11 @@ html.nav-compact .site-nav { box-shadow: 0 8px 22px -14px rgb(11 37 69 / 0.4); }
     .float-soft { animation: float-soft 7s ease-in-out infinite alternate; }
 }
 @keyframes float-soft { from { transform: translateY(0); } to { transform: translateY(-14px); } }
+
+/* Headings on the public site: every word starts with a capital letter, the rest stays as typed
+   ("Ayush Sharma Is Great Guy In Maths"). Done in CSS so headings that come from the admin (slide titles,
+   product names, article titles) follow too. Text inside articles (.rich-text) is left alone. */
+main h1:not(.rich-text h1),
+main h2:not(.rich-text h2) {
+    text-transform: capitalize;
+}

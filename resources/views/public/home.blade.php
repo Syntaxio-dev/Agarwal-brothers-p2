@@ -214,7 +214,7 @@
                 Who We Are
             </span>
             <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight text-center">
-                We Will Ensure You Always Get the <span class="text-cyan-ink">Best Results</span>
+                We will ensure you always get the <span class="text-cyan-ink">best results</span>
             </h2>
         </div>
 
@@ -306,7 +306,7 @@
                     Our Principals
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
-                    Strategic Alliances with <span class="text-cyan-ink">Global Scientific Leaders</span>
+                    The right instrument, <span class="text-cyan-ink">from the right brand</span>
                 </h2>
                 <p class="mt-1 max-w-2xl text-sm text-slate">
                     Trusted partnerships with world-renowned manufacturers, bringing cutting-edge laboratory technology to India.
@@ -373,7 +373,7 @@
                     Verticals
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
-                    Explore Our <span class="text-cyan-ink">Scientific Verticals</span>
+                    Explore our <span class="text-cyan-ink">scientific verticals</span>
                 </h2>
                 <p class="max-w-2xl text-sm text-slate">
                     From research to production, discover how our solutions support every lab need.
@@ -456,7 +456,7 @@
                     Precision Picks
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
-                    Explore Our <span class="text-cyan-ink">Top Lab Solutions</span>
+                    Explore our <span class="text-cyan-ink">top lab solutions</span>
                 </h2>
                 <p class="max-w-2xl text-sm text-slate">
                     Expert-curated equipment engineered for accuracy, reliability, and ease.
@@ -558,7 +558,7 @@
                     Global Presence
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
-                    Global Brands Represented by <span class="text-cyan-ink">Agarwal Brothers</span> in India
+                    Global brands represented by <span class="text-cyan-ink">Agarwal Brothers</span> in India
                 </h2>
                 <p class="max-w-2xl text-sm text-slate">
                     Hover over a pin to see the brands from each country.
@@ -632,7 +632,7 @@
                     Blogs
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
-                    Expert Perspectives | <span class="text-cyan-ink">Real-World Lab Applications</span>
+                    Expert perspectives | <span class="text-cyan-ink">real-world lab applications</span>
                 </h2>
             </div>
 
@@ -713,7 +713,7 @@
                     News & Events
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
-                    Events, Initiatives & <span class="text-cyan-ink">Community Highlights</span>
+                    Events, initiatives & <span class="text-cyan-ink">community highlights</span>
                 </h2>
             </div>
 

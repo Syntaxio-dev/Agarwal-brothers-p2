@@ -60,7 +60,7 @@
         @if ($products->count())
             <div class="mt-14" @if ($filterable) x-data="catalogueFilter(@js($filterData))" @endif>
                 <div data-reveal class="flex items-center gap-4">
-                    <h2 class="text-xl sm:text-2xl font-bold text-navy">Model Categories</h2>
+                    <h2 class="text-xl sm:text-2xl font-bold text-navy">Model categories</h2>
                     <div class="h-px flex-1 bg-gradient-to-r from-cyan/50 to-transparent"></div>
                 </div>
 
@@ -157,7 +157,7 @@
             </div>
         @endif
 
-        @include('public.partials.faq', ['faqs' => $category->faqs, 'title' => 'Frequently Asked Questions about ' . $category->name])
+        @include('public.partials.faq', ['faqs' => $category->faqs, 'title' => 'Frequently asked questions about ' . $category->name])
 
         {{-- CTA --}}
         <div data-reveal="zoom" class="mt-16 flex flex-col items-center justify-between gap-5 rounded-3xl bg-gradient-to-br from-navy to-link px-8 py-9 sm:flex-row sm:px-12">

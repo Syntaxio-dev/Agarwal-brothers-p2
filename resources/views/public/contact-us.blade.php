@@ -194,7 +194,7 @@
             </div>
 
             <div data-reveal="right" class="order-3 text-center lg:text-right">
-                <h2 class="text-2xl sm:text-3xl font-bold text-cyan-ink leading-tight">Office Timings</h2>
+                <h2 class="text-2xl sm:text-3xl font-bold text-cyan-ink leading-tight">Office timings</h2>
                 <div class="mt-3 space-y-1 text-base leading-relaxed">
                     @foreach ($c['working_days'] as $line)
                         <p class="{{ $loop->first ? 'font-semibold text-navy' : 'text-slate' }}">{{ $line }}</p>
@@ -212,7 +212,7 @@
                     Contact Us
                 </span>
                 <h2 class="text-xl sm:text-2xl font-bold text-navy leading-tight">
-                    For Support &amp; <span class="text-cyan-ink">Enquiries</span>
+                    For support &amp; <span class="text-cyan-ink">enquiries</span>
                 </h2>
                 <p class="max-w-2xl text-sm text-slate">
                     Call or write to our team directly. We will be glad to help.
@@ -298,7 +298,7 @@
                             <svg class="h-3.5 w-3.5" fill="currentColor" viewBox="0 0 24 24"><path d="M13 2 3 14h7l-1 8 10-12h-7l1-8Z"/></svg>
                             Need a quick response?
                         </span>
-                        <h2 class="mt-3 text-xl sm:text-2xl font-bold text-navy">Contact Our <span class="text-cyan-ink">Team</span></h2>
+                        <h2 class="mt-3 text-xl sm:text-2xl font-bold text-navy">Contact our <span class="text-cyan-ink">team</span></h2>
                         <p class="mt-1 text-sm text-slate">Fill out the form and our team will get back to you shortly. Fields marked * are required.</p>
                         @if (! empty($c['reply_note']))
                             <p class="mt-1 text-sm font-medium text-navy">{{ $c['reply_note'] }}</p>
