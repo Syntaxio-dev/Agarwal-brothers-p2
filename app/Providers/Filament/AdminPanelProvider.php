@@ -61,9 +61,12 @@ class AdminPanelProvider extends PanelProvider
 
                 return view('filament.partials.help-link', ['topic' => $topic]);
             })
-            ->navigationGroups(['Homepage', 'Catalogue', 'Content', 'Leads', 'Careers', 'Settings', 'Help'])
+            ->navigationGroups(['Homepage', 'Catalogue', 'Content', 'Leads', 'Sales team', 'Careers', 'Settings', 'Help'])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
+            // The Sales module keeps its admin screens inside its own folder (it can move to another site as one piece).
+            ->discoverResources(in: app_path('Sales/Filament/Resources'), for: 'App\Sales\Filament\Resources')
+            ->discoverPages(in: app_path('Sales/Filament/Pages'), for: 'App\Sales\Filament\Pages')
             ->pages([
                 Dashboard::class,
             ])

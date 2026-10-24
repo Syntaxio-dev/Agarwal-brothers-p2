@@ -38,4 +38,13 @@ return [
         'access' => ['job-openings', 'job-applications'],
     ],
 
+    // Field sales team (Sales module). Office staff who handle enquiries are the "sales" role above, not this one.
+    // The field rep (`field_rep`) is deliberately NOT listed: a role listed here can sign in to the admin panel,
+    // and reps use the phone app only.
+    'sales_manager' => [
+        'label' => 'Sales team manager',
+        'description' => 'Sees every field rep\'s expenses, meetings and clients; approves expenses; adds and switches reps.',
+        'access' => ['sales-dashboard', 'sales-reps', 'sales-expenses', 'sales-meetings', 'sales-clients'],
+    ],
+
 ];

@@ -35,6 +35,12 @@ class UserResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    /** Field reps of the Sales module are managed under Sales team > Reps; they are not panel users and not shown here. */
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+    {
+        return parent::getEloquentQuery()->where('role', '!=', \App\Sales\Models\SalesProfile::ROLE);
+    }
+
     public static function form(Schema $schema): Schema
     {
         return UserForm::configure($schema);

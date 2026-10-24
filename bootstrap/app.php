@@ -15,7 +15,8 @@ $app = Application::configure(basePath: dirname(__DIR__))
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
-        //
+        // Sales API (/api/sales/*): errors as {code, message, errors}. The website's own error pages are not touched.
+        \App\Sales\Support\ApiError::register($exceptions);
     })->create();
 
 // Hosting layout "public_html/laravel_app" (see tools/make-release.php): the web files (index.php, build, css ...)

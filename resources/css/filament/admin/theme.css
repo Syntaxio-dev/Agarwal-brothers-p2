@@ -5,6 +5,7 @@
 @import '@fontsource/ibm-plex-mono/latin-400.css';
 
 @source '../../../../app/Filament/**/*';
+@source '../../../../app/Sales/**/*';
 @source '../../../../resources/views/filament/**/*';
 
 @theme {

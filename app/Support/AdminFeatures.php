@@ -67,6 +67,13 @@ class AdminFeatures
                 ['job-openings', 'Job openings', 'Post roles with department, location, experience, salary and your own application questions. Switch them off when filled.', JobOpeningResource::class],
                 ['job-applications', 'Applications', 'Read applications, download resumes (kept private), move them through stages and write notes.', JobApplicationResource::class],
             ],
+            'Sales team' => [
+                ['sales-dashboard', 'Sales management', 'How the field team is doing: spending per day and per category, what waits for approval, meetings and follow-ups, and which reps have not synced today.', \App\Sales\Filament\Pages\SalesManagement::class],
+                ['sales-reps', 'Reps', 'Add a field rep (employee code and a password for the phone app), switch one off to block the phone at once, reset a password, see the last sync.', \App\Sales\Filament\Resources\SalesReps\SalesRepResource::class],
+                ['sales-expenses', 'Sales expenses', 'Expenses the reps saved on their phones: look at the bill photo, approve or reject (with a reason the rep sees), filter, and export to Excel or CSV.', \App\Sales\Filament\Resources\SalesExpenses\SalesExpenseResource::class],
+                ['sales-meetings', 'Sales meetings', 'What the reps discussed with clients, and the follow-ups they set.', \App\Sales\Filament\Resources\SalesMeetings\SalesMeetingResource::class],
+                ['sales-clients', 'Sales clients', 'The people and companies the reps met.', \App\Sales\Filament\Resources\SalesClients\SalesClientResource::class],
+            ],
             'Settings (administrators)' => [
                 ['site-settings', 'Site settings', 'Phone, WhatsApp, catalogue PDFs, page banners, Our Story text and photos, home page search description.', SiteSettingResource::class],
                 ['users', 'Users & roles', 'Create staff logins and give each a role: Administrator, Content editor, Sales or HR. Switch a person off without deleting them.', UserResource::class],
