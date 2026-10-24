@@ -1,8 +1,8 @@
 {{-- Our clients, bento layout: tall navy quote card (left), number tile + rotating category list (top right),
      rotating 4-logo cluster (bottom right).
      Needs $clientWall (active clients, top clients first), $featuredReviews, $siteSetting and $categoryWheel.
-     One 5-second timer turns the logo page and the quote together; a 2-second timer moves the category list.
-     The logos and the quote pause on hover/focus and while the review popup is open; the sector wheel never waits for the mouse (it only rests while the browser tab is hidden). All are off for reduced motion. --}}
+     The logo page changes every 4 seconds (a slow, soft cross-fade: the old logos fade and sink a little, then the new ones rise in), the quote every 5 seconds, the category list every second.
+     Only the QUOTE waits while the mouse or the keyboard is on its card (and while the review popup is open); the logos and the sector wheel never wait for the mouse (they only rest while the browser tab is hidden). All are off for reduced motion. --}}
 @php
     $clientCount = $clientWall->count();
     $perPage = 4;
@@ -46,17 +46,16 @@
                  page: 0, pages: {{ $pageCount }},
                  rev: 0, revs: {{ $reviewCount }}, reviews: @js($reviewData), open: false,
                  cats: @js($categoryWheel), ci: {{ $wheelCount }}, snap: false,
-                 paused: false, timer: null, wheelTimer: null,
+                 quotePaused: false, pageTimer: null, quoteTimer: null, wheelTimer: null,
                  get track() { return [...this.cats, ...this.cats, ...this.cats]; },
-                 get busy() { return this.paused || this.open; },
+                 get busy() { return this.quotePaused || this.open; },
                  init() {
                      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-                     if (this.pages > 1 || this.revs > 1) {
-                         this.timer = setInterval(() => {
-                             if (this.busy) return;
-                             if (this.pages > 1) this.page = (this.page + 1) % this.pages;
-                             if (this.revs > 1) this.rev = (this.rev + 1) % this.revs;
-                         }, 5000);
+                     if (this.pages > 1) {
+                         this.pageTimer = setInterval(() => { if (!document.hidden) this.page = (this.page + 1) % this.pages; }, 4000);
+                     }
+                     if (this.revs > 1) {
+                         this.quoteTimer = setInterval(() => { if (!this.busy && !document.hidden) this.rev = (this.rev + 1) % this.revs; }, 5000);
                      }
                      if (this.cats.length > 1) {
                          this.wheelTimer = setInterval(() => { if (!document.hidden) this.nextCat(); }, 1000);
@@ -71,17 +70,15 @@
                      }
                  },
                  openReview(i) { this.rev = i; this.open = true; },
-                 destroy() { clearInterval(this.timer); clearInterval(this.wheelTimer); },
+                 destroy() { clearInterval(this.pageTimer); clearInterval(this.quoteTimer); clearInterval(this.wheelTimer); },
              }"
-             @mouseenter="paused = true" @mouseleave="paused = false"
-             @focusin="paused = true" @focusout="paused = false"
              @keydown.escape.window="open = false"
              x-effect="document.documentElement.classList.toggle('overflow-hidden', open)"
              class="grid gap-3 {{ $reviewCount ? 'lg:grid-cols-[1.4fr_1fr]' : 'lg:grid-cols-2' }}">
 
             {{-- Quote card (featured reviews, taking turns when there are several) --}}
             @if ($reviewCount)
-                <div data-reveal="left" class="relative overflow-hidden rounded-2xl bg-navy p-6 text-white sm:p-8 lg:row-span-2">
+                <div data-reveal="left" @mouseenter="quotePaused = true" @mouseleave="quotePaused = false" @focusin="quotePaused = true" @focusout="quotePaused = false" class="relative overflow-hidden rounded-2xl bg-navy p-6 text-white sm:p-8 lg:row-span-2">
                     <svg class="pointer-events-none absolute -right-4 -top-4 h-44 w-44 text-white/[0.04]" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10H0z"/>
                     </svg>
@@ -173,9 +170,9 @@
             <div data-reveal class="rounded-2xl border border-gray-100 bg-white p-3 shadow-sm sm:p-4">
                 <div class="grid">
                     @foreach ($pages as $p => $items)
-                        <div :class="page === {{ $p }} ? 'opacity-100' : 'pointer-events-none opacity-0'"
+                        <div :class="page === {{ $p }} ? 'opacity-100 scale-100 translate-y-0 delay-300' : 'pointer-events-none opacity-0 scale-[0.97] translate-y-1.5'"
                              @if ($p > 0) :aria-hidden="page !== {{ $p }}" @endif
-                             class="grid grid-cols-2 content-start gap-2 transition-opacity duration-[400ms] [grid-area:1/1]">
+                             class="grid grid-cols-2 content-start gap-2 transition-[opacity,scale,translate] duration-[900ms] ease-in-out [grid-area:1/1]">
                             @foreach ($items as $client)
                                 @php $categoryLabel = optional($client->category)?->is_active ? $client->category->name : null; @endphp
                                 <div role="img" aria-label="{{ $client->name }}{{ $categoryLabel ? ', ' . $categoryLabel : '' }}" title="{{ $client->name }}"

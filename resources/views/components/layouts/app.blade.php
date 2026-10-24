@@ -136,7 +136,7 @@
                 {{-- Product catalogue: says "Catalogue" with a document icon; on hover / keyboard focus the word and the icon
                      swap to "Download" with a download arrow and the button turns link-blue (same hover as every primary button) --}}
                 @if (count($catList) === 1)
-                    <a href="{{ $catList[0]['url'] }}" download
+                    <a href="{{ $catList[0]['url'] }}" download="{{ $catList[0]['filename'] }}"
                        aria-label="Download product catalogue (PDF)" title="Download {{ $catList[0]['title'] }}"
                        class="nav-cat btn-primary hidden items-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold text-white sm:inline-flex 2xl:px-4">
                         <span class="cat-swap" aria-hidden="true">
@@ -175,7 +175,7 @@
                              class="absolute right-0 top-full z-50 mt-2 w-80 rounded-xl border border-gray-100 bg-white p-1.5 shadow-xl ring-1 ring-black/5">
                             <p class="px-3 pb-1 pt-2 font-mono text-[10px] font-medium uppercase tracking-[0.18em] text-slate">Download a catalogue</p>
                             @foreach ($catList as $cat)
-                                <a href="{{ $cat['url'] }}" download @click="catOpen = false"
+                                <a href="{{ $cat['url'] }}" download="{{ $cat['filename'] }}" @click="catOpen = false"
                                    class="group flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-navy transition-colors hover:bg-ice hover:text-link focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan">
                                     <span class="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-navy text-white transition-colors group-hover:bg-link" aria-hidden="true">
                                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/></svg>
@@ -253,7 +253,7 @@
                     <span class="flex h-5 min-w-5 items-center justify-center rounded-full bg-navy px-1.5 font-mono text-[11px] font-semibold text-white" x-text="$store.enquiryList.count"></span>
                 </a>
                 @foreach ($catList as $cat)
-                    <a href="{{ $cat['url'] }}" download
+                    <a href="{{ $cat['url'] }}" download="{{ $cat['filename'] }}"
                        class="btn-primary flex h-11 w-full items-center justify-between gap-2 rounded-lg px-4 py-2.5 font-medium text-white">
                         <span class="overflow-hidden text-ellipsis whitespace-nowrap text-sm">{{ count($catList) > 1 ? $cat['title'] : 'Product Catalogue' }}</span>
                         <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 17V3m0 14-6-6m6 6 6-6M5 21h14"/></svg>

@@ -37,7 +37,12 @@ echo "== Database changes"
 $PHP artisan migrate --force
 
 echo "== Public links and admin assets"
-$PHP artisan storage:link 2>/dev/null || true
+# Zip layout (public_html/laravel_app): PHP's symlink() is switched off on Hostinger, so the shell makes the link.
+if [ "$(basename "$PWD")" = "laravel_app" ] && [ -f ../index.php ]; then
+    [ -e ../storage ] || ln -s laravel_app/storage/app/public ../storage
+else
+    $PHP artisan storage:link 2>/dev/null || true
+fi
 $PHP artisan filament:assets
 
 echo "== Clear and rebuild caches"

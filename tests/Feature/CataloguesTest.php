@@ -108,4 +108,24 @@ class CataloguesTest extends TestCase
         $s->update(['catalogues' => $this->two()]);
         $this->assertCount(2, $s->fresh()->catalogueList());
     }
+
+    public function test_downloads_are_saved_as_agarwal_brothers_and_the_catalogue_name(): void
+    {
+        $this->assertSame('agarwal-brothers-laboratory-equipment-catalogue.pdf', SiteSetting::downloadName('Laboratory Equipment Catalogue'));
+        $this->assertSame('agarwal-brothers-consumables-cateloge.pdf', SiteSetting::downloadName('Consumables Cateloge '));
+        $this->assertSame('agarwal-brothers-equipment.pdf', SiteSetting::downloadName('Agarwal Brothers Equipment'));   // not doubled
+        $this->assertSame('agarwal-brothers-catalogue.pdf', SiteSetting::downloadName('   '));
+
+        SiteSetting::create(['catalogues' => [
+            ['title' => 'Equipment catalogue', 'file' => 'catalogue/01RANDOMULID1.pdf'],
+            ['title' => 'Consumables catalogue', 'file' => 'catalogue/01RANDOMULID2.pdf'],
+        ]]);
+
+        $home = $this->get('/')->assertOk()->getContent();
+        $this->assertStringContainsString('download="agarwal-brothers-equipment-catalogue.pdf"', $home);
+        $this->assertStringContainsString('download="agarwal-brothers-consumables-catalogue.pdf"', $home);
+
+        $contact = $this->get(route('contact'))->getContent();
+        $this->assertStringContainsString('download="agarwal-brothers-equipment-catalogue.pdf"', $contact);
+    }
 }

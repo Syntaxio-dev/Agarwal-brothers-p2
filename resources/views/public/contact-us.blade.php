@@ -81,7 +81,7 @@
                 ['Product enquiry', 'Tell us which instrument or brand you need.', route('contact', ['topic' => 'product']) . '#contact-form', 'm21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9', false],
                 ['Request a quote', 'Get a quotation for the models you have shortlisted.', route('contact', ['topic' => 'quote']) . '#contact-form', 'M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z', false],
                 ['Service & spare parts', 'Ask about service, repair or spare parts.', route('contact', ['topic' => 'service']) . '#contact-form', 'M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437 1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008Z', false],
-                ...array_map(fn ($c) => [$c['title'], 'Download the catalogue as a PDF.', $c['url'], 'M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3', true], $catalogueList),
+                ...array_map(fn ($c) => [$c['title'], 'Download the catalogue as a PDF.', $c['url'], 'M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3', $c['filename']], $catalogueList),
             ]));
         @endphp
         @php
@@ -104,7 +104,7 @@
                         @php
                             $divider = $loop->last ? '' : ((intdiv($loop->index, 2) === $tileRows - 1) ? 'border-b border-white/10 sm:border-b-0' : 'border-b border-white/10');
                         @endphp
-                        <a data-reveal href="{{ $tHref }}" @if ($tDownload) download @endif
+                        <a data-reveal href="{{ $tHref }}" @if ($tDownload) download="{{ is_string($tDownload) ? $tDownload : '' }}" @endif
                            class="row-link group flex items-center gap-3 rounded-lg px-3 py-4 transition-colors duration-300 hover:bg-white/[0.06] focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan {{ $divider }}">
                             <span class="flex h-10 w-10 shrink-0 items-center justify-center rounded-[10px] border transition-colors duration-300 {{ $tDownload ? 'border-cyan bg-cyan text-navy' : 'border-cyan/40 bg-ice text-navy group-hover:border-cyan' }}" aria-hidden="true">
                                 <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">

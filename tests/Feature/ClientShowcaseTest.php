@@ -114,7 +114,9 @@ class ClientShowcaseTest extends TestCase
         $this->assertMatchesRegularExpression('/count.{1,8}:\s*2/', $html);   // @js escapes the quotes
         $this->assertMatchesRegularExpression('/count.{1,8}:\s*1/', $html);
         $this->assertStringContainsString('2000', $html);            // each category stays about 2 seconds
-        $this->assertStringContainsString('5000', $html);            // logos and quote change every 5 seconds
+        $this->assertStringContainsString('4000', $html);            // the logos change every 4 seconds ...
+        $this->assertStringContainsString('5000', $html);            // ... the quote every 5 seconds
+        $this->assertStringNotContainsString('paused = true', $html); // nothing waits for the mouse on the logo grid
     }
 
     public function test_a_long_review_is_cut_short_with_a_read_full_review_popup(): void

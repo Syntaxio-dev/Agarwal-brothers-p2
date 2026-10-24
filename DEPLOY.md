@@ -1,5 +1,41 @@
 # Deploying the Agarwal Brothers site on Hostinger (hPanel)
 
+## FASTEST WAY: one zip into public_html (used for the first upload)
+
+`php tools/make-release.php` (run `npm run build` first, no `npm run dev` running) writes **`release/agarwal-site.zip`** (about 22 MB, about 14,500 files).
+Everything is already inside: the site files, the `vendor` folder (no dev tools) and the built CSS/JS. It was rehearsed locally on an empty database before it was given out.
+
+What is inside the zip (this is exactly what `public_html` will contain):
+
+| In public_html | What it is |
+|---|---|
+| `index.php`, `.htaccess`, `build/`, `css/`, `js/`, `fonts/`, `images/` ... | the website files |
+| `laravel_app/` | the application (code, packages, config). `laravel_app/.htaccess` and the main `.htaccess` refuse every request to it |
+
+Steps:
+1. hPanel > your website > **File Manager** > open `public_html`, delete Hostinger's default `index.html`/`default.php` if it is there.
+2. Upload `agarwal-site.zip` into `public_html` and **Extract** it. Hostinger's File Manager may put everything into a NEW FOLDER: then open that folder, select everything (hidden `.htaccess` too), Move it up into `public_html` and delete the empty folder. The result must be `index.php`, `build/`, `laravel_app/` ... directly inside `public_html` (if `app/` and `vendor/` sit directly there, or the whole site answers 403, it is wrong).
+3. Rename `laravel_app/.env.production.example` to `laravel_app/.env` (it MUST be renamed, the site reads only `.env`) and edit it. A database password with `#` or `&` must be in double quotes: `DB_PASSWORD="Ab#12&x"`. Edit: `APP_ENV=staging` (hidden from Google while you test), `APP_URL` = the temporary link, `DB_*` = the database from hPanel, mail later. Keep `SESSION_SECURE_COOKIE=true` only when the link starts with `https://`.
+4. SSH (hPanel > Advanced > SSH Access), then:
+   ```bash
+   cd ~/domains/YOUR-SITE/public_html/laravel_app      # the path shown in File Manager, folder laravel_app
+   php artisan key:generate --force
+   ln -s laravel_app/storage/app/public ../storage     # run from inside laravel_app; PHP's symlink() is DISABLED on Hostinger, so `php artisan storage:link` fails there
+   SKIP_COMPOSER=1 bash deploy.sh                      # migrate + the speed caches (makes the same link if it is missing)
+   ```
+5. Import the database (phpMyAdmin > Import) and extract the uploads zip of the admin Backup into `laravel_app/storage/app/public` (see below), then run `bash refresh-caches.sh`.
+6. Cron job (hPanel > Advanced > Cron Jobs, every minute; there is no `crontab` command over SSH): `cd /home/USER/domains/YOUR-SITE/public_html/laravel_app && php artisan schedule:run >> /dev/null 2>&1`. Without it mail waits in the queue and the nightly backup does not run.
+7. Photos and PDFs: pack `storage/app/public` of the laptop (without `livewire-tmp`) into a zip and unzip it into `laravel_app/storage/app/public` on the server (`unzip -o file.zip`, SSH has `unzip`). The admin Backup zip has them under `public/` instead.
+
+The application finds `public_html` by itself because its folder is called `laravel_app` and `../index.php` exists (see `bootstrap/app.php`): `storage:link` and `filament:assets` therefore write into `public_html`. Do not rename `laravel_app`.
+
+**Known limit:** the speed caches (`route:cache`) are tested for a site at the ROOT of a domain (the temporary link and agarwalbrothers.com both are). Do not put this zip in a sub-folder such as `public_html/site/`: with the route cache the home page then answers 405.
+
+---
+
+(The older, longer step-by-step below keeps the `laravel_app` outside `public_html`; the quick way above is enough for a normal Business plan.)
+
+
 Written for someone who has not deployed a Laravel site before. Do the steps in order.
 Do it first on a **demo sub-domain** (for example `demo.yourdomain.com`) to show the client; use the same steps again for the real domain later.
 

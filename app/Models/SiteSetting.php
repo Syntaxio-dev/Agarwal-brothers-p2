@@ -30,9 +30,24 @@ class SiteSetting extends Model
     {
         return collect($this->catalogues ?? [])
             ->filter(fn ($c) => is_array($c) && filled($c['file'] ?? null))
-            ->map(fn ($c) => ['title' => trim((string) ($c['title'] ?? '')) ?: 'Catalogue', 'url' => asset('storage/' . $c['file'])])
+            ->map(function ($c) {
+                $title = trim((string) ($c['title'] ?? '')) ?: 'Catalogue';
+
+                return ['title' => $title, 'url' => asset('storage/' . $c['file']), 'filename' => static::downloadName($title)];
+            })
             ->values()
             ->all();
+    }
+
+    /**
+     * The file name a visitor's browser saves a catalogue under: "agarwal-brothers-laboratory-equipment-catalogue.pdf"
+     * (the stored file has a random name). It follows the catalogue's name from Site Settings.
+     */
+    public static function downloadName(string $title): string
+    {
+        $slug = preg_replace('/^(agarwal-brothers-?)+/', '', \Illuminate\Support\Str::slug($title));
+
+        return 'agarwal-brothers-' . ($slug ?: 'catalogue') . '.pdf';
     }
 
     /** The site reads the most recent settings row. */
