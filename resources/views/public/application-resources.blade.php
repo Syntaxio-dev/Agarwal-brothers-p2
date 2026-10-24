@@ -20,15 +20,15 @@
     <div class="pointer-events-none absolute inset-x-0 top-0 h-[560px]
                 bg-[radial-gradient(900px_420px_at_50%_-8%,rgba(0,180,216,0.18),transparent_70%),radial-gradient(700px_380px_at_8%_14%,rgba(0,119,182,0.09),transparent_70%),radial-gradient(700px_380px_at_95%_20%,rgba(0,180,216,0.11),transparent_70%),linear-gradient(to_bottom,rgba(244,249,251,1),rgba(255,255,255,0))]"></div>
 
-    <div class="relative w-[98%] mx-auto px-4 md:px-10 lg:px-20 py-10 sm:py-14" x-data="{ active: 'all' }">
+    <div class="relative w-[98%] mx-auto px-4 md:px-10 lg:px-20 py-8 sm:py-14" x-data="{ active: 'all' }">
 
         @include('public.partials.breadcrumb', ['items' => [['Home', '/'], ['Application Resources', null]]])
 
-        <div class="text-center flex flex-col items-center gap-3 mb-8">
+        <div class="text-center flex flex-col items-center gap-3 mb-8 max-sm:mb-5">
             <span data-reveal class="section-badge">
                 Resources
             </span>
-            <h1 data-reveal class="text-2xl sm:text-3xl lg:text-4xl font-bold text-navy leading-tight">
+            <h1 data-reveal class="text-[1.65rem] sm:text-3xl lg:text-4xl font-bold text-navy leading-tight">
                 Application <span class="text-cyan-ink">Resources</span>
             </h1>
             <p data-reveal class="max-w-2xl text-sm sm:text-base text-slate leading-relaxed">
@@ -38,17 +38,17 @@
 
         {{-- Filter tabs --}}
         @if ($resources->count())
-            <div data-reveal class="flex flex-wrap justify-center gap-2 mb-8">
+            <div data-reveal class="flex flex-wrap justify-center gap-2 mb-8 max-sm:-mx-4 max-sm:mb-5 max-sm:flex-nowrap max-sm:justify-start max-sm:overflow-x-auto max-sm:px-4 max-sm:pb-1 max-sm:[scrollbar-width:none] max-sm:[&::-webkit-scrollbar]:hidden">
                 <button @click="active = 'all'"
                     :class="active === 'all' ? 'bg-navy text-white border-navy' : 'bg-white text-navy border-gray-200 hover:border-cyan/50'"
-                    class="px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200">
+                    class="px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200 max-sm:shrink-0 max-sm:whitespace-nowrap">
                     All Resources
                 </button>
                 @foreach ($categories as $key => $label)
                     @if ($present->contains($key))
                         <button @click="active = '{{ $key }}'"
                             :class="active === '{{ $key }}' ? 'bg-navy text-white border-navy' : 'bg-white text-navy border-gray-200 hover:border-cyan/50'"
-                            class="px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200">
+                            class="px-4 py-2 rounded-full text-sm font-medium border transition-all duration-200 max-sm:shrink-0 max-sm:whitespace-nowrap">
                             {{ $label }}s
                         </button>
                     @endif
@@ -57,7 +57,7 @@
         @endif
 
         {{-- Cards --}}
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-sm:gap-3">
             @foreach ($resources as $res)
                 @php
                     $cat = $res->category;
@@ -69,35 +69,36 @@
                 @endphp
 
                 <div data-reveal x-show="active === 'all' || active === '{{ $cat }}'"
-                     class="group flex flex-col overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm
+                     class="group flex flex-col overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm max-sm:grid max-sm:grid-cols-[5.5rem_1fr]
                             hover:shadow-xl hover:border-cyan/40 hover:-translate-y-1 transition-all duration-300">
-                    <div class="bar-grow h-1.5 bg-gradient-to-r {{ $s['bar'] }}"></div>
+                    <div class="bar-grow h-1.5 bg-gradient-to-r {{ $s['bar'] }} max-sm:col-span-2"></div>
 
-                    <div class="relative aspect-[16/10] w-full overflow-hidden bg-gradient-to-br from-ice to-cyan/10 flex items-center justify-center">
+                    <div class="relative aspect-[16/10] w-full overflow-hidden bg-gradient-to-br from-ice to-cyan/10 flex items-center justify-center max-sm:aspect-auto">
                         @if ($res->cover_image)
                             <img src="{{ asset('storage/' . $res->cover_image) }}" alt="{{ $res->title }}"
                                  class="img-load h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($res->cover_image) !!} onload="this.classList.add('is-loaded')">
                         @else
-                            <div class="pop-icon h-16 w-16 rounded-2xl bg-white shadow flex items-center justify-center transition-all duration-300 group-hover:bg-navy group-hover:scale-110">
+                            <div class="pop-icon h-16 w-16 rounded-2xl bg-white shadow flex items-center justify-center transition-all duration-300 group-hover:bg-navy group-hover:scale-110 max-sm:h-12 max-sm:w-12">
                                 <svg class="h-8 w-8 text-link transition-colors duration-300 group-hover:text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="{{ $icons[$cat] ?? $icons['appnote'] }}"/>
                                 </svg>
                             </div>
                         @endif
-                        <span class="absolute left-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide bg-white/95 shadow-sm {{ $s['chip'] }}">
+                        <span class="absolute left-3 top-3 rounded-full px-2.5 py-1 text-[10px] font-bold uppercase tracking-wide bg-white/95 shadow-sm max-sm:hidden {{ $s['chip'] }}">
                             {{ $categories[$cat] ?? $cat }}
                         </span>
                     </div>
 
-                    <div class="flex flex-1 flex-col p-5">
-                        <h3 class="text-base font-bold text-navy leading-snug line-clamp-2 min-h-[2.75rem] group-hover:text-link transition-colors">
+                    <div class="flex flex-1 flex-col p-5 max-sm:min-w-0 max-sm:p-3.5">
+                        <p class="mb-1 font-mono text-[10px] font-medium uppercase tracking-widest text-link sm:hidden">{{ $categories[$cat] ?? $cat }}</p>
+                        <h3 class="text-base font-bold text-navy leading-snug line-clamp-2 min-h-[2.75rem] max-sm:min-h-0 max-sm:text-[15px] group-hover:text-link transition-colors">
                             {{ $res->title }}
                         </h3>
                         @if ($res->description)
-                            <p class="mt-2 text-sm text-slate leading-relaxed line-clamp-3">{{ $res->description }}</p>
+                            <p class="mt-2 text-sm text-slate leading-relaxed line-clamp-3 max-sm:mt-1 max-sm:line-clamp-2 max-sm:text-xs">{{ $res->description }}</p>
                         @endif
 
-                        <div class="mt-auto pt-4 flex items-center justify-between gap-3 border-t border-gray-100">
+                        <div class="mt-auto pt-4 flex items-center justify-between gap-3 border-t border-gray-100 max-sm:mt-3 max-sm:pt-3">
                             <span class="text-xs text-slate line-clamp-1">{{ $res->source }}</span>
                             <a href="{{ $href }}" @if ($pdfUrl || $link) target="_blank" rel="noopener" @endif
                                class="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-navy px-4 py-2 text-xs font-semibold text-white hover:bg-link group-hover:bg-link transition-colors btn-primary">
@@ -124,14 +125,14 @@
         @endif
 
         {{-- Help banner --}}
-        <div data-reveal="zoom" class="mt-14 rounded-3xl bg-gradient-to-br from-ice to-cyan/10 border border-cyan/20 px-6 py-8 sm:px-10
+        <div data-reveal="zoom" class="mt-14 max-sm:mt-10 rounded-3xl bg-gradient-to-br from-ice to-cyan/10 border border-cyan/20 px-6 py-8 max-sm:py-6 sm:px-10
                     flex flex-col sm:flex-row items-center gap-5 text-center sm:text-left">
             <div class="flex-1">
                 <h2 class="text-lg sm:text-xl font-bold text-navy">Can't find the resource you need?</h2>
                 <p class="mt-1 text-sm text-slate">Our technical team can share application-specific guides, SOPs and instrument selection advice.</p>
             </div>
             <a href="{{ route('contact') }}"
-               class="shrink-0 inline-flex items-center gap-2 rounded-full bg-navy px-6 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-link hover:scale-105 transition-all duration-300 btn-primary">
+               class="shrink-0 inline-flex items-center justify-center gap-2 rounded-full bg-navy px-6 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-link hover:scale-105 transition-all duration-300 btn-primary max-sm:w-full">
                 Ask Our Team
             </a>
         </div>

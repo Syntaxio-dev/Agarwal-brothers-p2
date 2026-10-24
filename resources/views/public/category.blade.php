@@ -25,17 +25,17 @@
     <div class="pointer-events-none absolute inset-x-0 top-0 h-[480px]
                 bg-[radial-gradient(900px_380px_at_50%_-8%,rgba(0,180,216,0.14),transparent_70%),linear-gradient(to_bottom,rgba(244,249,251,1),rgba(255,255,255,0))]"></div>
 
-    <div class="relative w-[98%] mx-auto px-4 md:px-10 lg:px-16 py-10 sm:py-14">
+    <div class="relative w-[98%] mx-auto px-4 md:px-10 lg:px-16 py-8 sm:py-14">
 
         @include('public.partials.breadcrumb', ['items' => $crumbs])
 
         {{-- Title banner: category on the left, brand on the right --}}
-        <div data-reveal class="flex flex-col items-start justify-between gap-5 rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-ice px-6 py-6 shadow-sm sm:flex-row sm:items-center sm:px-10 sm:py-8">
+        <div data-reveal class="flex flex-col items-start justify-between gap-5 rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-ice px-6 py-6 shadow-sm sm:flex-row sm:items-center sm:px-10 sm:py-8 max-sm:gap-3 max-sm:px-5 max-sm:py-5">
             <div>
                 <p class="font-mono text-xs font-medium uppercase tracking-[0.2em] text-link">{{ $brand->name }}</p>
-                <h1 class="mt-2 text-3xl sm:text-4xl font-bold text-navy leading-tight">{{ $category->name }}</h1>
+                <h1 class="mt-2 text-[1.65rem] sm:text-4xl font-bold text-navy leading-tight">{{ $category->name }}</h1>
             </div>
-            <a href="{{ route('brand.show', $brand->slug) }}" class="flex h-16 w-44 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-white p-3" title="{{ $brand->name }}">
+            <a href="{{ route('brand.show', $brand->slug) }}" class="flex h-16 w-44 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-white p-3 max-sm:h-12 max-sm:w-32 max-sm:p-2" title="{{ $brand->name }}">
                 @if ($brand->logo)
                     <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="img-load max-h-full max-w-full object-contain" decoding="async" {!! \App\Support\Img::attrs($brand->logo) !!} onload="this.classList.add('is-loaded')">
                 @else
@@ -46,19 +46,19 @@
 
         {{-- Heading + intro --}}
         @if ($category->heading || $category->description)
-            <div data-reveal class="mx-auto mt-12 max-w-4xl text-center">
+            <div data-reveal class="mx-auto mt-9 sm:mt-12 max-w-4xl text-center">
                 @if ($category->heading)
-                    <h2 class="text-2xl sm:text-3xl font-bold text-link leading-tight">{{ $category->heading }}</h2>
+                    <h2 class="text-xl sm:text-3xl font-bold text-link leading-tight">{{ $category->heading }}</h2>
                 @endif
                 @if ($category->description)
-                    <p class="mt-4 text-base leading-relaxed text-slate">{{ $category->description }}</p>
+                    <p class="mt-3 text-[15px] leading-relaxed text-slate sm:mt-4 sm:text-base">{{ $category->description }}</p>
                 @endif
             </div>
         @endif
 
         {{-- Models, grouped --}}
         @if ($products->count())
-            <div class="mt-14" @if ($filterable) x-data="catalogueFilter(@js($filterData))" @endif>
+            <div class="mt-10 sm:mt-14" @if ($filterable) x-data="catalogueFilter(@js($filterData))" @endif>
                 <div data-reveal class="flex items-center gap-4">
                     <h2 class="text-xl sm:text-2xl font-bold text-navy">Model categories</h2>
                     <div class="h-px flex-1 bg-gradient-to-r from-cyan/50 to-transparent"></div>
@@ -76,7 +76,7 @@
                             </label>
                             <label class="flex items-center gap-2">
                                 <span class="font-mono text-[11px] font-medium uppercase tracking-[0.18em] text-slate">Sort</span>
-                                <select x-model="sort" class="h-11 min-w-[11rem] rounded-xl border border-gray-200 bg-white px-4 text-sm text-navy outline-none transition">
+                                <select x-model="sort" class="h-11 min-w-[11rem] max-sm:min-w-0 max-sm:flex-1 rounded-xl border border-gray-200 bg-white px-4 text-sm text-navy outline-none transition">
                                     <option value="default">Recommended</option>
                                     <option value="az">Name A to Z</option>
                                     <option value="za">Name Z to A</option>
@@ -86,10 +86,10 @@
                         </div>
 
                         @if ($groups->count() > 1)
-                            <div class="mt-3 flex flex-wrap gap-2" role="group" aria-label="Model group">
-                                <button type="button" class="chip" :class="{ 'chip-active': group === 'all' }" @click="group = 'all'" :aria-pressed="group === 'all'">All models</button>
+                            <div class="mt-3 flex flex-wrap gap-2 max-sm:-mx-3 max-sm:flex-nowrap max-sm:overflow-x-auto max-sm:px-3 max-sm:pb-1 max-sm:[scrollbar-width:none] max-sm:[&::-webkit-scrollbar]:hidden" role="group" aria-label="Model group">
+                                <button type="button" class="chip max-sm:shrink-0" :class="{ 'chip-active': group === 'all' }" @click="group = 'all'" :aria-pressed="group === 'all'">All models</button>
                                 @foreach ($groups as $groupName => $items)
-                                    <button type="button" class="chip" :class="{ 'chip-active': group === @js($groupName) }" @click="group = @js($groupName)"
+                                    <button type="button" class="chip max-sm:shrink-0" :class="{ 'chip-active': group === @js($groupName) }" @click="group = @js($groupName)"
                                             :aria-pressed="group === @js($groupName)">{{ $groupName }} <span class="opacity-70">({{ $items->count() }})</span></button>
                                 @endforeach
                             </div>
@@ -111,12 +111,12 @@
                     <div class="mt-8" @if ($filterable) x-show="groupShown(@js($groupName)) > 0" @endif>
                         <h3 data-reveal class="mb-5 text-center font-mono text-sm font-medium uppercase tracking-[0.2em] text-link">{{ $groupName }}</h3>
 
-                        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                        <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 max-sm:grid-cols-2 max-sm:gap-3">
                             @foreach ($items as $product)
                                 <div data-reveal class="group transition-all duration-300 hover:-translate-y-1 relative flex" @if ($filterable) x-show="matches({{ $product->id }})" :style="{ order: order({{ $product->id }}) }" @endif>
                                 <a href="{{ route('product.show', [$product->slug] + $q) }}"
                                    class="w-full group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 group-hover:border-cyan/50 group-hover:shadow-xl">
-                                    <div class="flex h-48 items-center justify-center bg-ice p-2">
+                                    <div class="flex h-48 items-center justify-center bg-ice p-2 max-sm:h-36">
                                         @if ($product->image)
                                             <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
                                                  class="img-load max-h-full max-w-full mix-blend-multiply object-contain transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($product->image) !!} onload="this.classList.add('is-loaded')">
@@ -126,12 +126,12 @@
                                             </svg>
                                         @endif
                                     </div>
-                                    <div class="flex flex-1 flex-col p-5">
-                                        <h4 class="text-base font-bold text-navy transition-colors group-hover:text-link">{{ $product->name }}</h4>
+                                    <div class="flex flex-1 flex-col p-5 max-sm:p-3 max-sm:pb-14">
+                                        <h4 class="text-base font-bold text-navy transition-colors group-hover:text-link max-sm:text-sm max-sm:leading-snug">{{ $product->name }}</h4>
                                         @if ($product->short_description)
-                                            <p class="mt-1.5 line-clamp-2 text-sm leading-relaxed text-slate">{{ $product->short_description }}</p>
+                                            <p class="mt-1.5 line-clamp-2 text-sm leading-relaxed text-slate max-sm:hidden">{{ $product->short_description }}</p>
                                         @endif
-                                        <span class="mt-auto pt-4 text-xs font-semibold text-link">View details <span class="inline-block transition-transform duration-200 group-hover:translate-x-1">&rarr;</span></span>
+                                        <span class="mt-auto pt-4 text-xs font-semibold text-link max-sm:hidden">View details <span class="inline-block transition-transform duration-200 group-hover:translate-x-1">&rarr;</span></span>
                                     </div>
                                 </a>
                                     @include('public.partials.compare-toggle', ['product' => $product])
@@ -160,12 +160,12 @@
         @include('public.partials.faq', ['faqs' => $category->faqs, 'title' => 'Frequently asked questions about ' . $category->name])
 
         {{-- CTA --}}
-        <div data-reveal="zoom" class="mt-16 flex flex-col items-center justify-between gap-5 rounded-3xl bg-gradient-to-br from-navy to-link px-8 py-9 sm:flex-row sm:px-12">
+        <div data-reveal="zoom" class="mt-16 flex flex-col items-center justify-between gap-5 rounded-3xl bg-gradient-to-br from-navy to-link px-8 py-9 sm:flex-row sm:px-12 max-sm:mt-12 max-sm:px-6 max-sm:py-7">
             <div class="text-center sm:text-left">
                 <h3 class="text-xl font-bold text-white sm:text-2xl">Need help choosing the right {{ strtolower($category->name) }}?</h3>
                 <p class="mt-1.5 text-sm text-white/75">Our specialists can recommend a model for your application.</p>
             </div>
-            <a href="{{ route('contact') }}" class="btn-glass shrink-0 px-7 py-3">Talk to an expert</a>
+            <a href="{{ route('contact') }}" class="btn-glass shrink-0 px-7 py-3 max-sm:w-full max-sm:justify-center">Talk to an expert</a>
         </div>
     </div>
   </div>
