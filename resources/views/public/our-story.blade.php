@@ -45,7 +45,7 @@
 @endphp
 
 <x-layouts.app title="Our Story" :description="'Agarwal Brothers has supplied laboratory equipment, scientific instruments and chemicals from Jaipur since ' . $founded . '. Read our story, values and leadership.'">
-  <div class="relative overflow-hidden">
+  <div class="relative overflow-hidden max-md:overflow-clip">
     <div class="pointer-events-none absolute inset-x-0 top-0 h-[640px]
                 bg-[radial-gradient(900px_420px_at_50%_-8%,rgba(0,180,216,0.16),transparent_70%),radial-gradient(700px_380px_at_6%_16%,rgba(0,119,182,0.08),transparent_70%),radial-gradient(700px_380px_at_96%_22%,rgba(0,180,216,0.10),transparent_70%),linear-gradient(to_bottom,rgba(244,249,251,1),rgba(255,255,255,0))]"></div>
 
@@ -66,10 +66,21 @@
             </div>
         </div>
 
-        {{-- ===== 2. About ===== --}}
-        <div class="mt-16 sm:mt-20 grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
+        {{-- Phones only: a slim bar of jump links that stays under the navbar while you scroll, and follows the section you are in --}}
+        @php
+            $jumps = array_values(array_filter([
+                ['about', 'About'], ['mission', 'Mission'],
+                $leaders->count() ? ['leadership', 'Leadership'] : null,
+                ['journey', 'Journey'], ['values', 'Values'],
+                $team->count() ? ['team', 'Team'] : null,
+            ]));
+        @endphp
+        <x-jump-bar :jumps="$jumps" />
 
-            <div class="relative mx-auto w-full max-w-lg h-[360px] sm:h-[440px]">
+        {{-- ===== 2. About ===== --}}
+        <div id="about" class="mt-8 sm:mt-20 max-md:scroll-mt-12 grid grid-cols-1 lg:grid-cols-2 gap-8 sm:gap-12 lg:gap-16 items-center">
+
+            <div class="relative mx-auto w-full max-w-lg h-[280px] sm:h-[440px]">
                 <div data-reveal="left" class="absolute left-0 top-0 h-[72%] w-[68%] overflow-hidden rounded-3xl shadow-xl bg-gradient-to-br from-ice to-cyan/20 flex items-center justify-center">
                     @if ($img('story_image_1'))
                         <img src="{{ $img('story_image_1') }}" alt="" class="img-load h-full w-full object-cover" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
@@ -98,11 +109,13 @@
             <div>
                 <div data-reveal>
                     <span class="section-badge">Company About</span>
-                    <h2 class="mt-4 text-2xl sm:text-4xl font-bold text-navy leading-tight">
+                    <h2 class="mt-4 text-[1.65rem] sm:text-4xl font-bold text-navy leading-tight">
                         {{ $years }}+ years of powering <span class="text-cyan-ink">India's laboratories</span>
                     </h2>
-                    <p class="mt-5 text-base text-slate leading-relaxed">{{ $intro }}</p>
+                    <p class="mt-4 text-[15px] text-slate leading-relaxed sm:mt-5 sm:text-base">{{ $intro }}</p>
                 </div>
+
+                <x-phone-facts :show="['customers', 'industries', 'brands']" data-reveal class="mt-5" />
 
                 <p data-reveal class="mt-6 text-sm font-bold text-navy">What sets us apart</p>
                 <ul class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
@@ -119,7 +132,7 @@
                 </ul>
 
                 <a data-reveal href="/contact-us"
-                   class="mt-8 inline-flex items-center gap-2 rounded-full bg-navy px-7 py-3 text-sm font-semibold text-white hover:bg-link btn-primary">
+                   class="mt-6 inline-flex items-center gap-2 rounded-full bg-navy px-7 py-3 text-sm font-semibold text-white hover:bg-link btn-primary sm:mt-8">
                     Talk to our team
                     <svg class="arrow-nudge h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
@@ -129,8 +142,8 @@
         </div>
 
         {{-- ===== 3. Mission / Vision / Goal ===== --}}
-        <div class="mt-20 sm:mt-24 rounded-3xl bg-gradient-to-br from-ice to-cyan/10 border border-cyan/20 p-6 sm:p-10 lg:p-12
-                    grid grid-cols-1 lg:grid-cols-2 gap-10 items-center"
+        <div id="mission" class="mt-12 sm:mt-24 max-md:scroll-mt-12 rounded-3xl bg-gradient-to-br from-ice to-cyan/10 border border-cyan/20 p-5 sm:p-10 lg:p-12
+                    grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10 items-center"
              x-data="{
                 tab: 'mission', pill: { x: 0, y: 0, w: 0, h: 0 }, ready: false,
                 place() {
@@ -176,7 +189,7 @@
                 </div>
             </div>
 
-            <div data-reveal="right" class="relative aspect-[4/3] w-full overflow-hidden rounded-3xl shadow-xl ring-4 ring-white bg-gradient-to-br from-navy to-link flex items-center justify-center">
+            <div data-reveal="right" class="relative aspect-[16/9] sm:aspect-[4/3] w-full overflow-hidden rounded-3xl shadow-xl ring-4 ring-white bg-gradient-to-br from-navy to-link flex items-center justify-center">
                 @if ($img('story_mission_image'))
                     <img src="{{ $img('story_mission_image') }}" alt="" class="img-load absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
                 @else
@@ -195,16 +208,19 @@
         {{-- ===== 6. Leadership blocks ===== --}}
         @if ($leaders->count())
             @php $leadBg = $img('leadership_bg'); @endphp
-            <div class="mt-20 sm:mt-24">
-                <div data-reveal class="text-center flex flex-col items-center gap-3 mb-10">
+            <div id="leadership" class="mt-14 sm:mt-24 max-md:scroll-mt-12">
+                <div data-reveal class="text-center flex flex-col items-center gap-3 mb-6 sm:mb-10">
                     <span class="section-badge">Meet our leadership</span>
                     <h2 class="text-2xl sm:text-3xl font-bold text-navy leading-tight">The people <span class="text-cyan-ink">behind the company</span></h2>
                 </div>
 
-                <div class="flex flex-col gap-8 sm:gap-10">
+                {{-- phones: one swipe row of leader cards with dots; from 768px the stacked blocks --}}
+                <div x-data="{ i: 0 }">
+                <div x-ref="row" @scroll.passive="i = Math.round($el.scrollLeft / ($el.firstElementChild.offsetWidth + 12))"
+                     class="flex gap-3 max-md:-mx-4 max-md:snap-x max-md:snap-mandatory max-md:overflow-x-auto max-md:scroll-px-4 max-md:px-4 max-md:pb-3 max-md:[scrollbar-width:none] max-md:[&::-webkit-scrollbar]:hidden md:flex-col md:gap-10">
                     @foreach ($leaders as $i => $leader)
                         @php $flip = $i % 2 === 1; @endphp
-                        <div class="relative overflow-hidden rounded-3xl shadow-xl ring-1 ring-black/5 bg-gradient-to-br from-navy to-link">
+                        <div class="relative overflow-hidden rounded-3xl shadow-xl ring-1 ring-black/5 bg-gradient-to-br from-navy to-link max-md:shrink-0 max-md:snap-start {{ $leaders->count() > 1 ? 'max-md:w-[88%]' : 'max-md:w-full' }}">
                             @if ($leadBg)
                                 <img src="{{ $leadBg }}" alt="" class="img-load absolute inset-0 h-full w-full scale-105 object-cover blur-[3px]" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
                                 <div class="absolute inset-0 bg-gradient-to-br from-navy/70 via-navy/45 to-link/40"></div>
@@ -213,9 +229,9 @@
                                 <div class="pointer-events-none absolute -bottom-24 {{ $flip ? '-right-16' : '-left-16' }} h-72 w-72 rounded-full border-[28px] border-white/5"></div>
                             @endif
 
-                            <div class="relative grid grid-cols-1 md:grid-cols-2 items-center gap-2 md:gap-6 px-5 pt-8 pb-6 md:py-0 md:px-12">
+                            <div class="relative grid grid-cols-1 md:grid-cols-2 items-center gap-2 md:gap-6 px-4 pt-6 pb-4 md:py-0 md:px-12">
                                 {{-- Portrait --}}
-                                <div data-reveal="{{ $flip ? 'right' : 'left' }}" class="{{ $flip ? 'md:order-2' : '' }} flex h-[260px] items-end justify-center md:h-[400px] lg:h-[430px]">
+                                <div data-reveal="{{ $flip ? 'right' : 'left' }}" class="{{ $flip ? 'md:order-2' : '' }} flex h-[210px] items-end justify-center md:h-[400px] lg:h-[430px]">
                                     @if ($leader->photo)
                                         <img src="{{ asset('storage/' . $leader->photo) }}" alt="{{ $leader->name }}"
                                              class="img-load h-full w-auto max-w-full object-contain object-bottom drop-shadow-2xl" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($leader->photo) !!} onload="this.classList.add('is-loaded')">
@@ -229,14 +245,14 @@
 
                                 {{-- Quote card (glass) --}}
                                 <div data-reveal="{{ $flip ? 'left' : 'right' }}" data-reveal-delay="150" class="{{ $flip ? 'md:order-1' : '' }} md:py-12">
-                                    <div class="rounded-2xl border border-gray-100 bg-white/95 p-6 shadow-lg sm:p-8">
+                                    <div class="rounded-2xl border border-gray-100 bg-white/95 p-5 shadow-lg sm:p-8">
                                         <svg class="quote-pop h-7 w-7 text-cyan/60" fill="currentColor" viewBox="0 0 24 24">
                                             <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10H0z"/>
                                         </svg>
-                                        <p class="mt-2 text-base leading-relaxed text-navy sm:text-lg">
+                                        <p class="mt-2 text-[15px] leading-relaxed text-navy sm:text-lg">
                                             {{ $leader->quote ?: 'A message from our leadership will appear here.' }}
                                         </p>
-                                        <p class="mt-5 text-lg font-semibold text-link">
+                                        <p class="mt-4 text-base font-semibold text-link sm:mt-5 sm:text-lg">
                                             {{ $leader->name }}@if ($leader->designation), <span class="font-medium text-navy/80">{{ $leader->designation }}</span>@endif
                                         </p>
                                         @if ($leader->linkedin_url && \App\Rules\SafeLink::passes($leader->linkedin_url))
@@ -253,12 +269,22 @@
                         </div>
                     @endforeach
                 </div>
+                @if ($leaders->count() > 1)
+                    <div class="mt-1 flex justify-center gap-1.5 md:hidden" role="group" aria-label="Choose a leader">
+                        @foreach ($leaders as $dot => $dl)
+                            <button type="button" aria-label="{{ $dl->name }}"
+                                    @click="$refs.row.scrollTo({ left: {{ $dot }} * ($refs.row.firstElementChild.offsetWidth + 12), behavior: 'smooth' })"
+                                    :class="i === {{ $dot }} ? 'w-5 bg-link' : 'w-1.5 bg-gray-300'" class="h-1.5 rounded-full transition-all duration-300"></button>
+                        @endforeach
+                    </div>
+                @endif
+                </div>
             </div>
         @endif
 
         {{-- ===== 4. Journey ===== --}}
-        <div class="mt-20 sm:mt-24">
-            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-10">
+        <div id="journey" class="mt-14 sm:mt-24 max-md:scroll-mt-12">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-6 sm:mb-10">
                 <span class="section-badge">Our Journey</span>
                 <h2 class="text-2xl sm:text-3xl font-bold text-navy leading-tight">From one office to <span class="text-cyan-ink">50+ global brands</span></h2>
             </div>
@@ -326,7 +352,7 @@
         </div>
 
         {{-- ===== 5. Values: intro on the left, compact value rows on the right ===== --}}
-        <div class="mt-20 sm:mt-24 grid grid-cols-1 items-start gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
+        <div id="values" class="mt-14 sm:mt-24 max-md:scroll-mt-12 grid grid-cols-1 items-start gap-6 sm:gap-10 lg:grid-cols-[0.85fr_1.15fr] lg:gap-14">
             <div data-reveal="left">
                 <span class="section-badge">Our Values</span>
                 <h2 class="mt-3 text-2xl sm:text-3xl font-bold text-navy leading-tight">What <span class="text-cyan-ink">drives us</span></h2>
@@ -362,29 +388,29 @@
 
         {{-- ===== 6b. Team grid ===== --}}
         @if ($team->count())
-            <div class="mt-20 sm:mt-24">
-                <div data-reveal class="text-center flex flex-col items-center gap-3 mb-10">
+            <div id="team" class="mt-14 sm:mt-24 max-md:scroll-mt-12">
+                <div data-reveal class="text-center flex flex-col items-center gap-3 mb-6 sm:mb-10">
                     <span class="section-badge">Our people</span>
                     <h2 class="text-2xl sm:text-3xl font-bold text-navy leading-tight">Meet the <span class="text-cyan-ink">team</span></h2>
                 </div>
 
-                <div class="flex flex-wrap justify-center gap-6">
+                <div class="flex flex-wrap justify-center gap-3 sm:gap-6">
                     @foreach ($team as $member)
-                        <div data-reveal class="group w-full sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-1.15rem)] overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm
+                        <div data-reveal class="group w-[calc(50%-0.375rem)] sm:w-[calc(50%-0.75rem)] lg:w-[calc(25%-1.15rem)] overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm
                                     hover:shadow-xl hover:border-cyan/40 hover:-translate-y-1 transition-all duration-300">
                             <div class="relative aspect-[4/5] w-full overflow-hidden bg-gradient-to-br from-ice to-cyan/20 flex items-center justify-center">
                                 @if ($member->photo)
                                     <img src="{{ asset('storage/' . $member->photo) }}" alt="{{ $member->name }}"
                                          class="img-load h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($member->photo) !!} onload="this.classList.add('is-loaded')">
                                 @else
-                                    <span class="flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-br from-navy to-link text-3xl font-bold text-white shadow-lg">
+                                    <span class="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-br from-navy to-link text-2xl font-bold text-white shadow-lg sm:h-24 sm:w-24 sm:text-3xl">
                                         {{ strtoupper(mb_substr($member->name, 0, 1)) }}
                                     </span>
                                 @endif
 
                                 {{-- Contact details slide up on hover / keyboard focus (always shown on touch screens, which cannot hover) --}}
                                 @if ($member->phone || $member->email || $member->linkedin_url)
-                                    <div class="team-contact absolute inset-x-0 bottom-0 translate-y-full bg-navy/95 px-4 py-3 text-left transition-transform duration-300 ease-out group-hover:translate-y-0 group-focus-within:translate-y-0 [@media(hover:none)]:translate-y-0">
+                                    <div class="team-contact absolute inset-x-0 bottom-0 max-sm:hidden translate-y-full bg-navy/95 px-4 py-3 text-left transition-transform duration-300 ease-out group-hover:translate-y-0 group-focus-within:translate-y-0 [@media(hover:none)]:translate-y-0">
                                         @if ($member->phone)
                                             <a href="tel:{{ preg_replace('/[^0-9+]/', '', $member->phone) }}" class="flex items-center gap-2 py-1 text-xs font-medium text-white hover:text-cyan focus-visible:text-cyan">
                                                 <svg class="h-3.5 w-3.5 shrink-0 text-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
@@ -406,10 +432,31 @@
                                     </div>
                                 @endif
                             </div>
-                            <div class="p-5 text-center">
-                                <h3 class="name-underline text-base font-bold text-navy">{{ $member->name }}</h3>
+                            <div class="p-3 text-center sm:p-5">
+                                <h3 class="name-underline text-sm font-bold text-navy sm:text-base">{{ $member->name }}</h3>
                                 @if ($member->designation)
-                                    <p class="mt-1 text-xs font-semibold uppercase tracking-wider text-link">{{ $member->designation }}</p>
+                                    <p class="mt-1 text-[10px] font-semibold uppercase tracking-wider text-link sm:text-xs">{{ $member->designation }}</p>
+                                @endif
+                                {{-- phones cannot hover, so the contact details are three small round buttons here --}}
+                                @php $memberLinkedin = $member->linkedin_url && \App\Rules\SafeLink::passes($member->linkedin_url); @endphp
+                                @if ($member->phone || $member->email || $memberLinkedin)
+                                    <div class="mt-2.5 flex items-center justify-center gap-2 sm:hidden">
+                                        @if ($member->phone)
+                                            <a href="tel:{{ preg_replace('/[^0-9+]/', '', $member->phone) }}" aria-label="Call {{ $member->name }}" class="flex h-8 w-8 items-center justify-center rounded-full bg-ice text-link transition active:bg-navy active:text-white">
+                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
+                                            </a>
+                                        @endif
+                                        @if ($member->email)
+                                            <a href="mailto:{{ $member->email }}" aria-label="Email {{ $member->name }}" class="flex h-8 w-8 items-center justify-center rounded-full bg-ice text-link transition active:bg-navy active:text-white">
+                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75"/></svg>
+                                            </a>
+                                        @endif
+                                        @if ($memberLinkedin)
+                                            <a href="{{ $member->linkedin_url }}" target="_blank" rel="noopener noreferrer" aria-label="{{ $member->name }} on LinkedIn" class="flex h-8 w-8 items-center justify-center rounded-full bg-ice text-link transition active:bg-navy active:text-white">
+                                                <svg class="h-4 w-4" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true"><path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28ZM5.34 7.43a2.06 2.06 0 1 1 0-4.12 2.06 2.06 0 0 1 0 4.12ZM7.12 20.45H3.56V9h3.56v11.45Z"/></svg>
+                                            </a>
+                                        @endif
+                                    </div>
                                 @endif
                             </div>
                         </div>

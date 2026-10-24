@@ -74,11 +74,11 @@
              }"
              @keydown.escape.window="open = false"
              x-effect="document.documentElement.classList.toggle('overflow-hidden', open)"
-             class="grid gap-3 {{ $reviewCount ? 'lg:grid-cols-[1.4fr_1fr]' : 'lg:grid-cols-2' }}">
+             class="grid gap-3 max-sm:grid-cols-[1fr_1.3fr] max-sm:gap-2 {{ $reviewCount ? 'lg:grid-cols-[1.4fr_1fr]' : 'lg:grid-cols-2' }}">
 
             {{-- Quote card (featured reviews, taking turns when there are several) --}}
             @if ($reviewCount)
-                <div data-reveal="left" @mouseenter="quotePaused = true" @mouseleave="quotePaused = false" @focusin="quotePaused = true" @focusout="quotePaused = false" class="relative overflow-hidden rounded-2xl bg-navy p-6 text-white sm:p-8 lg:row-span-2">
+                <div data-reveal="left" @mouseenter="quotePaused = true" @mouseleave="quotePaused = false" @focusin="quotePaused = true" @focusout="quotePaused = false" class="relative overflow-hidden rounded-2xl bg-navy p-5 text-white max-sm:col-span-2 sm:p-8 lg:row-span-2">
                     <svg class="pointer-events-none absolute -right-4 -top-4 h-44 w-44 text-white/[0.04]" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                         <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10H0z"/>
                     </svg>
@@ -92,7 +92,7 @@
                                         <path d="M14.017 21v-7.391c0-5.704 3.731-9.57 8.983-10.609l.995 2.151c-2.432.917-3.995 3.638-3.995 5.849h4v10H14.017zm-14.017 0v-7.391c0-5.704 3.748-9.57 9-10.609l.996 2.151c-2.433.917-3.996 3.638-3.996 5.849h3.983v10H0z"/>
                                     </svg>
                                     @php $isLong = mb_strlen($review->content) > $longReview; @endphp
-                                    <blockquote class="mt-5 text-xl font-medium leading-snug sm:text-2xl {{ $isLong ? 'line-clamp-6' : '' }}">{{ $review->content }}</blockquote>
+                                    <blockquote class="mt-4 text-lg font-medium leading-snug sm:mt-5 sm:text-2xl {{ $isLong ? 'line-clamp-6' : '' }}">{{ $review->content }}</blockquote>
                                     @if ($review->rating)
                                         <div class="mt-5 flex gap-1" role="img" aria-label="Rated {{ $review->rating }} out of 5">
                                             @for ($star = 1; $star <= 5; $star++)
@@ -137,8 +137,8 @@
             @endif
 
             {{-- Number tile + rotating category list (like a picker wheel: the one in the middle is the current one) --}}
-            <div data-reveal class="rounded-2xl bg-ice p-5 sm:p-6">
-                <p class="text-4xl font-bold leading-none text-navy sm:text-5xl">{{ $statNumber }}</p>
+            <div data-reveal class="min-w-0 rounded-2xl bg-ice p-4 sm:p-6">
+                <p class="text-3xl font-bold leading-none text-navy sm:text-5xl">{{ $statNumber }}</p>
                 <p class="mt-2 font-mono text-[11px] uppercase tracking-widest text-cyan-ink">{{ $statLabel }}</p>
 
                 @if ($wheelCount)
@@ -152,7 +152,7 @@
                                 <ul class="m-0 list-none p-0" :class="snap ? '' : 'transition-transform duration-500 ease-in-out'"
                                     :style="`transform: translateY(-${(ci - 1) * 1.75}rem)`">
                                     <template x-for="(c, i) in track" :key="i">
-                                        <li class="flex h-[1.75rem] origin-left items-center gap-2 truncate text-[15px] transition-all duration-500 ease-in-out"
+                                        <li class="flex h-[1.75rem] origin-left items-center gap-2 truncate text-sm sm:text-[15px] transition-all duration-500 ease-in-out"
                                             :class="i === ci ? 'scale-100 font-semibold text-navy' : (Math.abs(i - ci) === 1 ? 'scale-[0.8] text-slate/70' : 'scale-[0.8] opacity-0')"
                                             :aria-hidden="i !== ci">
                                             <span class="truncate" x-text="c.label"></span>
@@ -167,16 +167,16 @@
             </div>
 
             {{-- Rotating logo cluster --}}
-            <div data-reveal class="rounded-2xl border border-gray-100 bg-white p-3 shadow-sm sm:p-4">
-                <div class="grid">
+            <div data-reveal class="min-w-0 rounded-2xl border border-gray-100 bg-white p-2 shadow-sm sm:p-4">
+                <div class="grid h-full">
                     @foreach ($pages as $p => $items)
                         <div :class="page === {{ $p }} ? 'opacity-100 scale-100 translate-y-0 delay-300' : 'pointer-events-none opacity-0 scale-[0.97] translate-y-1.5'"
                              @if ($p > 0) :aria-hidden="page !== {{ $p }}" @endif
-                             class="grid grid-cols-2 content-start gap-2 transition-[opacity,scale,translate] duration-[900ms] ease-in-out [grid-area:1/1]">
+                             class="grid grid-cols-2 grid-rows-2 gap-1.5 sm:grid-rows-none sm:content-start sm:gap-2 transition-[opacity,scale,translate] duration-[900ms] ease-in-out [grid-area:1/1]">
                             @foreach ($items as $client)
                                 @php $categoryLabel = optional($client->category)?->is_active ? $client->category->name : null; @endphp
                                 <div role="img" aria-label="{{ $client->name }}{{ $categoryLabel ? ', ' . $categoryLabel : '' }}" title="{{ $client->name }}"
-                                     class="flex h-24 items-center justify-center rounded-xl border border-gray-200 bg-white p-2 transition-all duration-300 hover:-translate-y-1 hover:border-cyan/50 hover:shadow-lg sm:h-28">
+                                     class="flex h-full min-h-[4.25rem] items-center justify-center rounded-xl border border-gray-200 bg-white p-1.5 transition-all duration-300 hover:-translate-y-1 hover:border-cyan/50 hover:shadow-lg sm:h-28 sm:p-2">
                                     @if ($client->logo)
                                         <img src="{{ asset('storage/' . $client->logo) }}" alt="" class="img-load max-h-full max-w-full object-contain"
                                              loading="lazy" decoding="async" {!! \App\Support\Img::attrs($client->logo) !!} onload="this.classList.add('is-loaded')">

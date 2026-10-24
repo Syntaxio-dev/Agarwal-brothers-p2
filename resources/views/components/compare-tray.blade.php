@@ -8,7 +8,7 @@
 
     {{-- Panel --}}
     <aside x-cloak x-show="$store.compare.items.length && open" x-transition.opacity
-           class="fixed bottom-6 right-20 z-30 w-56 overflow-hidden rounded-2xl border border-navy/15 bg-white shadow-xl sm:w-64"
+           class="fixed bottom-6 right-20 z-30 w-56 overflow-hidden rounded-2xl border border-navy/15 bg-white shadow-xl max-md:bottom-[5.25rem] max-md:right-3 sm:w-64"
            role="region" aria-label="Compare list">
 
         <div class="flex items-center justify-between border-b border-gray-200 bg-ice px-3.5 py-2.5">
@@ -50,7 +50,7 @@
     {{-- Small tab shown when the panel is minimised --}}
     <button type="button" x-cloak x-show="$store.compare.items.length && !open" x-transition.opacity @click="open = true"
             aria-label="Open compare list"
-            class="fixed bottom-6 right-20 z-30 flex items-center gap-2 rounded-xl bg-navy px-3.5 py-2.5 text-white shadow-lg transition hover:bg-link"
+            class="fixed bottom-6 right-20 z-30 flex items-center gap-2 rounded-xl bg-navy px-3.5 py-2.5 text-white shadow-lg transition hover:bg-link max-md:bottom-[5.25rem] max-md:right-3"
             style="box-shadow: inset 0 -2px 0 #00B4D8;">
         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
             <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 21 3 16.5m0 0L7.5 12M3 16.5h13.5m0-13.5L21 7.5m0 0L16.5 12M21 7.5H7.5"/>

@@ -21,7 +21,7 @@ class HomeCapabilitiesTest extends TestCase
     public function test_it_shows_three_capabilities_with_the_current_brand_count_and_no_amc_card(): void
     {
         $html = $this->get('/')->assertOk()->getContent();
-        $block = substr($html, strpos($html, 'capabilities-heading'), 7000);
+        $block = substr($html, strpos($html, 'capabilities-heading'), 9000);
 
         foreach (['Supply', 'Installation', 'Calibration &amp; Service'] as $title) {
             $this->assertStringContainsString($title, $block);
@@ -31,7 +31,7 @@ class HomeCapabilitiesTest extends TestCase
         $this->assertStringContainsString(\App\Support\Company::plus('brands') . ' global brands', $block);   // from config, never a typed number
 
         $this->assertSame(3, substr_count($block, 'class="cap-card '));
-        $this->assertSame(3, substr_count($block, '<h3 class="relative mt-5 text-lg font-bold text-navy">'));
+        $this->assertSame(3, substr_count($block, '<h3 class="relative col-start-2 mt-0.5 text-base font-bold text-navy sm:mt-5 sm:text-lg">'));
         $this->assertSame(3, substr_count($block, 'text-7xl font-extrabold'));                  // the ghost number of each card
         $this->assertSame(3, substr_count($block, 'bg-gradient-to-br from-navy to-link'));      // all icon tiles are the same gradient
         $this->assertStringNotContainsString('bg-cyan text-navy', $block);

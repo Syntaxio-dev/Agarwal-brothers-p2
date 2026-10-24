@@ -3,7 +3,7 @@
     <div class="pointer-events-none absolute inset-x-0 top-0 h-[520px]
                 bg-[radial-gradient(900px_420px_at_50%_-8%,rgba(0,180,216,0.16),transparent_70%),radial-gradient(700px_380px_at_6%_16%,rgba(0,119,182,0.08),transparent_70%),radial-gradient(700px_380px_at_96%_22%,rgba(0,180,216,0.10),transparent_70%),linear-gradient(to_bottom,rgba(244,249,251,1),rgba(255,255,255,0))]"></div>
 
-    <div class="relative w-[98%] mx-auto px-4 md:px-10 lg:px-16 py-10 sm:py-14">
+    <div class="relative w-[98%] mx-auto px-4 md:px-10 lg:px-16 py-8 sm:py-14">
 
         @include('public.partials.breadcrumb', ['items' => [
             ['Home', '/'],
@@ -14,9 +14,9 @@
         {{-- Header --}}
         <div data-reveal class="max-w-3xl">
             <span class="section-badge">Vertical</span>
-            <h1 class="mt-4 text-3xl sm:text-4xl font-bold text-navy leading-tight">{{ $vertical->name }}</h1>
+            <h1 class="mt-4 text-[1.65rem] sm:text-4xl font-bold text-navy leading-tight">{{ $vertical->name }}</h1>
             @if ($vertical->description)
-                <p class="mt-3 text-base text-slate leading-relaxed">{{ $vertical->description }}</p>
+                <p class="mt-3 text-[15px] text-slate leading-relaxed sm:text-base">{{ $vertical->description }}</p>
             @endif
 
             @if ($brandGroups->count())
@@ -29,10 +29,11 @@
 
         {{-- Brand-wise menu --}}
         @if ($brandGroups->count())
-            <div class="mt-10 grid grid-cols-1 items-start gap-6 md:grid-cols-2 xl:grid-cols-3">
+            <div class="mt-8 grid grid-cols-1 items-start gap-3 sm:mt-10 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
                 @foreach ($brandGroups as $group)
                     @php $brand = $group['brand']; @endphp
-                    <div data-reveal class="rounded-2xl border border-gray-200 bg-white p-5 shadow-sm transition-all duration-300 hover:border-cyan/50 hover:shadow-lg">
+                    {{-- phones: with more than 3 brands each card folds (the first one starts open); from 768px every list is always open --}}
+                    <div data-reveal x-data="{ open: {{ $brandGroups->count() <= 3 || $loop->first ? 'true' : 'false' }} }" class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm transition-all duration-300 hover:border-cyan/50 hover:shadow-lg">
 
                         <div class="flex items-center justify-between gap-3">
                             <a href="{{ route('brand.show', $brand->slug) }}" class="flex h-12 w-40 min-w-0 items-center" title="{{ $brand->name }}">
@@ -42,16 +43,24 @@
                                     <span class="truncate text-lg font-bold text-navy">{{ $brand->name }}</span>
                                 @endif
                             </a>
-                            <span class="shrink-0 rounded-md bg-cyan/10 px-2 py-1 font-mono text-[11px] text-link">
-                                {{ $group['categories']->count() }} {{ \Illuminate\Support\Str::plural('line', $group['categories']->count()) }}
+                            <span class="flex shrink-0 items-center gap-2">
+                                <span class="rounded-md bg-cyan/10 px-2 py-1 font-mono text-[11px] text-link">
+                                    {{ $group['categories']->count() }} {{ \Illuminate\Support\Str::plural('line', $group['categories']->count()) }}
+                                </span>
+                                @if ($brandGroups->count() > 3)
+                                    <button type="button" @click="open = !open" :aria-expanded="open" aria-label="Show or hide the {{ $brand->name }} product lines"
+                                            class="flex h-8 w-8 items-center justify-center rounded-full bg-ice text-navy transition active:bg-navy active:text-white md:hidden">
+                                        <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+                                    </button>
+                                @endif
                             </span>
                         </div>
 
-                        <ul class="mt-4 space-y-2">
+                        <ul class="mt-4 space-y-2" @if ($brandGroups->count() > 3) :class="open ? '' : 'max-md:hidden'" @endif>
                             @foreach ($group['categories'] as $category)
                                 <li>
                                     <a href="{{ route('category.show', [$brand->slug, $category->slug, 'v' => $vertical->slug]) }}"
-                                       class="group flex items-center justify-between gap-3 rounded-lg bg-ice px-3.5 py-2.5 text-sm font-medium text-navy
+                                       class="group flex items-center justify-between gap-3 rounded-lg bg-ice px-3.5 py-3 text-sm font-medium text-navy md:py-2.5
                                               transition-colors duration-200 hover:bg-navy hover:text-white">
                                         <span class="min-w-0 truncate">{{ $category->name }}</span>
                                         <span class="flex shrink-0 items-center gap-2">

@@ -42,7 +42,7 @@
     }" x-init="start()"
         class="relative w-[98%] max-w-[98vw] mx-auto mt-2 rounded-xl overflow-hidden">
 
-        <div class="relative w-full aspect-video 2xl:h-[600px] rounded-xl overflow-hidden bg-navy">
+        <div class="relative w-full max-sm:aspect-[4/3] sm:aspect-video 2xl:h-[600px] rounded-xl overflow-hidden bg-navy">
 
             @forelse ($slides as $i => $slide)
                 @php $slideLink = $slide->linkTarget(); $slideProd = $slide->resolvedProduct(); @endphp
@@ -74,25 +74,25 @@
 
                     @if ($slide->title || $slide->subtitle || $slideProd)
                         <div class="absolute inset-0 flex items-center">
-                            <div class="w-full px-8 sm:px-12 lg:px-20">
+                            <div class="w-full px-14 sm:px-12 lg:px-20">
                                 <div class="max-w-xl">
                                     @if (! $slide->title && $slideProd)
                                         <span class="section-badge">Featured product</span>
-                                        <h2 class="mt-2 text-2xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight drop-shadow-lg">
+                                        <h2 class="mt-2 text-[1.4rem] sm:text-4xl lg:text-5xl font-bold text-white leading-tight drop-shadow-lg">
                                             {{ $slideProd->name }}
                                         </h2>
                                     @elseif ($slide->title)
-                                        <h2 class="text-2xl sm:text-4xl lg:text-5xl font-bold text-white leading-tight drop-shadow-lg">
+                                        <h2 class="text-[1.4rem] sm:text-4xl lg:text-5xl font-bold text-white leading-tight drop-shadow-lg">
                                             {{ $slide->title }}
                                         </h2>
                                     @endif
                                     @if ($slide->subtitle)
-                                        <p class="mt-4 text-base sm:text-lg text-white/90 leading-relaxed drop-shadow">
+                                        <p class="mt-2 line-clamp-2 text-sm sm:mt-4 sm:line-clamp-none sm:text-lg text-white/90 leading-relaxed drop-shadow">
                                             {{ $slide->subtitle }}
                                         </p>
                                     @endif
                                     @if ($slideLink)
-                                        <span class="btn-glass mt-6 px-7 py-3">
+                                        <span class="btn-glass mt-4 px-5 py-2.5 text-sm sm:mt-6 sm:px-7 sm:py-3 sm:text-base">
                                             {{ $slide->linkLabel() }}
                                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 9h6V5l7 7-7 7v-4H6V9z"/>
@@ -113,7 +113,24 @@
 
         {{-- Carousel arrows --}}
         @if ($slides->count() > 1)
-            <div class="absolute right-0 top-1/2 z-20 flex -translate-y-1/2 flex-col items-center gap-2 rounded-l-xl bg-ice p-2 shadow-md sm:gap-3 sm:p-3">
+            {{-- Phone: two round buttons on the picture edges and dots at the bottom (the side panel is for bigger screens) --}}
+            <button type="button" @click="prev(); reset()" aria-label="Previous slide"
+                    class="absolute left-2.5 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition active:bg-white/35 sm:hidden">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/></svg>
+            </button>
+            <button type="button" @click="next(); reset()" aria-label="Next slide"
+                    class="absolute right-2.5 top-1/2 z-20 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-sm transition active:bg-white/35 sm:hidden">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></svg>
+            </button>
+            <div class="absolute bottom-3 left-1/2 z-20 flex -translate-x-1/2 items-center gap-1.5 sm:hidden" role="group" aria-label="Choose a slide">
+                @foreach ($slides as $dot => $dotSlide)
+                    <button type="button" @click="active = {{ $dot }}; reset()" aria-label="Slide {{ $dot + 1 }}"
+                            :class="active === {{ $dot }} ? 'w-5 bg-cyan' : 'w-1.5 bg-white/60'"
+                            class="h-1.5 rounded-full transition-all duration-300"></button>
+                @endforeach
+            </div>
+
+            <div class="absolute right-0 top-1/2 z-20 hidden -translate-y-1/2 flex-col items-center gap-2 rounded-l-xl bg-ice p-2 shadow-md sm:flex sm:gap-3 sm:p-3">
                 <button @click="prev(); reset()" class="glass-icon rounded-full p-1.5 sm:p-2">
                     <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                         <path stroke-linecap="round" stroke-linejoin="round" d="m15 18-6-6 6-6"/>
@@ -130,48 +147,7 @@
     </section>
 
 
-    {{-- ===== 1b. WHAT WE DO: three capabilities (the brand count comes from App\Support\Company, so it stays correct) ===== --}}
-    @php
-        $capabilities = [
-            ['01', 'Supply', 'Authorised supply of lab equipment and chemicals from ' . \App\Support\Company::plus('brands') . ' global brands.',
-             'm21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9'],
-            ['02', 'Installation', 'On-site installation and commissioning by trained engineers.',
-             'M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437 1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008Z'],
-            ['03', 'Calibration & Service', 'Calibration, repairs and genuine spares to keep labs accurate.',
-             'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z'],
-        ];
-    @endphp
-    <section class="relative mx-auto mt-4 w-[98%] rounded-3xl bg-ice px-4 py-14 sm:px-8 sm:py-16 md:px-10 lg:px-16" aria-labelledby="capabilities-heading">
-        <div data-reveal class="mb-10 flex flex-col items-center justify-center gap-3 text-center">
-            <span class="section-badge">What we do</span>
-            <h2 id="capabilities-heading" class="text-xl font-bold leading-tight text-navy sm:text-2xl">
-                One partner, <span class="text-cyan-ink">start to finish</span>
-            </h2>
-        </div>
-
-        {{-- the dashed line draws left to right behind the cards (only the bits in the gaps show), cards rise one after another --}}
-        <div data-reveal="draw" class="relative mx-auto grid max-w-6xl grid-cols-1 gap-5 md:grid-cols-3 md:gap-x-8 lg:gap-x-12 xl:gap-x-20">
-            <div aria-hidden="true" class="cap-line pointer-events-none absolute left-[16.667%] right-[16.667%] top-[92px] hidden h-[3px] rounded-full bg-[repeating-linear-gradient(to_right,#00B4D8_0_12px,transparent_12px_20px)] md:block"></div>
-
-            @foreach ($capabilities as [$num, $capTitle, $capText, $capIcon])
-                <div class="cap-card group relative overflow-hidden rounded-2xl border border-gray-100 bg-white p-7 shadow-sm transition-all duration-[350ms] hover:-translate-y-1.5 hover:border-cyan/50 hover:shadow-[0_16px_30px_-14px_rgba(11,37,69,0.35)]"
-                     style="--cap-delay: {{ 150 + $loop->index * 120 }}ms">
-                    <span aria-hidden="true" class="pointer-events-none absolute right-5 top-3 translate-y-2 select-none text-7xl font-extrabold leading-none text-navy opacity-0 transition-all duration-[350ms] group-hover:translate-y-0 group-hover:opacity-[.14]">{{ $num }}</span>
-                    <p class="relative font-mono text-sm font-medium text-link">{{ $num }}</p>
-                    <div class="relative mt-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-navy to-link text-white shadow-md transition-all duration-[350ms] ease-[cubic-bezier(.34,1.56,.64,1)] group-hover:-rotate-6 group-hover:scale-[1.08] group-hover:from-link group-hover:to-cyan" aria-hidden="true">
-                        <svg class="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="{{ $capIcon }}"/>
-                        </svg>
-                    </div>
-                    <h3 class="relative mt-5 text-lg font-bold text-navy">{{ $capTitle }}</h3>
-                    <p class="relative mt-2 text-sm leading-relaxed text-slate">{{ $capText }}</p>
-                </div>
-            @endforeach
-        </div>
-    </section>
-
-
-    {{-- ===== 2. WHO WE ARE ===== --}}
+    {{-- ===== 1a. PHONE ONLY: quick facts row right under the hero (numbers come from App\Support\Company) ===== --}}
     @php
         $companyYears = \App\Support\Company::yearsShown();   // 33 years shows as 30+
         $foundedYear = \App\Support\Company::foundedYear();
@@ -185,6 +161,51 @@
              'M12.75 3.03v.568c0 .334.148.65.405.864l1.068.89c.442.369.535 1.01.216 1.49l-.51.766a2.25 2.25 0 0 1-1.161.886l-.143.048a1.107 1.107 0 0 0-.57 1.664c.369.555.169 1.307-.427 1.605L9 13.125l.423 1.059a.956.956 0 0 1-1.652.928l-.679-.906a1.125 1.125 0 0 0-1.906.172L4.5 15.75l-.612.153M12.75 3.031a9 9 0 0 1 6.69 14.036m0 0-.177-.529A2.25 2.25 0 0 0 17.128 15H16.5l-.324-.324a1.453 1.453 0 0 0-2.328.377l-.036.073a1.586 1.586 0 0 1-.982.816l-.99.282c-.55.157-.894.702-.8 1.267l.073.438c.08.474.49.821.97.821.846 0 1.598.542 1.865 1.345l.215.643m-3.414 1.768A9.004 9.004 0 0 1 3.75 12c0-1.26.26-2.46.727-3.55'],
         ];
     @endphp
+    <x-phone-facts data-reveal class="mx-auto mt-3 w-[98%]" />
+
+
+    {{-- ===== 1b. WHAT WE DO: three capabilities (the brand count comes from App\Support\Company, so it stays correct) ===== --}}
+    @php
+        $capabilities = [
+            ['01', 'Supply', 'Authorised supply of lab equipment and chemicals from ' . \App\Support\Company::plus('brands') . ' global brands.',
+             'm21 7.5-9-5.25L3 7.5m18 0-9 5.25m9-5.25v9l-9 5.25M3 7.5l9 5.25M3 7.5v9l9 5.25m0-9v9'],
+            ['02', 'Installation', 'On-site installation and commissioning by trained engineers.',
+             'M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085m-1.745 1.437L5.909 7.5H4.5L2.25 3.75l1.5-1.5L7.5 4.5v1.409l4.26 4.26m-1.745 1.437 1.745-1.437m6.615 8.206L15.75 15.75M4.867 19.125h.008v.008h-.008v-.008Z'],
+            ['03', 'Calibration & Service', 'Calibration, repairs and genuine spares to keep labs accurate.',
+             'M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A1.125 1.125 0 0 1 3 19.875v-6.75ZM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V8.625ZM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a1.125 1.125 0 0 1-1.125-1.125V4.125Z'],
+        ];
+    @endphp
+    <section class="relative mx-auto mt-4 w-[98%] rounded-3xl bg-ice px-4 py-10 sm:px-8 sm:py-16 md:px-10 lg:px-16" aria-labelledby="capabilities-heading">
+        <div data-reveal class="mb-7 flex sm:mb-10 flex-col items-center justify-center gap-3 text-center">
+            <span class="section-badge">What we do</span>
+            <h2 id="capabilities-heading" class="text-xl font-bold leading-tight text-navy sm:text-2xl">
+                One partner, <span class="text-cyan-ink">start to finish</span>
+            </h2>
+        </div>
+
+        {{-- the dashed line draws left to right behind the cards (only the bits in the gaps show), cards rise one after another --}}
+        <div data-reveal="draw" class="relative mx-auto grid max-w-6xl grid-cols-1 gap-5 md:grid-cols-3 md:gap-x-8 lg:gap-x-12 xl:gap-x-20">
+            <div aria-hidden="true" class="cap-line pointer-events-none absolute left-[16.667%] right-[16.667%] top-[92px] hidden h-[3px] rounded-full bg-[repeating-linear-gradient(to_right,#00B4D8_0_12px,transparent_12px_20px)] md:block"></div>
+
+            @foreach ($capabilities as [$num, $capTitle, $capText, $capIcon])
+                <div class="cap-card group relative grid grid-cols-[3rem_1fr] gap-x-4 overflow-hidden rounded-2xl border border-gray-100 bg-white p-4 shadow-sm sm:block sm:p-7 transition-all duration-[350ms] hover:-translate-y-1.5 hover:border-cyan/50 hover:shadow-[0_16px_30px_-14px_rgba(11,37,69,0.35)]"
+                     style="--cap-delay: {{ 150 + $loop->index * 120 }}ms">
+                    <span aria-hidden="true" class="pointer-events-none absolute right-5 top-3 translate-y-2 select-none text-7xl font-extrabold leading-none text-navy opacity-0 transition-all duration-[350ms] group-hover:translate-y-0 group-hover:opacity-[.14]">{{ $num }}</span>
+                    <p class="relative col-start-2 font-mono text-sm font-medium text-link">{{ $num }}</p>
+                    <div class="relative col-start-1 row-span-3 row-start-1 flex h-12 w-12 sm:mt-4 sm:h-14 sm:w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-navy to-link text-white shadow-md transition-all duration-[350ms] ease-[cubic-bezier(.34,1.56,.64,1)] group-hover:-rotate-6 group-hover:scale-[1.08] group-hover:from-link group-hover:to-cyan" aria-hidden="true">
+                        <svg class="h-6 w-6 sm:h-7 sm:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="{{ $capIcon }}"/>
+                        </svg>
+                    </div>
+                    <h3 class="relative col-start-2 mt-0.5 text-base font-bold text-navy sm:mt-5 sm:text-lg">{{ $capTitle }}</h3>
+                    <p class="relative col-start-2 mt-1 text-sm leading-relaxed text-slate sm:mt-2">{{ $capText }}</p>
+                </div>
+            @endforeach
+        </div>
+    </section>
+
+
+    {{-- ===== 2. WHO WE ARE ===== --}}
     <section x-data="{
         started: false,
         c: { customers: 0, industries: 0, brands: 0 },
@@ -205,11 +226,11 @@
         }
     }"
     x-init="new IntersectionObserver(([e]) => { if (e.isIntersecting) { startCounting(); } }, { threshold: 0.2 }).observe($el)"
-    class="relative w-[98%] mx-auto py-14 sm:py-16 md:px-10 lg:px-20">
+    class="relative w-[98%] mx-auto py-10 sm:py-16 md:px-10 lg:px-20">
 
         <div class="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(1200px_600px_at_20%_-10%,rgba(0,180,216,0.06),transparent),radial-gradient(1200px_600px_at_80%_110%,rgba(0,180,216,0.06),transparent)]"></div>
 
-        <div data-reveal class="text-center flex flex-col justify-center items-center gap-3 mb-10">
+        <div data-reveal class="text-center flex flex-col justify-center items-center gap-3 mb-7 sm:mb-10">
             <span class="section-badge">
                 Who We Are
             </span>
@@ -218,20 +239,20 @@
             </h2>
         </div>
 
-        <div class="flex flex-col md:flex-row items-center justify-center gap-8 lg:gap-12">
+        <div class="flex flex-col md:flex-row items-center justify-center gap-6 sm:gap-8 lg:gap-12">
 
             {{-- Left: years of excellence (worked out from the founding year) --}}
             <div data-reveal="left" class="flex flex-col items-center justify-center w-full md:w-[42%] text-center">
                 <p class="text-xs sm:text-sm uppercase tracking-[0.25em] font-semibold text-slate mb-1">Celebrating</p>
 
                 <div class="relative my-2">
-                    <span class="text-[110px] sm:text-[140px] lg:text-[160px] font-black leading-none
+                    <span class="text-[72px] sm:text-[140px] lg:text-[160px] font-black leading-none
                                  text-transparent bg-clip-text
                                  bg-gradient-to-br from-cyan via-link to-navy
                                  drop-shadow-sm select-none">
                         {{ $companyYears }}
                     </span>
-                    <span class="absolute -right-4 top-4 sm:-right-5 sm:top-5 text-cyan-ink text-3xl sm:text-4xl font-black">+</span>
+                    <span class="absolute -right-3 top-2 sm:-right-5 sm:top-5 text-cyan-ink text-2xl sm:text-4xl font-black">+</span>
                 </div>
 
                 <p class="text-base sm:text-lg font-bold text-navy uppercase tracking-[0.15em] -mt-2">Years of</p>
@@ -298,10 +319,10 @@
 
     {{-- ===== 3. OUR PRINCIPALS — Moving Brand Chain ===== --}}
     @if ($brands->count())
-    <section class="py-12 sm:py-16">
+    <section class="py-10 sm:py-16">
         <div class="w-[98%] mx-auto md:px-5 lg:px-20">
 
-            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-10">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-6 sm:mb-10">
                 <span class="section-badge">
                     Our Principals
                 </span>
@@ -341,7 +362,7 @@
                             @foreach ($half_set as $brand)
                                 <a href="{{ route('brand.show', $brand->slug) }}"
                                     @if ($copy) aria-hidden="true" tabindex="-1" @endif
-                                    class="shrink-0 flex items-center justify-center h-28 w-40 sm:w-48 rounded-xl
+                                    class="shrink-0 flex items-center justify-center h-24 w-36 sm:h-28 sm:w-48 rounded-xl
                                            bg-white border border-gray-100 p-2.5 shadow-sm
                                            hover:-translate-y-2 hover:scale-110 hover:shadow-2xl hover:border-cyan/50 hover:z-20
                                            transition-all duration-300 group relative">
@@ -365,10 +386,10 @@
 
     {{-- ===== 4. EXPLORE OUR SCIENTIFIC VERTICALS ===== --}}
     @if ($verticals->count())
-    <section class="bg-ice py-12 sm:py-14">
+    <section class="bg-ice py-10 sm:py-14">
         <div class="w-[98%] mx-auto md:px-5 lg:px-20">
 
-            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-8">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-5 sm:mb-8">
                 <span class="section-badge">
                     Verticals
                 </span>
@@ -380,16 +401,21 @@
                 </p>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="mb-2 flex justify-end sm:hidden">
+                <a href="{{ route('verticals.index') }}" class="text-xs font-semibold text-link">View all &rarr;</a>
+            </div>
+
+            {{-- phone: one swipe row; from 640px the usual grid --}}
+            <div class="-mx-1 flex snap-x snap-mandatory gap-2.5 overflow-x-auto px-1 py-1 [scrollbar-width:none] sm:mx-0 sm:grid sm:grid-cols-2 sm:gap-4 sm:overflow-visible sm:p-0 lg:grid-cols-4 [&::-webkit-scrollbar]:hidden">
                 @foreach ($verticals->take(8) as $vertical)
                     <a data-reveal href="{{ route('vertical.show', $vertical->slug) }}"
-                        class="group flex flex-col overflow-hidden rounded-xl bg-white
+                        class="group flex w-[9.5rem] shrink-0 snap-start flex-col overflow-hidden rounded-xl bg-white sm:w-auto
                                border border-gray-100 shadow-sm
                                hover:shadow-lg hover:border-cyan/40 hover:-translate-y-1
                                transition-all duration-300">
 
-                        <div class="flex-1 p-4">
-                            <div class="flex items-center gap-3">
+                        <div class="flex-1 p-3 sm:p-4">
+                            <div class="flex flex-col items-start gap-2 sm:flex-row sm:items-center sm:gap-3">
                                 <div class="h-12 w-12 shrink-0 rounded-lg bg-ice border border-gray-100 overflow-hidden
                                             flex items-center justify-center">
                                     @if ($vertical->image)
@@ -401,14 +427,14 @@
                                         </svg>
                                     @endif
                                 </div>
-                                <h3 class="text-sm font-bold text-navy leading-snug line-clamp-2
+                                <h3 class="text-[13px] font-bold text-navy leading-snug line-clamp-3 sm:text-sm sm:line-clamp-2
                                            group-hover:text-link transition-colors duration-200">
                                     {{ $vertical->name }}
                                 </h3>
                             </div>
 
                             @if ($vertical->description)
-                                <p class="mt-3 text-xs text-slate leading-relaxed line-clamp-2">{{ $vertical->description }}</p>
+                                <p class="mt-3 text-xs text-slate leading-relaxed line-clamp-2 max-sm:hidden">{{ $vertical->description }}</p>
                             @endif
                         </div>
 
@@ -444,14 +470,14 @@
 
     {{-- ===== 5. PRECISION PICKS ===== --}}
     @if ($topPicks->count())
-    <section class="py-12 sm:py-14"
+    <section class="py-10 sm:py-14"
         x-data="{
             active: 0,
             go(i) { this.active = i }
         }">
         <div class="w-[98%] mx-auto md:px-5 lg:px-20">
 
-            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-8">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-5 sm:mb-8">
                 <span class="section-badge">
                     Precision Picks
                 </span>
@@ -466,19 +492,20 @@
             <div class="grid grid-cols-1 lg:grid-cols-[260px_1fr_240px] lg:h-[420px] gap-5 items-stretch">
 
                 {{-- Product selector list --}}
-                <div data-reveal="left" class="order-2 lg:order-1 rounded-2xl bg-white border border-gray-100 shadow-sm p-3
-                            flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible lg:overflow-y-auto">
+                <div data-reveal="left" class="order-2 lg:order-1 rounded-2xl bg-white border border-gray-100 shadow-sm p-2.5 sm:p-3
+                            flex lg:flex-col gap-2 overflow-x-auto lg:overflow-x-visible lg:overflow-y-auto [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
                     @foreach ($topPicks as $i => $product)
                         <button type="button"
                             @click="go({{ $i }})"
                             :class="active === {{ $i }}
-                                ? 'bg-cyan/10 border-cyan text-link'
+                                ? 'bg-cyan/10 border-cyan text-link max-sm:!border-navy max-sm:!bg-navy max-sm:!text-white max-sm:shadow-[inset_0_-2px_0_#00B4D8]'
                                 : 'bg-white border-gray-100 text-navy hover:border-cyan/40'"
                             class="shrink-0 lg:shrink w-56 lg:w-full flex items-center gap-3 text-left
-                                   rounded-xl border px-4 py-3 transition-all duration-200">
+                                   rounded-xl border px-4 py-3 transition-all duration-200
+                                   max-sm:w-auto max-sm:max-w-[13rem] max-sm:rounded-full max-sm:px-3.5 max-sm:py-1.5">
                             <span :class="active === {{ $i }} ? 'bg-cyan' : 'bg-gray-300'"
-                                  class="h-2 w-2 rounded-full shrink-0 transition-colors"></span>
-                            <span class="text-sm font-medium leading-snug line-clamp-2">{{ $product->name }}</span>
+                                  class="h-2 w-2 rounded-full shrink-0 transition-colors max-sm:hidden"></span>
+                            <span class="text-sm font-medium leading-snug line-clamp-2 max-sm:line-clamp-1 max-sm:text-xs max-sm:font-semibold">{{ $product->name }}</span>
                         </button>
                     @endforeach
                 </div>
@@ -510,7 +537,7 @@
                 </div>
 
                 {{-- Details + CTA --}}
-                <div data-reveal="right" class="order-3 rounded-2xl bg-white border border-gray-100 shadow-sm p-6 flex flex-col justify-center text-center lg:text-left lg:overflow-y-auto">
+                <div data-reveal="right" class="order-3 rounded-2xl bg-white border border-gray-100 shadow-sm p-5 sm:p-6 flex flex-col justify-center text-left lg:overflow-y-auto">
                     <div class="grid">
                     @foreach ($topPicks as $i => $product)
                         <div :class="active === {{ $i }} ? 'opacity-100' : 'opacity-0 pointer-events-none'"
@@ -620,7 +647,7 @@
 
     {{-- ===== 7. BLOGS ===== --}}
     @if ($blogs->count())
-    <section class="py-12 sm:py-14"
+    <section class="py-10 sm:py-14"
         x-data="{
             active: 0,
             urls: @js($blogs->map(fn ($b) => route('insights.show', $b->slug))->values())
@@ -705,10 +732,10 @@
 
     {{-- ===== 8. NEWS & EVENTS ===== --}}
     @if ($news->count())
-    <section class="bg-ice py-12 sm:py-14">
+    <section class="bg-ice py-10 sm:py-14">
         <div class="w-[98%] mx-auto md:px-5 lg:px-20">
 
-            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-8">
+            <div data-reveal class="text-center flex flex-col items-center gap-3 mb-5 sm:mb-8">
                 <span class="section-badge">
                     News & Events
                 </span>
@@ -717,14 +744,15 @@
                 </h2>
             </div>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 max-w-5xl mx-auto">
+            {{-- phone: one swipe row; from 640px the usual grid --}}
+            <div class="-mx-1 flex snap-x snap-mandatory gap-3 overflow-x-auto px-1 py-1 [scrollbar-width:none] sm:mx-auto sm:grid sm:max-w-5xl sm:grid-cols-2 sm:gap-6 sm:overflow-visible sm:p-0 lg:grid-cols-3 [&::-webkit-scrollbar]:hidden">
                 @foreach ($news as $item)
-                    <div data-reveal class="group flex flex-col overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm
+                    <div data-reveal class="group flex w-[15.5rem] shrink-0 snap-start flex-col overflow-hidden rounded-2xl bg-white border border-gray-100 shadow-sm sm:w-auto
                                 hover:shadow-lg hover:-translate-y-1 transition-all duration-300">
                         <div class="h-1.5 bg-gradient-to-r from-navy via-link to-cyan"></div>
 
                         <a href="{{ route('insights.show', $item->slug) }}" class="block p-4 pb-3">
-                            <div class="aspect-[4/5] w-full rounded-xl overflow-hidden bg-ice border border-gray-100
+                            <div class="aspect-[3/2] w-full sm:aspect-[4/5] rounded-xl overflow-hidden bg-ice border border-gray-100
                                         flex items-center justify-center">
                                 @if ($item->image)
                                     <img src="{{ asset('storage/' . $item->image) }}" alt="{{ $item->title }}"
@@ -739,7 +767,10 @@
                             <h3 class="text-sm font-semibold text-navy leading-snug line-clamp-2 min-h-[2.5rem]">
                                 {{ $item->title }}
                             </h3>
-                            <p class="mt-1 text-xs text-slate">
+                            <p class="mt-1 inline-flex items-center gap-1.5 text-xs text-slate">
+                                <svg class="h-3.5 w-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8" aria-hidden="true">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/>
+                                </svg>
                                 {{ ($item->event_date ?? $item->created_at)->format('F d, Y') }}
                             </p>
                             <a href="{{ route('insights.show', $item->slug) }}"

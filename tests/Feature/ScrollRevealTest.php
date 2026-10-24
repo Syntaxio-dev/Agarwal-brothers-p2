@@ -376,7 +376,7 @@ class ScrollRevealTest extends TestCase
         // Get a Quote goes to the contact form
         $this->assertStringContainsString(route('contact') . '#contact-form', $html);
         // right-aligned stack so the capsules grow to the left
-        $this->assertStringContainsString('fixed bottom-5 right-4 z-40 flex flex-col items-end', $html);
+        $this->assertStringContainsString('fixed bottom-5 right-4 z-40 hidden flex-col items-end gap-3 md:flex', $html);
 
         $css = file_get_contents(resource_path('css/app.css'));
         $this->assertStringContainsString('.fab-pill:hover .fab-label', $css);

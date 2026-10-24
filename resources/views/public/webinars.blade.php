@@ -26,7 +26,7 @@
                 bg-[linear-gradient(to_right,rgba(11,37,69,0.05)_1px,transparent_1px),linear-gradient(to_bottom,rgba(11,37,69,0.05)_1px,transparent_1px)] bg-[size:44px_44px]
                 [mask-image:linear-gradient(to_bottom,black,transparent)]"></div>
 
-    <div class="relative w-[98%] mx-auto px-4 md:px-10 lg:px-20 py-10 sm:py-14">
+    <div class="relative w-[98%] mx-auto px-4 md:px-10 lg:px-20 py-8 sm:py-14">
 
         @include('public.partials.breadcrumb', ['items' => [['Home', '/'], ['Webinars', null]]])
 
@@ -46,10 +46,10 @@
                         @endif
                     </div>
 
-                    <h1 data-reveal class="mt-5 text-3xl sm:text-4xl lg:text-5xl font-bold text-navy leading-tight">{{ $next->title }}</h1>
+                    <h1 data-reveal class="mt-4 text-[1.65rem] sm:mt-5 sm:text-4xl lg:text-5xl font-bold text-navy leading-tight">{{ $next->title }}</h1>
 
                     @if ($next->excerpt)
-                        <p data-reveal class="mt-4 max-w-2xl text-base text-slate leading-relaxed">{{ $next->excerpt }}</p>
+                        <p data-reveal class="mt-3 max-w-2xl text-[15px] text-slate leading-relaxed line-clamp-4 sm:mt-4 sm:line-clamp-none sm:text-base">{{ $next->excerpt }}</p>
                     @endif
 
                     <p data-reveal class="mt-5 inline-flex items-center gap-2 text-sm font-bold text-navy">
@@ -61,20 +61,20 @@
                         &middot; {{ $next->venue ?: 'Online' }}
                     </p>
 
-                    <div data-reveal class="mt-7 flex flex-wrap gap-3">
+                    <div data-reveal class="mt-6 flex flex-wrap gap-2.5 sm:mt-7 sm:gap-3">
                         @php $nextReg = \App\Rules\SafeLink::passes($next->registration_url) ? $next->registration_url : null; @endphp
                         <a href="{{ $nextReg ?: route('insights.show', $next->slug) }}"
                            @if ($nextReg) target="_blank" rel="noopener" @endif
-                           class="btn-primary inline-flex items-center gap-2 rounded-full bg-navy px-7 py-3 text-sm font-semibold text-white hover:bg-link">
+                           class="btn-primary inline-flex w-full items-center justify-center gap-2 rounded-full bg-navy px-7 py-3 text-sm font-semibold text-white hover:bg-link sm:w-auto">
                             {{ $nextReg ? 'Register now' : 'View details' }}
                             <svg class="arrow-nudge h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
                             </svg>
                         </a>
                         @if ($next->registration_url)
-                            <a href="{{ route('insights.show', $next->slug) }}" class="btn-ghost">View details</a>
+                            <a href="{{ route('insights.show', $next->slug) }}" class="btn-ghost max-sm:flex-1 max-sm:justify-center max-sm:whitespace-nowrap max-sm:!px-3">View details</a>
                         @endif
-                        <a href="{{ $calendar }}" target="_blank" rel="noopener" class="btn-ghost">
+                        <a href="{{ $calendar }}" target="_blank" rel="noopener" class="btn-ghost max-sm:flex-1 max-sm:justify-center max-sm:whitespace-nowrap max-sm:!px-3">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M6.75 3v2.25M17.25 3v2.25M3 18.75V7.5a2.25 2.25 0 0 1 2.25-2.25h13.5A2.25 2.25 0 0 1 21 7.5v11.25m-18 0A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75m-18 0v-7.5A2.25 2.25 0 0 1 5.25 9h13.5A2.25 2.25 0 0 1 21 11.25v7.5"/>
                             </svg>
@@ -100,7 +100,7 @@
                         }
                      }"
                      x-init="tick(); setInterval(() => tick(), 1000)">
-                    <div class="rounded-3xl bg-white/90 border border-gray-100 shadow-xl p-6 sm:p-7">
+                    <div class="rounded-3xl bg-white/90 border border-gray-100 shadow-xl p-5 sm:p-7">
                         <div class="flex items-start justify-between gap-4">
                             <div>
                                 <p class="text-[11px] font-bold uppercase tracking-[0.2em] text-link" x-text="over ? 'Happening now' : 'Starts in'"></p>
@@ -141,7 +141,7 @@
                         <div class="pointer-events-none absolute inset-0
                                     bg-[radial-gradient(600px_300px_at_85%_20%,rgba(0,180,216,0.35),transparent_70%),radial-gradient(500px_260px_at_10%_100%,rgba(0,180,216,0.2),transparent_70%)]"></div>
                         <div class="relative px-6 sm:px-12 lg:px-16">
-                            <h1 class="intro-rise text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight">Webinars</h1>
+                            <h1 class="intro-rise text-[1.65rem] sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight">Webinars</h1>
                             <p class="intro-fade mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-lg font-semibold text-white/90">
                                 <span>Learn</span><span class="h-1.5 w-1.5 rounded-full bg-cyan"></span>
                                 <span>Connect</span><span class="h-1.5 w-1.5 rounded-full bg-cyan"></span>
@@ -157,15 +157,15 @@
 
         {{-- ===== Principal filter ===== --}}
         @if ($principals->count())
-            <div data-reveal class="mt-14">
+            <div data-reveal class="mt-9 sm:mt-14">
                 <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate">Filter by principal</p>
-                <div class="mt-3 flex flex-wrap gap-3">
-                    <a href="{{ route('insights.webinars') }}" class="chip {{ $selectedSlug ? '' : 'chip-active' }} !pl-4">
+                <div class="-mx-4 mt-3 flex gap-2.5 overflow-x-auto px-4 pb-1 [scrollbar-width:none] sm:mx-0 sm:flex-wrap sm:gap-3 sm:overflow-visible sm:px-0 sm:pb-0 [&::-webkit-scrollbar]:hidden">
+                    <a href="{{ route('insights.webinars') }}" class="chip shrink-0 {{ $selectedSlug ? '' : 'chip-active' }} !pl-4">
                         All Principals ({{ $totalCount }})
                     </a>
                     @foreach ($principals as $row)
                         <a href="{{ route('insights.webinars', ['principal' => $row['brand']->slug]) }}"
-                           class="chip {{ $selectedSlug === $row['brand']->slug ? 'chip-active' : '' }}">
+                           class="chip shrink-0 {{ $selectedSlug === $row['brand']->slug ? 'chip-active' : '' }}">
                             <span class="flex h-7 w-9 items-center justify-center overflow-hidden rounded-md bg-white p-0.5">
                                 @if ($row['brand']->logo)
                                     <img src="{{ asset('storage/' . $row['brand']->logo) }}" alt="" class="img-load max-h-full max-w-full object-contain" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($row['brand']->logo) !!} onload="this.classList.add('is-loaded')">
@@ -179,13 +179,13 @@
         @endif
 
         {{-- ===== Upcoming ===== --}}
-        <div class="mt-12">
+        <div class="mt-9 sm:mt-12">
             <div data-reveal class="flex items-center gap-4">
                 <h2 class="text-xl sm:text-2xl font-bold text-navy">Upcoming</h2>
                 <div class="h-px flex-1 bg-gradient-to-r from-cyan/40 to-transparent"></div>
             </div>
 
-            <div class="mt-6 flex flex-col gap-4">
+            <div class="mt-5 flex flex-col gap-3 sm:mt-6 sm:gap-4">
                 @forelse ($upcoming as $w)
                     @include('public.partials.webinar-row', ['w' => $w, 'past' => false])
                 @empty
@@ -199,13 +199,13 @@
 
         {{-- ===== Past ===== --}}
         @if ($past->count())
-            <div class="mt-14">
+            <div class="mt-10 sm:mt-14">
                 <div data-reveal class="flex items-center gap-4">
                     <h2 class="text-xl sm:text-2xl font-bold text-navy">Past webinars &amp; recordings</h2>
                     <div class="h-px flex-1 bg-gradient-to-r from-cyan/40 to-transparent"></div>
                 </div>
 
-                <div class="mt-6 flex flex-col gap-4">
+                <div class="mt-5 flex flex-col gap-3 sm:mt-6 sm:gap-4">
                     @foreach ($past as $w)
                         @include('public.partials.webinar-row', ['w' => $w, 'past' => true])
                     @endforeach

@@ -150,7 +150,7 @@
         </div>
 
         <div class="mt-6 flex justify-end">
-            <x-form.submit label="Submit Application" class="px-8" />
+            <x-form.submit label="Submit Application" class="px-8 max-sm:w-full" />
         </div>
     </form>
 </div>

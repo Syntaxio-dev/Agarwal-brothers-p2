@@ -32,7 +32,7 @@
     $months = [1 => 'January', 2 => 'February', 3 => 'March', 4 => 'April', 5 => 'May', 6 => 'June',
                7 => 'July', 8 => 'August', 9 => 'September', 10 => 'October', 11 => 'November', 12 => 'December'];
 
-    $select = 'h-11 min-w-[10rem] rounded-lg border border-gray-200 bg-white px-4 text-sm text-navy outline-none focus:border-cyan focus:ring-2 focus:ring-cyan/20 transition';
+    $select = 'h-11 w-full min-w-0 rounded-lg sm:w-auto sm:min-w-[10rem] border border-gray-200 bg-white px-4 text-sm text-navy outline-none focus:border-cyan focus:ring-2 focus:ring-cyan/20 transition';
 @endphp
 
 <x-layouts.app :title="$title" :description="[
@@ -44,7 +44,7 @@
     <div class="pointer-events-none absolute inset-x-0 top-0 h-[620px]
                 bg-[radial-gradient(900px_420px_at_50%_-8%,rgba(0,180,216,0.18),transparent_70%),radial-gradient(700px_380px_at_8%_14%,rgba(0,119,182,0.09),transparent_70%),radial-gradient(700px_380px_at_95%_20%,rgba(0,180,216,0.11),transparent_70%),linear-gradient(to_bottom,rgba(244,249,251,1),rgba(255,255,255,0))]"></div>
 
-    <div class="relative w-[98%] mx-auto px-4 md:px-10 lg:px-20 py-10 sm:py-14">
+    <div class="relative w-[98%] mx-auto px-4 md:px-10 lg:px-20 py-8 sm:py-14">
 
         {{-- Breadcrumb --}}
         @include('public.partials.breadcrumb', ['items' => [['Home', '/'], [$title, null]]])
@@ -59,7 +59,7 @@
                         </svg>
                         Agarwal Brothers Events
                     </span>
-                    <h1 data-reveal class="mt-5 text-3xl sm:text-4xl lg:text-5xl font-bold text-navy leading-tight">
+                    <h1 data-reveal class="mt-4 text-[1.65rem] sm:mt-5 sm:text-4xl lg:text-5xl font-bold text-navy leading-tight">
                         Events, Exhibitions &amp; <span class="text-cyan-ink">Scientific Updates</span>
                     </h1>
                     <div data-reveal class="mt-5 flex flex-wrap gap-2">
@@ -67,13 +67,13 @@
                         <span class="rounded-full bg-white border border-gray-200 px-4 py-1.5 text-xs font-medium text-navy">Latest updates</span>
                         <span class="rounded-full bg-white border border-gray-200 px-4 py-1.5 text-xs font-medium text-navy">Across India</span>
                     </div>
-                    <p data-reveal class="mt-5 max-w-xl text-base text-slate leading-relaxed">
+                    <p data-reveal class="mt-4 max-w-xl text-[15px] text-slate leading-relaxed sm:mt-5 sm:text-base">
                         Meet our specialists, explore application-led product demonstrations, and follow
                         Agarwal Brothers' presence across India's leading scientific exhibitions.
                     </p>
                 </div>
 
-                <div data-reveal="right" class="rounded-2xl bg-white border border-gray-100 shadow-lg p-6">
+                <div data-reveal="right" class="rounded-2xl bg-white border border-gray-100 shadow-lg p-5 sm:p-6">
                     <div class="flex items-start justify-between gap-4">
                         <div>
                             <p class="text-xs font-bold uppercase tracking-widest text-cyan-ink">Discover</p>
@@ -101,7 +101,7 @@
                         <div class="pointer-events-none absolute right-24 top-6 h-24 w-24 rounded-full border-[10px] border-cyan/20"></div>
 
                         <div class="relative px-6 sm:px-12 lg:px-16">
-                            <h2 class="intro-rise text-3xl sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight">{{ $meta['banner_title'] }}</h2>
+                            <h2 class="intro-rise text-[1.65rem] sm:text-5xl lg:text-6xl font-extrabold text-white leading-tight">{{ $meta['banner_title'] }}</h2>
                             <p class="intro-fade mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs sm:text-lg font-semibold text-white/90">
                                 @foreach ($meta['banner_tags'] as $tag)
                                     <span>{{ $tag }}</span>
@@ -116,8 +116,8 @@
 
         {{-- ===== Filters ===== --}}
         <form data-reveal method="GET" action="{{ url()->current() }}"
-              class="mt-12 flex flex-wrap items-center gap-x-12 gap-y-5 rounded-2xl bg-white border border-gray-100 shadow-sm px-6 py-6 sm:px-10 sm:py-8">
-            <label class="flex items-center gap-4 text-sm font-semibold text-navy">
+              class="mt-8 grid grid-cols-2 items-end gap-x-3 gap-y-4 rounded-2xl bg-white border border-gray-100 shadow-sm p-4 sm:mt-12 sm:flex sm:flex-wrap sm:items-center sm:gap-x-12 sm:gap-y-5 sm:px-10 sm:py-8">
+            <label class="flex flex-col items-start gap-1.5 text-xs font-semibold text-navy sm:flex-row sm:items-center sm:gap-4 sm:text-sm">
                 Month
                 <select name="month" onchange="this.form.submit()" class="{{ $select }}">
                     <option value="">All Months</option>
@@ -127,7 +127,7 @@
                 </select>
             </label>
 
-            <label class="flex items-center gap-4 text-sm font-semibold text-navy">
+            <label class="flex flex-col items-start gap-1.5 text-xs font-semibold text-navy sm:flex-row sm:items-center sm:gap-4 sm:text-sm">
                 Year
                 <select name="year" onchange="this.form.submit()" class="{{ $select }}">
                     <option value="">All Years</option>
@@ -138,7 +138,7 @@
             </label>
 
             @if ($type !== 'blog')
-                <label class="flex items-center gap-3 text-sm font-semibold text-navy cursor-pointer">
+                <label class="col-span-2 flex items-center gap-3 text-sm font-semibold text-navy cursor-pointer sm:col-span-1">
                     <input type="checkbox" name="upcoming" value="1" @checked($filters['upcoming']) onchange="this.form.submit()"
                            class="h-4 w-4 rounded border-gray-300 text-cyan focus:ring-cyan">
                     Upcoming Only
@@ -147,38 +147,40 @@
 
             @if ($hasFilters)
                 <a href="{{ url()->current() }}"
-                   class="ml-auto rounded-lg bg-navy px-6 py-2.5 text-sm font-semibold text-white hover:bg-link transition-colors">
+                   class="col-span-2 rounded-lg bg-navy px-6 py-2.5 text-center text-sm font-semibold text-white hover:bg-link transition-colors sm:col-span-1 sm:ml-auto">
                     Reset Filters
                 </a>
             @endif
         </form>
 
         {{-- ===== Heading ===== --}}
-        <div data-reveal class="mt-14 mb-8">
+        <div data-reveal class="mt-9 mb-5 sm:mt-14 sm:mb-8">
             <{{ ($type === 'news' && ! $hero) ? 'h2' : 'h1' }} class="text-2xl sm:text-3xl font-bold text-navy leading-tight">
                 {{ $meta['heading'] }} <span class="text-cyan-ink">{{ $meta['accent'] }}</span>
             </{{ ($type === 'news' && ! $hero) ? 'h2' : 'h1' }}>
             <div class="bar-grow mt-3 h-1 w-16 rounded-full bg-cyan"></div>
+            <p class="mt-3 font-mono text-[11px] uppercase tracking-widest text-slate sm:hidden">{{ $insights->count() }} {{ \Illuminate\Support\Str::plural('item', $insights->count()) }}{{ $hasFilters ? ' found' : '' }}</p>
         </div>
 
         {{-- ===== Cards ===== --}}
         @if ($insights->count())
-            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
                 @foreach ($insights as $insight)
+                    @php $phoneRow = ! ($type === 'blog' && $loop->first); @endphp
                     <a data-reveal href="{{ route('insights.show', $insight->slug) }}"
-                        class="edge-top group relative flex flex-col overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm
+                        class="edge-top group relative flex flex-col overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm {{ $phoneRow ? 'max-sm:flex-row' : '' }}
                                hover:shadow-xl hover:border-cyan/50 hover:-translate-y-1 transition-all duration-300">
 
-                        <div class="relative {{ $meta['ratio'] }} w-full overflow-hidden bg-gradient-to-br from-ice to-cyan/10 flex items-center justify-center">
+                        <div class="relative {{ $meta['ratio'] }} w-full overflow-hidden bg-gradient-to-br from-ice to-cyan/10 flex items-center justify-center {{ $phoneRow ? 'max-sm:aspect-auto max-sm:w-[7.5rem] max-sm:shrink-0' : '' }}">
                             @if ($insight->image)
                                 <img src="{{ asset('storage/' . $insight->image) }}" alt="{{ $insight->title }}"
                                     class="img-load h-full w-full {{ $meta['fit'] }} transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($insight->image) !!} onload="this.classList.add('is-loaded')">
                             @else
-                                <span class="px-6 text-center text-base font-bold text-navy/50 line-clamp-3">{{ $insight->title }}</span>
+                                <span class="px-6 text-center text-base font-bold text-navy/50 line-clamp-3 max-sm:px-2 max-sm:text-xs">{{ $insight->title }}</span>
                             @endif
 
                             @if ($insight->pdf)
-                                <span class="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold uppercase text-link shadow">
+                                <span class="absolute right-3 top-3 inline-flex items-center gap-1 rounded-full bg-white/95 px-2.5 py-1 text-[10px] font-bold uppercase text-link shadow max-sm:right-1.5 max-sm:top-1.5 max-sm:px-1.5 max-sm:py-0.5">
                                     <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M19.5 14.25v-2.625a3.375 3.375 0 0 0-3.375-3.375h-1.5A1.125 1.125 0 0 1 13.5 7.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H8.25m2.25 0H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 0 0-9-9Z"/>
                                     </svg>
@@ -187,20 +189,20 @@
                             @endif
                         </div>
 
-                        <div class="flex flex-1 flex-col p-5">
+                        <div class="flex flex-1 flex-col p-5 {{ $phoneRow ? 'max-sm:min-w-0 max-sm:p-3.5' : '' }}">
                             <p class="text-xs font-semibold text-link">
                                 {{ ($insight->event_date ?? $insight->created_at)->format('d M Y') }}
                             </p>
-                            <h3 class="mt-2 text-base font-bold text-navy leading-snug line-clamp-2 min-h-[2.75rem]
+                            <h3 class="mt-2 text-base font-bold text-navy leading-snug line-clamp-2 min-h-[2.75rem] max-sm:mt-1 max-sm:min-h-0 max-sm:text-[15px] {{ $phoneRow ? 'max-sm:line-clamp-3' : '' }}
                                        group-hover:text-link transition-colors">
                                 {{ $insight->title }}
                             </h3>
                             @if ($insight->excerpt)
-                                <p class="mt-2 text-sm text-slate line-clamp-2 leading-relaxed">{{ $insight->excerpt }}</p>
+                                <p class="mt-2 text-sm text-slate line-clamp-2 leading-relaxed {{ $phoneRow ? 'max-sm:hidden' : '' }}">{{ $insight->excerpt }}</p>
                             @endif
 
-                            <span class="mt-auto pt-4">
-                                <span class="inline-flex items-center gap-1.5 rounded-full bg-navy px-5 py-2 text-xs font-semibold text-white group-hover:bg-link transition-colors btn-primary">
+                            <span class="mt-auto pt-4 max-sm:pt-2.5">
+                                <span class="inline-flex items-center gap-1.5 rounded-full bg-navy px-5 py-2 text-xs font-semibold text-white group-hover:bg-link transition-colors btn-primary max-sm:px-3.5 max-sm:py-1.5 max-sm:text-[11px]">
                                     {{ $insight->pdf ? 'View Details' : 'Read More' }}
                                     <svg class="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>

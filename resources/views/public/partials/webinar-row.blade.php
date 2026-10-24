@@ -21,14 +21,14 @@
     }
 @endphp
 
-<div data-reveal class="edge-left group relative overflow-hidden flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 rounded-2xl bg-white border border-gray-200 shadow-sm px-5 py-5
+<div data-reveal class="edge-left group relative overflow-hidden flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6 rounded-2xl bg-white border border-gray-200 shadow-sm px-5 py-5 max-sm:grid max-sm:grid-cols-[4rem_1fr] max-sm:items-center max-sm:gap-x-3.5 max-sm:gap-y-3 max-sm:p-4
             hover:shadow-lg hover:border-cyan/50 transition-all duration-300">
 
-    <div class="h-20 w-full sm:w-32 shrink-0 rounded-xl bg-white border border-gray-100 flex items-center justify-center p-3">
+    <div class="h-20 w-full sm:w-32 shrink-0 rounded-xl bg-white border border-gray-100 flex items-center justify-center p-3 max-sm:h-16 max-sm:w-16 max-sm:p-2">
         @if ($w->brand?->logo)
             <img src="{{ asset('storage/' . $w->brand->logo) }}" alt="{{ $w->brand->name }}" class="img-load max-h-full max-w-full object-contain" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($w->brand->logo) !!} onload="this.classList.add('is-loaded')">
         @elseif ($w->brand)
-            <span class="text-sm font-bold text-navy text-center">{{ $w->brand->name }}</span>
+            <span class="text-sm font-bold text-navy text-center max-sm:text-[10px] max-sm:leading-tight">{{ $w->brand->name }}</span>
         @else
             <svg class="h-8 w-8 text-link/50" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                 <path stroke-linecap="round" stroke-linejoin="round" d="m15.75 10.5 4.72-4.72a.75.75 0 0 1 1.28.53v11.38a.75.75 0 0 1-1.28.53l-4.72-4.72M4.5 18.75h9a2.25 2.25 0 0 0 2.25-2.25v-9a2.25 2.25 0 0 0-2.25-2.25h-9A2.25 2.25 0 0 0 2.25 7.5v9a2.25 2.25 0 0 0 2.25 2.25Z"/>
@@ -46,7 +46,7 @@
         @endif
     </div>
 
-    <div class="flex-1 min-w-0">
+    <div class="flex-1 min-w-0 max-sm:col-span-2">
         <a href="{{ $detail }}" class="text-base font-bold text-navy leading-snug hover:text-link group-hover:text-link transition-colors line-clamp-2">{{ $w->title }}</a>
         @if ($w->excerpt)
             <p class="mt-1 text-sm text-slate leading-relaxed line-clamp-2">{{ $w->excerpt }}</p>
@@ -54,7 +54,7 @@
     </div>
 
     <a href="{{ $href }}" @if ($external) target="_blank" rel="noopener" @endif
-       class="btn-primary shrink-0 inline-flex items-center justify-center gap-2 rounded-full bg-navy px-5 py-2.5 text-sm font-semibold text-white hover:bg-link group-hover:bg-link">
+       class="btn-primary shrink-0 inline-flex items-center justify-center gap-2 rounded-full bg-navy px-5 py-2.5 text-sm font-semibold text-white hover:bg-link group-hover:bg-link max-sm:col-span-2 max-sm:w-full">
         {{ $cta }}
         <svg class="arrow-nudge h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>

@@ -5,7 +5,7 @@
      x-cloak x-show="show && p && $store.recent.dismissed !== p.slug"
      x-transition:enter="transition duration-500 ease-out" x-transition:enter-start="translate-y-6 opacity-0" x-transition:enter-end="translate-y-0 opacity-100"
      x-transition:leave="transition duration-200 ease-in" x-transition:leave-start="opacity-100" x-transition:leave-end="opacity-0"
-     class="fixed bottom-6 left-4 z-30 w-[min(20rem,calc(100vw-6.5rem))] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_24px_48px_-20px_rgba(11,37,69,0.35)]"
+     class="fixed bottom-6 left-4 z-30 w-[min(20rem,calc(100vw-6.5rem))] max-md:bottom-[5.25rem] max-md:w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-[0_24px_48px_-20px_rgba(11,37,69,0.35)]"
      role="complementary" aria-label="Recently viewed product">
 
     <div class="flex items-center justify-between border-b border-gray-100 px-4 py-2.5">

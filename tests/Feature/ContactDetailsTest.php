@@ -96,7 +96,7 @@ class ContactDetailsTest extends TestCase
         $html = $this->get('/contact-us')->assertOk()->getContent();
 
         // two people cards (the head office and the timings now sit beside the map)
-        preg_match_all('/<h3 class="mt-4 text-base font-bold text-navy">([^<]+)<\/h3>/', $html, $m);
+        preg_match_all('/<h3 class="mt-4 text-base font-bold text-navy max-sm:mt-0">([^<]+)<\/h3>/', $html, $m);
         $this->assertSame(['Founder', 'Enquiries & Sales'], array_map('html_entity_decode', $m[1]));
 
         // Jodhpur is only a pin on the map (no branch card, no address, no 'Branch Office' label)
