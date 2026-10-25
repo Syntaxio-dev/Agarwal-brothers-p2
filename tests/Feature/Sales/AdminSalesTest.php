@@ -70,7 +70,8 @@ class AdminSalesTest extends SalesTestCase
         Livewire::test(SalesManagement::class)
             ->assertSee('₹1,234')
             ->assertSee('Ravi Sharma')
-            ->assertSee('Acme Labs')
+            ->assertDontSee('Acme Labs')   // a follow-up shows on its own tab
+            ->call('setTab', 'followups')->assertSee('Acme Labs')
             ->assertSee('Fuel')
             ->assertSee('Waiting for approval')
             ->call('setRange', 7)->assertSet('range', 7)->assertSee('Last 7 days')

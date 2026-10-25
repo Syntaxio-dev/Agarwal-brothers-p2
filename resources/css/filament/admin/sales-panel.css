@@ -1,0 +1,196 @@
+/* ===================================================================================================================
+   Sales module (manager pages): one look for the "Sales management" page and every Sales screen (reps, expenses, meetings,
+   clients, enquiries, reports, calls, positions). Light = ice page, white cards; dark = black page, near-black cards.
+   Palette only: navy #0B2545, link #0077B6, cyan #00B4D8, slate, ice, success #2A9D8F, alert #E76F51. The "-ink" colours are the
+   darker (or, in dark mode, lighter) versions used for TEXT so it keeps 4.5:1 contrast on its tint.
+   Imported by theme.css.
+   =================================================================================================================== */
+:root {
+    --sx-bg: #F4F9FB;
+    --sx-card: #ffffff;
+    --sx-line: #E3ECF1;
+    --sx-ink: #0B2545;
+    --sx-mute: #5F6870;            /* slate, darkened a little so small text passes 4.5:1 on the ice page too */
+    --sx-link: #0077B6;
+    --sx-eyebrow: #007C98;
+    --sx-cyan: #00B4D8;
+    --sx-alert-ink: #B8472B;
+    --sx-ok-ink: #1E7A6E;
+    --sx-tint: #EAF4F8;
+    --sx-hero: #0B2545;
+}
+html.dark {
+    --sx-bg: #000000;
+    --sx-card: #0B0F13;
+    --sx-line: #17202A;
+    --sx-ink: #EDF5F9;
+    --sx-mute: #8794A0;
+    --sx-link: #3FD8F7;
+    --sx-eyebrow: #22D3F5;
+    --sx-cyan: #22D3F5;
+    --sx-alert-ink: #FF9C80;
+    --sx-ok-ink: #4FE0CC;
+    --sx-tint: #10181F;
+    --sx-hero: #070C10;
+}
+
+/* every Sales screen: the page colour, flat cards with a hairline, a small "SALES TEAM" eyebrow above the heading */
+html.dark body:has(:is([class*='fi-resource-sales-'], .sx-page)),
+html.dark body:has(:is([class*='fi-resource-sales-'], .sx-page)) .fi-layout {
+    background-color: var(--sx-bg);
+}
+:is([class*='fi-resource-sales-']) .fi-header-heading::before {
+    content: 'SALES TEAM';
+    display: block;
+    margin-bottom: 0.375rem;
+    font: 400 0.6875rem/1 var(--font-mono);
+    letter-spacing: 0.1em;
+    color: var(--sx-eyebrow);
+}
+html.dark :is([class*='fi-resource-sales-']) .fi-header-heading {
+    color: var(--sx-ink);
+}
+:is([class*='fi-resource-sales-']) :is(.fi-ta-ctn, .fi-section) {
+    border: 1px solid var(--sx-line);
+    border-radius: 0.75rem;
+    box-shadow: none;
+    --tw-ring-shadow: 0 0 #0000;
+}
+html.dark :is([class*='fi-resource-sales-']) :is(.fi-ta-ctn, .fi-section) {
+    background-color: var(--sx-card);
+}
+:is([class*='fi-resource-sales-']) .fi-ta-row:hover {
+    background-color: var(--sx-tint);
+}
+:is([class*='fi-resource-sales-']) .fi-ta-header-cell-label {
+    color: var(--sx-mute);
+}
+:is([class*='fi-resource-sales-']) .fi-ta-text-item-label {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ---- the "Sales management" page ---- */
+.sx-page { display: grid; gap: 1.25rem; color: var(--sx-ink); font-variant-numeric: tabular-nums; }
+.sx-eyebrow { font: 400 0.6875rem/1.2 var(--font-mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--sx-eyebrow); }
+.sx-mute { color: var(--sx-mute); }
+.sx-late { color: var(--sx-alert-ink); }
+.sx-ok { color: var(--sx-ok-ink); }
+.sx-trunc { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+.sx-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 1rem; }
+.sx-h1 { margin-top: 0.375rem; font-size: 1.75rem; line-height: 1.15; font-weight: 600; letter-spacing: -0.021em; }
+.sx-sub { margin-top: 0.375rem; font-size: 0.875rem; color: var(--sx-mute); }
+.sx-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; }
+
+.sx-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem; min-height: 2.25rem; padding: 0 0.9rem;
+    border: 1px solid var(--sx-line); border-radius: 0.5rem; background: var(--sx-card); color: var(--sx-ink);
+    font-size: 0.875rem; font-weight: 500; line-height: 1; text-decoration: none; cursor: pointer;
+}
+.sx-btn:hover { border-color: var(--sx-link); }
+.sx-btn[aria-pressed='true'], .sx-btn-primary {
+    background: #0B2545; border-color: #0B2545; color: #ffffff; box-shadow: inset 0 -2px 0 rgb(0 180 216 / 0.85);
+}
+.sx-btn[aria-pressed='true']:hover, .sx-btn-primary:hover { background: #0077B6; border-color: #0077B6; }
+
+.sx-card { background: var(--sx-card); border: 1px solid var(--sx-line); border-radius: 0.75rem; padding: 1.125rem; min-width: 0; }
+a.sx-card { display: block; color: inherit; text-decoration: none; }
+a.sx-card:hover { border-color: var(--sx-link); }
+.sx-card-head { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.75rem; }
+.sx-link { font-size: 0.8125rem; font-weight: 600; color: var(--sx-link); text-decoration: none; }
+
+.sx-kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; }
+.sx-hero {
+    grid-column: span 2; grid-row: span 2; position: relative; display: flex; flex-direction: column; overflow: hidden;
+    padding: 1.5rem; border-radius: 1rem; background: var(--sx-hero); color: #ffffff; border: 1px solid transparent;
+}
+html.dark .sx-hero { border-color: rgb(34 211 245 / 0.18); box-shadow: 0 0 60px rgb(34 211 245 / 0.07); }
+.sx-hero .sx-eyebrow { color: #7fdcf0; }
+.sx-hero-amount { margin-top: 0.75rem; font-size: 2.75rem; line-height: 1; font-weight: 600; letter-spacing: -0.03em; }
+.sx-hero-sub { margin-top: 0.5rem; font-size: 0.875rem; color: rgb(255 255 255 / 0.78); }
+.sx-orbit { position: absolute; top: 1rem; right: 1rem; width: 5.5rem; height: 5.5rem; color: #00B4D8; opacity: 0.5; pointer-events: none; }
+.sx-bars { display: flex; align-items: flex-end; gap: 3px; height: 8.75rem; margin-top: auto; padding-top: 1.25rem; }
+.sx-bars.dense { gap: 1px; }
+.sx-bar { flex: 1; min-width: 0; border-radius: 3px; background: rgb(255 255 255 / 0.28); }
+.sx-bar.today { background: #00B4D8; }
+.sx-bar.empty { opacity: 0.35; }
+.sx-axis { display: flex; justify-content: space-between; margin-top: 0.5rem; font-size: 0.75rem; color: rgb(255 255 255 / 0.65); }
+
+.sx-stat { position: relative; display: block; padding-right: 3.25rem; }
+.sx-stat-value { margin-top: 0.5rem; font-size: 1.75rem; line-height: 1.1; font-weight: 600; letter-spacing: -0.02em; }
+.sx-stat-sub { margin-top: 0.375rem; font-size: 0.8125rem; color: var(--sx-mute); }
+.sx-icon {
+    position: absolute; top: 1rem; right: 1rem; display: grid; place-items: center; width: 2rem; height: 2rem;
+    border-radius: 0.5rem; background: var(--sx-tint); color: var(--sx-link);
+}
+
+.sx-split { display: grid; grid-template-columns: minmax(0, 1fr) 340px; gap: 1rem; align-items: start; }
+.sx-scroll { overflow-x: auto; }
+.sx-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+.sx-table th { padding: 0 0.75rem 0.625rem; text-align: right; font: 400 0.6875rem/1 var(--font-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--sx-mute); white-space: nowrap; }
+.sx-table th:first-child, .sx-table td:first-child { text-align: left; }
+.sx-table td { padding: 0.75rem; text-align: right; border-top: 1px solid var(--sx-line); vertical-align: middle; }
+.sx-rep-cell { width: 250px; min-width: 250px; max-width: 250px; }
+.sx-row { cursor: pointer; }
+.sx-row:hover { background: var(--sx-tint); }
+.sx-row[aria-selected='true'] { background: var(--sx-tint); }
+.sx-row[aria-selected='true'] td:first-child { box-shadow: inset 3px 0 0 var(--sx-cyan); }
+.sx-rep { display: flex; align-items: center; gap: 0.625rem; }
+.sx-rep-text { min-width: 0; }
+.sx-name { font-weight: 600; }
+.sx-code { margin-left: 0.375rem; font: 400 0.6875rem/1 var(--font-mono); color: var(--sx-mute); }
+.sx-small { font-size: 0.75rem; color: var(--sx-mute); }
+.sx-avatar { flex: none; display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: 9999px; background: var(--sx-tint); color: var(--sx-ink); font-size: 0.8125rem; font-weight: 600; }
+.sx-dot { display: inline-block; width: 0.5rem; height: 0.5rem; margin-right: 0.375rem; border-radius: 9999px; background: #2A9D8F; }
+.sx-dot.late { background: #E76F51; }
+
+.sx-chip { display: inline-flex; align-items: center; gap: 0.25rem; padding: 0.2rem 0.6rem; border-radius: 9999px; font-size: 0.75rem; font-weight: 600; line-height: 1.2; white-space: nowrap; background: rgb(108 117 125 / 0.14); color: var(--sx-mute); }
+.sx-chip.ok { background: rgb(42 157 143 / 0.14); color: var(--sx-ok-ink); }
+.sx-chip.late { background: rgb(231 111 81 / 0.14); color: var(--sx-alert-ink); }
+
+.sx-figures { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.5rem; margin: 1rem 0; }
+.sx-figure { padding: 0.625rem; border-radius: 0.5rem; background: var(--sx-tint); }
+.sx-figure b { display: block; margin-top: 0.25rem; font-size: 1.125rem; font-weight: 600; }
+.sx-block { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--sx-line); }
+.sx-buttons { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 1.25rem; }
+
+.sx-bottom { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1rem; align-items: start; }
+.sx-bottom > .wide { grid-column: span 2; }
+.sx-tabs { display: flex; flex-wrap: wrap; gap: 0.375rem; margin-bottom: 0.5rem; }
+.sx-tab-count { display: inline-grid; place-items: center; min-width: 1.25rem; height: 1.25rem; padding: 0 0.3rem; border-radius: 9999px; background: rgb(108 117 125 / 0.2); font-size: 0.6875rem; }
+.sx-btn[aria-pressed='true'] .sx-tab-count { background: rgb(255 255 255 / 0.2); }
+.sx-tab-count.late { background: rgb(231 111 81 / 0.2); color: var(--sx-alert-ink); }
+.sx-btn[aria-pressed='true'] .sx-tab-count.late { color: #ffffff; }
+.sx-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.75rem 0.5rem; border-top: 1px solid var(--sx-line); color: inherit; text-decoration: none; }
+.sx-item.first { border-top: 0; }
+a.sx-item:hover { background: var(--sx-tint); }
+.sx-item-text { flex: 1; min-width: 0; }
+.sx-chev { flex: none; width: 1rem; height: 1rem; color: var(--sx-mute); }
+.sx-track { height: 0.5rem; margin-top: 0.25rem; border-radius: 9999px; background: var(--sx-line); overflow: hidden; }
+.sx-fill { height: 100%; border-radius: 9999px; background: #0077B6; }
+html.dark .sx-fill { background: #22D3F5; }
+.sx-line { display: flex; justify-content: space-between; gap: 0.75rem; margin-top: 0.875rem; font-size: 0.875rem; }
+.sx-empty { padding: 1rem 0.25rem; font-size: 0.875rem; color: var(--sx-mute); }
+
+@media (max-width: 1023px) {
+    .sx-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .sx-hero { grid-row: span 1; }
+    .sx-split, .sx-bottom { grid-template-columns: minmax(0, 1fr); }
+    .sx-bottom > .wide { grid-column: auto; }
+}
+@media (max-width: 639px) {
+    .sx-kpis { grid-template-columns: minmax(0, 1fr); }
+    .sx-hero { grid-column: auto; padding: 1.125rem; }
+    .sx-hero-amount { font-size: 2.25rem; }
+    .sx-h1 { font-size: 1.5rem; }
+}
+@media (prefers-reduced-motion: no-preference) {
+    .sx-btn, .sx-card, .sx-row { transition: background-color 0.15s ease, border-color 0.15s ease; }
+}
+
+/* the Sales management page draws its own header (eyebrow, title, range, export): Filament's plain one would repeat the title */
+.fi-page:has(.sx-page) .fi-header { display: none; }
+
+/* the dark top bar: the website logo is navy, so on black it is shown in white */
+html.dark .fi-topbar .fi-logo,
+html.dark .fi-topbar img.fi-logo { filter: brightness(0) invert(1); }

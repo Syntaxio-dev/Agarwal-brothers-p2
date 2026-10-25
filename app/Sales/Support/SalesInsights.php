@@ -178,14 +178,32 @@ class SalesInsights
     {
         $since = static::today()->subDays($days)->utc();
 
-        return SalesClient::query()
+        return static::neglectedQuery($since)
             ->with('assignee')
-            ->whereDoesntHave('calls', fn ($q) => $q->where('started_at', '>=', $since))
-            ->whereDoesntHave('meetings', fn ($q) => $q->where('meeting_at', '>=', $since))
-            ->where('created_at', '<', $since)   // a client added this week is not "neglected" yet
+            ->withMax('calls', 'started_at')
+            ->withMax('meetings', 'meeting_at')
             ->orderBy('name')
             ->limit($limit)
-            ->get();
+            ->get()
+            ->each(function (SalesClient $c) {
+                // days since the last call or meeting (null = never reached at all)
+                $last = collect([$c->calls_max_started_at, $c->meetings_max_meeting_at])->filter()->map(fn ($t) => CarbonImmutable::parse($t, 'UTC'))->max();
+                $c->setAttribute('days_since_contact', $last ? (int) $last->diffInDays(now(), true) : null);
+            });
+    }
+
+    /** How many clients nobody called or met in the last `$days` days (the whole number, not just the page shown). */
+    public static function neglectedTotal(int $days = 30): int
+    {
+        return (int) static::neglectedQuery(static::today()->subDays($days)->utc())->count();
+    }
+
+    private static function neglectedQuery(CarbonImmutable $since)
+    {
+        return SalesClient::query()
+            ->whereDoesntHave('calls', fn ($q) => $q->where('started_at', '>=', $since))
+            ->whereDoesntHave('meetings', fn ($q) => $q->where('meeting_at', '>=', $since))
+            ->where('created_at', '<', $since);   // a client added this week is not "neglected" yet
     }
 
     /** Talk time as "1h 05m" / "7m". */
@@ -229,9 +247,14 @@ class SalesInsights
         $meetings = SalesMeeting::selectRaw('user_id, COUNT(*) as n')->where('meeting_at', '>=', static::fromUtc($days))->groupBy('user_id')->pluck('n', 'user_id');
         $enquiries = SalesEnquiry::selectRaw('user_id, COUNT(*) as n, SUM(CASE WHEN next_followup_at < ? THEN 1 ELSE 0 END) as late', [now()])->whereIn('status', SalesEnquiry::OPEN)->groupBy('user_id')->get()->keyBy('user_id');
         $calls = SalesCall::selectRaw('user_id, COUNT(*) as n, SUM(duration_seconds) as secs')->where('started_at', '>=', static::fromUtc($days))->groupBy('user_id')->get()->keyBy('user_id');
+        $won = SalesEnquiry::selectRaw('user_id, COUNT(*) as n')->where('status', 'won')->where('closed_at', '>=', static::fromUtc($days))->groupBy('user_id')->pluck('n', 'user_id');
+        $reported = SalesDailyReport::whereDate('report_date', static::today()->toDateString())->whereNotNull('submitted_at')->pluck('user_id')->flip();
 
         return SalesProfile::active()->with('user')->get()->map(fn (SalesProfile $p) => [
             'id' => $p->id,
+            'user_id' => $p->user_id,
+            'won' => (int) ($won[$p->user_id] ?? 0),
+            'report_today' => $reported->has($p->user_id),
             'name' => $p->user->name,
             'code' => $p->employee_code,
             'spend_paise' => (int) ($spend[$p->user_id]->total ?? 0),
@@ -245,6 +268,45 @@ class SalesInsights
             'last_sync_at' => $p->last_sync_at,
             'stale' => static::isStale($p),
         ])->sortByDesc('spend_paise')->values();
+    }
+
+    /**
+     * Everything the "selected rep" card shows: the rep's own row of figures, the phone, today's report and the three open enquiries
+     * that need the most attention (overdue first). Null when the profile is not an active rep.
+     *
+     * @return ?array{rep: array, phone: ?string, app_version: ?string, device_model: ?string, last_sync_at: mixed, stale: bool, report: array{submitted: bool, notes: ?string}, enquiries: Collection<int, SalesEnquiry>}
+     */
+    public static function repDetail(int $profileId, int $days): ?array
+    {
+        $row = static::reps($days)->firstWhere('id', $profileId);
+        $profile = SalesProfile::active()->find($profileId);
+
+        if (! $row || ! $profile) {
+            return null;
+        }
+
+        $report = SalesDailyReport::where('user_id', $profile->user_id)->whereDate('report_date', static::today()->toDateString())->first();
+
+        return [
+            'rep' => $row,
+            'phone' => $profile->phone,
+            'app_version' => $profile->app_version,
+            'device_model' => $profile->device_model,
+            'last_sync_at' => $profile->last_sync_at,
+            'stale' => static::isStale($profile),
+            'report' => ['submitted' => (bool) $report?->submitted_at, 'notes' => $report?->submitted_at ? $report->notes : null],
+            // overdue first (the oldest follow-up), then the ones with a date, then those without
+            'enquiries' => SalesEnquiry::where('user_id', $profile->user_id)->whereIn('status', SalesEnquiry::OPEN)
+                ->orderByRaw('next_followup_at IS NULL')->orderBy('next_followup_at')->orderByDesc('opened_at')->limit(3)->get(),
+        ];
+    }
+
+    /** The most recent time any active rep's phone synced (null when none ever did). */
+    public static function latestSync(): ?CarbonImmutable
+    {
+        $latest = SalesProfile::active()->max('last_sync_at');
+
+        return $latest ? CarbonImmutable::parse($latest, 'UTC') : null;
     }
 
     /** Active reps whose phone has not synced since midnight today (India time). */
