@@ -26,7 +26,7 @@ class EnquiryReportTest extends SalesTestCase
                 ['product' => 'Muffle Furnace', 'brands' => 'Labtech, Remi', 'quantity' => 1, 'budget_paise' => 15000000],
                 ['product' => 'Hot Air Oven', 'brands' => '', 'quantity' => 2, 'budget_paise' => null],
             ],
-            'opened_at' => $this->moment('-2 hours'),
+            'opened_at' => $this->moment('-2 minutes'),
             'next_followup_at' => $this->moment('+1 day'),
             'closed_at' => null,
             'timeline' => [['at' => $this->moment('-2 hours'), 'text' => 'Asked for the price of an oven and a furnace', 'status' => 'new']],

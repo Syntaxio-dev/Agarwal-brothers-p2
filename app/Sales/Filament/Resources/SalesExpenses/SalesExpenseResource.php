@@ -88,11 +88,17 @@ class SalesExpenseResource extends Resource
             ->columns([
                 TextColumn::make('expense_date')->label('Date')->date('d M Y')->sortable(),
                 TextColumn::make('user.name')->label('Rep')->searchable()->weight('medium'),
-                TextColumn::make('category')->badge()->color('info')->formatStateUsing(fn (string $state) => ucfirst($state)),
+                TextColumn::make('category')->badge()->color('info')->formatStateUsing(fn (string $state) => SalesExpense::categoryLabel($state)),
+                TextColumn::make('work_area')->label('Work area')->badge()
+                    ->formatStateUsing(fn (?string $state) => $state ? ['local' => 'Local', 'outstation' => 'Outstation'][$state] ?? $state : '—')
+                    ->color(fn (?string $state) => $state === 'outstation' ? 'warning' : 'gray'),
+                TextColumn::make('bill_type')->label('Bill')->badge()
+                    ->formatStateUsing(fn (?string $state) => $state ? SalesExpense::BILL_TYPES[$state] ?? $state : '—')
+                    ->color(fn (?string $state) => match ($state) { 'with_bill' => 'success', 'without_bill' => 'danger', default => 'gray' }),
                 TextColumn::make('amount_paise')->label('Amount')->formatStateUsing(fn ($state) => Money::rupees((int) $state))->alignEnd()->sortable(),
                 TextColumn::make('note')->limit(40)->tooltip(fn (SalesExpense $r) => $r->note)->placeholder('—'),
                 TextColumn::make('bill_path')
-                    ->label('Bill')
+                    ->label('Bill photo')
                     ->formatStateUsing(fn ($state) => $state ? 'View photo' : '—')
                     ->color('primary')
                     ->url(fn (SalesExpense $r) => $r->bill_path ? route('sales.bill', $r->uuid) : null)
@@ -113,7 +119,9 @@ class SalesExpenseResource extends Resource
             ->defaultSort('expense_date', 'desc')
             ->filters([
                 SelectFilter::make('status')->options(['pending' => 'Waiting', 'approved' => 'Approved', 'rejected' => 'Rejected']),
-                SelectFilter::make('category')->options(collect(config('sales.expense_categories'))->mapWithKeys(fn ($c) => [$c => ucfirst($c)])->all()),
+                SelectFilter::make('category')->options(collect(config('sales.expense_categories'))->mapWithKeys(fn ($c) => [$c => SalesExpense::categoryLabel($c)])->all()),
+                SelectFilter::make('work_area')->label('Work area')->options(SalesExpense::WORK_AREAS),
+                SelectFilter::make('bill_type')->label('Bill')->options(SalesExpense::BILL_TYPES),
                 SelectFilter::make('user_id')->label('Rep')
                     ->options(fn () => SalesProfile::with('user')->get()->pluck('user.name', 'user_id')->sort()->all()),
                 Filter::make('date')

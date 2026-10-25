@@ -11,7 +11,7 @@
 
     $tz = config('sales.timezone');
     $statusNames = SalesEnquiry::STATUSES;
-    $categoryNames = ['travel' => 'Travel', 'food' => 'Food', 'lodging' => 'Lodging', 'fuel' => 'Fuel', 'other' => 'Other'];
+    $categoryNames = \App\Sales\Models\SalesExpense::CATEGORY_LABELS;
 
     // The view only formats: every figure comes from SalesInsights. A link exists only when the manager may open that screen.
     $to = fn (string $area, string $resource, array $params = [], string $page = 'index') => $can($area) ? $resource::getUrl($page, $params) : null;
@@ -29,8 +29,8 @@
         ['Open enquiries', $s['enquiries_open'], false, [[$s['enquiries_overdue'] . ' overdue', $s['enquiries_overdue'] > 0], [$s['enquiries_due_today'] . ' due today', false]], 'heroicon-o-clipboard-document-list', $to('sales-enquiries', SalesEnquiryResource::class)],
         ["Today's reports", $s['reports_today'] . ' of ' . $s['reps_active'], false, [[$reportsMissing->isNotEmpty() ? 'Waiting: ' . $reportsMissing->take(3)->implode(', ') . ($reportsMissing->count() > 3 ? ' +' . ($reportsMissing->count() - 3) : '') : 'Everybody has reported', $reportsMissing->isNotEmpty()]], 'heroicon-o-document-text', $to('sales-reports', SalesReportResource::class)],
         ['Client calls', $s['calls'], false, [[$s['calls_out'] . ' out', false], [$s['calls_in'] . ' in', false], [$s['calls_missed'] . ' missed', $s['calls_missed'] > 0], [$talk($s['talk_seconds']) . ' talk', false]], 'heroicon-o-phone', $to('sales-calls', SalesCallResource::class)],
-        ['Client pool', $s['clients'], false, [[$people($s['people']), false], [$s['clients_called'] . ' called', false]], 'heroicon-o-building-office', $to('sales-clients', SalesClientResource::class)],
-        ['Field reps', $s['reps_active'], false, [[$s['reps_not_synced_today'] . ' not synced today', $s['reps_not_synced_today'] > 0]], 'heroicon-o-user-group', $to('sales-reps', SalesRepResource::class)],
+        ['Client pool', $s['clients'], false, [[$people($s['people']), false], [$s['people_alone'] . ' without a company', false], [$s['clients_called'] . ' called', false]], 'heroicon-o-building-office', $to('sales-clients', SalesClientResource::class)],
+        ['Field reps', $s['reps_active'], false, [[$s['reps_not_synced_today'] . ' not synced today', $s['reps_not_synced_today'] > 0], [$s['scripts'] . ' own scripts from ' . $s['scripts_reps'] . ' reps', false]], 'heroicon-o-user-group', $to('sales-reps', SalesRepResource::class)],
         ['Orders won', $s['enquiries_won'], false, [[$s['enquiries_lost'] . ' lost', false], ['last ' . $days . ' days', false]], 'heroicon-o-trophy', $to('sales-enquiries', SalesEnquiryResource::class, ['tableFilters' => ['status' => ['values' => ['won']]]])],
     ];
 
@@ -317,6 +317,26 @@
                 @empty
                     <p class="sx-empty">Nothing to show yet.</p>
                 @endforelse
+            </div>
+
+            @php
+                $splits = [
+                    'Local or outstation' => [$expenseSplit['work_area'], ['local' => 'Local (in Jaipur)', 'outstation' => 'Outstation', 'unknown' => 'Not told (older app)']],
+                    'With or without bill' => [$expenseSplit['bill'], ['with_bill' => 'With bill', 'without_bill' => 'Without bill', 'unknown' => 'Not told (older app)']],
+                ];
+            @endphp
+            <div class="sx-card">
+                @foreach ($splits as $title => [$figures, $names])
+                    @php($splitTotal = max(1, array_sum($figures)))
+                    <p class="sx-eyebrow" style="margin-bottom:.25rem;{{ $loop->first ? '' : 'margin-top:1.25rem' }}">{{ $title }}</p>
+                    @foreach ($figures as $key => $paise)
+                        @continue($key === 'unknown' && $paise === 0)
+                        <div style="margin-top:.75rem">
+                            <div class="sx-line" style="margin-top:0"><span style="font-weight:500">{{ $names[$key] }}</span><span class="sx-mute">{{ $money($paise) }} &middot; {{ round(100 * $paise / $splitTotal) }}%</span></div>
+                            <div class="sx-track"><div class="sx-fill" style="width: {{ round(100 * $paise / $splitTotal) }}%"></div></div>
+                        </div>
+                    @endforeach
+                @endforeach
             </div>
         </section>
     </div>

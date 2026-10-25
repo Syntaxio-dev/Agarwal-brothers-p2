@@ -39,6 +39,14 @@ class ProductController extends Controller
                 'short_term_problems' => $p->short_term_problems ?? [],
                 'long_term_problems' => $p->long_term_problems ?? [],
                 'top_brands' => $p->top_brands ?? [],
+                // "before the meeting": all empty until the manager writes them
+                'client_types' => array_values(array_intersect(array_keys(SalesProduct::CLIENT_TYPES), $p->client_types ?? [])),
+                'pitch' => $p->pitch ?? '',
+                'key_notes' => $p->key_notes ?? [],
+                'formula' => $p->formula ?? '',
+                'do' => $p->do_list ?? [],
+                'avoid' => $p->avoid_list ?? [],
+                'match_rules' => $p->match_rules ?? [],
             ])
             ->values()
             ->all();

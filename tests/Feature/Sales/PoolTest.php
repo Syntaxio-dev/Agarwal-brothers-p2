@@ -50,7 +50,7 @@ class PoolTest extends SalesTestCase
 
     // ---- the shared pool -------------------------------------------------------------
 
-    public function test_a_client_one_rep_adds_reaches_the_other_rep_and_either_can_improve_it(): void
+    public function test_a_client_one_rep_adds_reaches_the_other_rep_but_only_the_one_who_added_it_can_change_it(): void
     {
         $a = $this->headers($this->rep('REP001', '9000000001'));
         $b = $this->headers($this->rep('REP002', '9000000002'));
@@ -63,14 +63,25 @@ class PoolTest extends SalesTestCase
         $this->assertSame('JK Cement', $seen->json('clients.0.name'));
         $this->assertSame($person['uuid'], $seen->json('contacts.0.uuid'));
         $this->assertSame('Purchase Manager', $seen->json('contacts.0.position'));
-        $this->assertSame('REP001', $seen->json('contacts.0.created_by_code'), 'the phone needs this to know who may delete the person');
+        $this->assertSame('REP001', $seen->json('contacts.0.created_by_code'), 'the phone needs this to know who may change or delete the person');
+        $this->assertNotEmpty($seen->json('contacts.0.created_by_name'), 'the other reps see who added the person');
 
-        // B improves A's client: a newer version wins, an older one is only a duplicate
+        // B cannot change A's client or person, even with a newer time
         $this->travel(2)->seconds();
+        $hack = $client + [];
+        $hack['notes'] = 'Ask for Rohit after 11 am';
+        $hack['updated_at'] = $this->moment();
+        $refused = $this->push($b, ['clients' => [$hack], 'contacts' => [$this->contact($client['uuid'], ['uuid' => $person['uuid'], 'name' => 'Somebody Else', 'updated_at' => $this->moment()])]])->assertOk();
+        $this->assertSame('NOT_ALLOWED', $this->answer($refused, 'clients', $client['uuid'])['code']);
+        $this->assertSame('NOT_ALLOWED', $this->answer($refused, 'contacts', $person['uuid'])['code']);
+        $this->assertNotSame('Ask for Rohit after 11 am', SalesClient::first()->notes);
+        $this->assertSame('Rohit Sharma', SalesContact::first()->name);
+
+        // A can: a newer version wins, an older one is only a duplicate
         $better = $client + [];
         $better['notes'] = 'Ask for Rohit after 11 am';
         $better['updated_at'] = $this->moment();
-        $answer = $this->push($b, ['clients' => [$better]])->assertOk();
+        $answer = $this->push($a, ['clients' => [$better]])->assertOk();
         $this->assertSame('accepted', $this->answer($answer, 'clients', $client['uuid'])['status']);
         $this->assertSame('Ask for Rohit after 11 am', SalesClient::first()->notes);
 
@@ -80,11 +91,38 @@ class PoolTest extends SalesTestCase
         $this->assertSame('duplicate', $this->answer($this->push($a, ['clients' => [$old]])->assertOk(), 'clients', $client['uuid'])['status']);
         $this->assertSame('Ask for Rohit after 11 am', SalesClient::first()->notes);
 
-        // the one who added it stays "added by" and "works with" does not move because B edited
+        // the one who added it stays "added by" and "works with" does not move
         $row = SalesClient::first();
         $this->assertSame('REP001', $row->owner->salesProfile->employee_code);
         $this->assertSame($row->user_id, $row->assigned_to);
-        $this->assertSame('REP002', $row->editor->salesProfile->employee_code, 'the last change is credited to the rep who made it');
+        $this->assertSame('REP001', $row->editor->salesProfile->employee_code);
+    }
+
+    public function test_a_person_without_a_company_is_stored_shown_to_the_team_and_belongs_to_the_one_who_added_them(): void
+    {
+        $a = $this->headers($this->rep('REP001', '9000000001'));
+        $b = $this->headers($this->rep('REP002', '9000000002'));
+        $alone = $this->contact('', ['client_uuid' => null, 'name' => 'Meena Joshi', 'position' => '', 'phone' => '98290 11223']);
+
+        $this->assertSame('accepted', $this->answer($this->push($a, ['contacts' => [$alone]])->assertOk(), 'contacts', $alone['uuid'])['status']);
+        $this->assertNull(SalesContact::first()->client_uuid);
+
+        $seen = $this->pull($b)->assertOk();
+        $this->assertNull($seen->json('contacts.0.client_uuid'));
+        $this->assertSame('Meena Joshi', $seen->json('contacts.0.name'));
+        $this->assertSame('REP001', $seen->json('contacts.0.created_by_code'));
+
+        // another rep cannot change her, and her number is taken in the whole pool
+        $this->travel(2)->seconds();
+        $other = $this->contact('', ['uuid' => $alone['uuid'], 'client_uuid' => null, 'name' => 'Changed Name', 'updated_at' => $this->moment()]);
+        $this->assertSame('NOT_ALLOWED', $this->answer($this->push($b, ['contacts' => [$other]])->assertOk(), 'contacts', $alone['uuid'])['code']);
+
+        $dup = $this->contact('', ['client_uuid' => null, 'name' => 'Second Meena', 'phone' => '+91 98290 11223']);
+        $this->assertSame('INVALID', $this->answer($this->push($b, ['contacts' => [$dup]])->assertOk(), 'contacts', $dup['uuid'])['code']);
+
+        // a call with her number is a pool call even though there is no company
+        $call = $this->callRow(['number' => '+919829011223', 'client_name' => '', 'contact_uuid' => $alone['uuid'], 'contact_name' => 'Meena Joshi']);
+        $this->assertSame('accepted', $this->answer($this->push($b, ['calls' => [$call]])->assertOk(), 'calls', $call['uuid'])['status']);
     }
 
     public function test_the_phone_can_never_choose_who_a_client_is_assigned_to(): void

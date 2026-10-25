@@ -15,6 +15,7 @@ use App\Sales\Models\SalesPosition;
 use App\Sales\Models\SalesProduct;
 use App\Sales\Models\SalesProductRequest;
 use App\Sales\Models\SalesProfile;
+use App\Sales\Models\SalesScript;
 use App\Sales\Policies\CallPolicy;
 use App\Sales\Policies\ClientPolicy;
 use App\Sales\Policies\ContactPolicy;
@@ -26,6 +27,7 @@ use App\Sales\Policies\ProductPolicy;
 use App\Sales\Policies\ProductRequestPolicy;
 use App\Sales\Policies\ProfilePolicy;
 use App\Sales\Policies\ReportPolicy;
+use App\Sales\Policies\ScriptPolicy;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -57,6 +59,7 @@ class SalesServiceProvider extends ServiceProvider
         Gate::policy(SalesDailyReport::class, ReportPolicy::class);
         Gate::policy(SalesProduct::class, ProductPolicy::class);
         Gate::policy(SalesProductRequest::class, ProductRequestPolicy::class);
+        Gate::policy(SalesScript::class, ScriptPolicy::class);
 
         if ($this->app->runningInConsole()) {
             $this->commands([\App\Sales\Console\ImportProducts::class]);

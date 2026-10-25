@@ -35,7 +35,7 @@ return [
     // One pull returns at most this many records of each kind (the app asks again while "has_more" is true).
     'max_pull_records' => 1000,
 
-    'expense_categories' => ['travel', 'food', 'lodging', 'fuel', 'other'],
+    'expense_categories' => ['travel', 'food', 'fuel', 'parking', 'gifting', 'lodging', 'other'],
 
     // Field reps never get a real mailbox: users.email must be unique, so a placeholder is made from the employee code.
     'rep_email_domain' => 'reps.invalid',

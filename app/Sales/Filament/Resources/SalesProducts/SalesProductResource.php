@@ -11,12 +11,14 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
@@ -64,6 +66,15 @@ class SalesProductResource extends Resource
             ->collapsible()
             ->columnSpanFull();
 
+        $short = fn (string $name, string $label, string $help, int $max, int $length) => Repeater::make($name)
+            ->label($label)
+            ->helperText($help)
+            ->simple(TextInput::make('item')->required()->maxLength($length))
+            ->addActionLabel('Add a line')
+            ->defaultItems(0)
+            ->maxItems($max)
+            ->reorderable();
+
         return $schema->components([
             Section::make('Product')->columns(2)->schema([
                 TextInput::make('name')->required()->minLength(2)->maxLength(200)->columnSpanFull(),
@@ -98,6 +109,32 @@ class SalesProductResource extends Resource
                     ->itemLabel(fn (array $state): ?string => $state['name'] ?? null),
                 Textarea::make('industries')->label('Industries')->rows(2)->maxLength(2000),
             ]),
+
+            Section::make('Before the meeting')
+                ->description('What the rep sees first on the phone. Put **two stars** around the words that should be highlighted, for example "spins a sample fast so the **heavy parts settle**". Everything here is optional.')
+                ->schema([
+                    CheckboxList::make('client_types')->label('Usually bought by')->options(SalesProduct::CLIENT_TYPES)->columns(3)
+                        ->helperText('The product is suggested when the rep says they are meeting this kind of client.'),
+                    Textarea::make('pitch')->label('The 20-second pitch')->rows(3)->maxLength(400)->helperText('At most two sentences.'),
+                    $short('key_notes', 'Key notes for the cheat sheet', 'Three to five short lines a rep can memorise.', 5, 160),
+                    TextInput::make('formula')->label('A formula (optional)')->maxLength(300),
+                    Grid::make(2)->schema([
+                        $short('do_list', 'Do', 'Up to three short lines.', 3, 140),
+                        $short('avoid_list', 'Avoid', 'Up to three short lines.', 3, 140),
+                    ])->columnSpanFull(),
+                    Repeater::make('match_rules')
+                        ->label('If the client says ... offer ...')
+                        ->schema([
+                            TextInput::make('if')->label('The client says')->required()->maxLength(160),
+                            TextInput::make('then')->label('Offer')->required()->maxLength(80),
+                        ])
+                        ->addActionLabel('Add an answer')
+                        ->defaultItems(0)
+                        ->maxItems(4)
+                        ->reorderable()
+                        ->collapsible()
+                        ->itemLabel(fn (array $state): ?string => $state['if'] ?? null),
+                ]),
 
             Section::make('Talking to the client')->schema([
                 $lines('key_parameters', 'Questions to ask the client', 'What the rep should find out before quoting.'),

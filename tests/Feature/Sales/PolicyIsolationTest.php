@@ -38,12 +38,14 @@ class PolicyIsolationTest extends SalesTestCase
         $this->assertFalse($a->can('delete', $meeting));
         $this->assertTrue($b->can('view', $meeting));
 
-        // the pool: everybody reads and improves, only the one who added it (or a manager) deletes
+        // the pool: everybody reads, only the one who added it (or a manager) changes or deletes
         $client = SalesClient::create(['uuid' => (string) Str::uuid(), 'user_id' => $b->id, 'name' => 'Lab Co', 'client_updated_at' => now()]);
         $this->assertTrue($a->can('view', $client));
-        $this->assertTrue($a->can('update', $client));
+        $this->assertFalse($a->can('update', $client));
         $this->assertFalse($a->can('delete', $client));
+        $this->assertTrue($b->can('update', $client));
         $this->assertTrue($b->can('delete', $client));
+        $this->assertTrue($this->manager()->can('update', $client));
         $this->assertTrue($this->manager()->can('delete', $client));
     }
 

@@ -9,7 +9,9 @@ use App\Sales\Models\SalesDailyReport;
 use App\Sales\Models\SalesEnquiry;
 use App\Sales\Models\SalesExpense;
 use App\Sales\Models\SalesMeeting;
+use App\Sales\Models\SalesProduct;
 use App\Sales\Models\SalesProfile;
+use App\Sales\Models\SalesScript;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
 
@@ -164,8 +166,12 @@ class SalesInsights
         return [
             'clients' => SalesClient::count(),
             'people' => SalesContact::count(),
+            'people_alone' => SalesContact::whereNull('client_uuid')->count(), // customers who buy on their own, with no company
             'clients_without_people' => SalesClient::whereDoesntHave('contacts')->count(),
             'clients_unassigned' => SalesClient::whereNull('assigned_to')->count(),
+            'scripts' => SalesScript::count(), // the reps' own pitches for a product
+            'scripts_reps' => (int) SalesScript::query()->distinct()->count('user_id'),
+            'products_briefed' => SalesProduct::query()->where('is_active', true)->whereNotNull('pitch')->where('pitch', '!=', '')->count(),
         ];
     }
 
@@ -236,6 +242,28 @@ class SalesInsights
             ->whereBetween('expense_date', [static::from($days)->toDateString(), static::today()->toDateString()])
             ->groupBy('category')->orderByDesc('total')->get()
             ->map(fn ($row) => ['category' => $row->category, 'paise' => (int) $row->total, 'count' => (int) $row->n])->all();
+    }
+
+    /**
+     * Where the money went (local work or outstation) and whether there was a bill: whole paise for each answer. An expense from an older
+     * phone, which did not ask, is counted under "unknown".
+     *
+     * @return array{work_area: array<string, int>, bill: array<string, int>}
+     */
+    public static function expenseSplit(int $days): array
+    {
+        $out = ['work_area' => ['local' => 0, 'outstation' => 0, 'unknown' => 0], 'bill' => ['with_bill' => 0, 'without_bill' => 0, 'unknown' => 0]];
+
+        $rows = SalesExpense::selectRaw('work_area, bill_type, SUM(amount_paise) as total')
+            ->whereBetween('expense_date', [static::from($days)->toDateString(), static::today()->toDateString()])
+            ->groupBy('work_area', 'bill_type')->get();
+
+        foreach ($rows as $row) {
+            $out['work_area'][$row->work_area ?? 'unknown'] += (int) $row->total;
+            $out['bill'][$row->bill_type ?? 'unknown'] += (int) $row->total;
+        }
+
+        return $out;
     }
 
     /** @return Collection<int, array> every active rep with this window's figures, biggest spender first */

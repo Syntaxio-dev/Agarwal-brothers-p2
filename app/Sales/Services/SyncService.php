@@ -12,6 +12,7 @@ use App\Sales\Models\SalesExpense;
 use App\Sales\Models\SalesMeeting;
 use App\Sales\Models\SalesPosition;
 use App\Sales\Models\SalesProductRequest;
+use App\Sales\Models\SalesScript;
 use App\Sales\Support\PhoneNumber;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Log;
@@ -34,10 +35,10 @@ use Illuminate\Validation\Rule;
 class SyncService
 {
     /** Kinds that carry records, in the order they are pushed (a client before the people at it). */
-    public const KINDS = ['expenses', 'clients', 'contacts', 'meetings', 'enquiries', 'calls', 'reports', 'product_requests'];
+    public const KINDS = ['expenses', 'clients', 'contacts', 'meetings', 'enquiries', 'calls', 'reports', 'product_requests', 'scripts'];
 
     /** Kinds the phone may delete (a call is a log, a report is a record: never). */
-    public const DELETABLE = ['expenses', 'clients', 'contacts', 'meetings', 'enquiries'];
+    public const DELETABLE = ['expenses', 'clients', 'contacts', 'meetings', 'enquiries', 'scripts'];
 
     private const MAX_POSITIONS = 300;
 
@@ -49,6 +50,7 @@ class SyncService
         $methods = [
             'expenses' => 'upsertExpense', 'clients' => 'upsertClient', 'contacts' => 'upsertContact', 'meetings' => 'upsertMeeting',
             'enquiries' => 'upsertEnquiry', 'calls' => 'upsertCall', 'reports' => 'upsertReport', 'product_requests' => 'upsertProductRequest',
+            'scripts' => 'upsertScript',
         ];
 
         foreach ($methods as $kind => $method) {
@@ -122,6 +124,8 @@ class SyncService
             'amount_paise' => ['required', 'integer', 'min:1', 'max:' . (int) config('sales.max_expense_rupees') * 100],
             'expense_date' => ['required', 'date_format:Y-m-d', 'after_or_equal:2020-01-01', 'before_or_equal:' . $this->latestDay()],
             'note' => ['nullable', 'string', 'max:1000'],
+            'work_area' => ['sometimes', 'nullable', Rule::in(array_keys(SalesExpense::WORK_AREAS))],
+            'bill_type' => ['sometimes', 'nullable', Rule::in(array_keys(SalesExpense::BILL_TYPES))],
             'has_bill' => ['sometimes', 'boolean'],
             'updated_at' => ['required', 'date', $this->clockRule()],
         ]);
@@ -146,6 +150,13 @@ class SyncService
             'note' => filled($r['note'] ?? null) ? trim($r['note']) : null,
             'client_updated_at' => $this->time($r['updated_at']),
         ]);
+
+        // Phones of an older version do not send these two: what is already stored is kept then.
+        foreach (['work_area', 'bill_type'] as $answer) {
+            if (array_key_exists($answer, $r)) {
+                $model->{$answer} = $r[$answer];
+            }
+        }
 
         // The phone says it has no bill photo (any more): drop the stored one.
         if (! filter_var($r['has_bill'] ?? false, FILTER_VALIDATE_BOOLEAN) && $model->bill_path) {
@@ -178,6 +189,9 @@ class SyncService
 
         $model = SalesClient::withTrashed()->where('uuid', $r['uuid'])->first();
 
+        if ($refused = $this->notYours($model, $user)) {
+            return $refused;
+        }
         if ($early = $this->earlyAnswer($model, $user, $r['updated_at'], shared: true)) {
             return $early;
         }
@@ -206,7 +220,7 @@ class SyncService
     {
         $invalid = $this->check($r, [
             'uuid' => ['required', 'uuid'],
-            'client_uuid' => ['required', 'uuid'],
+            'client_uuid' => ['nullable', 'uuid'], // null = a person without a company
             'name' => ['required', 'string', 'min:2', 'max:150'],
             'position' => ['nullable', 'string', 'max:100'],
             'phone' => ['nullable', 'string', 'max:30', $this->phoneRule()],
@@ -220,6 +234,9 @@ class SyncService
 
         $model = SalesContact::withTrashed()->where('uuid', $r['uuid'])->first();
 
+        if ($refused = $this->notYours($model, $user)) {
+            return $refused;
+        }
         if ($early = $this->earlyAnswer($model, $user, $r['updated_at'], shared: true)) {
             return $early;
         }
@@ -229,7 +246,7 @@ class SyncService
 
         $model ??= new SalesContact(['uuid' => $r['uuid'], 'user_id' => $user->id]);
         $model->fill([
-            'client_uuid' => $r['client_uuid'],
+            'client_uuid' => $r['client_uuid'] ?? null,
             'name' => trim($r['name']),
             'position' => $this->text($r['position'] ?? null),
             'phone' => $this->text($r['phone'] ?? null),
@@ -407,6 +424,40 @@ class SyncService
         return ['status' => 'accepted'];
     }
 
+    // ---- scripts (private: the rep's own pitch for a product) --------------------------------
+
+    private function upsertScript(User $user, array $r): array
+    {
+        $invalid = $this->check($r, [
+            'uuid' => ['required', 'uuid'],
+            'product_uuid' => ['nullable', 'uuid'],
+            'product_name' => ['required', 'string', 'min:2', 'max:200'],
+            'title' => ['nullable', 'string', 'max:120'],
+            'body' => ['required', 'string', 'min:3', 'max:3000'],
+            'updated_at' => ['required', 'date', $this->clockRule()],
+        ]);
+        if ($invalid) {
+            return $invalid;
+        }
+
+        $model = SalesScript::withTrashed()->where('uuid', $r['uuid'])->first();
+
+        if ($early = $this->earlyAnswer($model, $user, $r['updated_at'])) {
+            return $early;
+        }
+
+        $model ??= new SalesScript(['uuid' => $r['uuid'], 'user_id' => $user->id]);
+        $model->fill([
+            'product_uuid' => $r['product_uuid'] ?? null,
+            'product_name' => trim($r['product_name']),
+            'title' => $this->text($r['title'] ?? null),
+            'body' => trim($r['body']),
+            'client_updated_at' => $this->time($r['updated_at']),
+        ])->save();
+
+        return ['status' => 'accepted'];
+    }
+
     // ---- enquiries (private) -----------------------------------------------------------
 
     private function upsertEnquiry(User $user, array $r): array
@@ -544,7 +595,7 @@ class SyncService
             return $this->rejected('INVALID', 'Not a valid id.');
         }
 
-        $class = ['expenses' => SalesExpense::class, 'clients' => SalesClient::class, 'contacts' => SalesContact::class, 'meetings' => SalesMeeting::class, 'enquiries' => SalesEnquiry::class][$kind];
+        $class = ['expenses' => SalesExpense::class, 'clients' => SalesClient::class, 'contacts' => SalesContact::class, 'meetings' => SalesMeeting::class, 'enquiries' => SalesEnquiry::class, 'scripts' => SalesScript::class][$kind];
         $model = $class::withTrashed()->where('uuid', $uuid)->first();
 
         // Unknown here (never reached the server) or already deleted: the wish is already true.
@@ -592,6 +643,7 @@ class SyncService
             'enquiries' => [SalesEnquiry::class, fn (SalesEnquiry $e) => $this->enquiryPayload($e), false],
             'calls' => [SalesCall::class, fn (SalesCall $c) => $this->callPayload($c), false],
             'reports' => [SalesDailyReport::class, fn (SalesDailyReport $d) => $this->reportPayload($d), false],
+            'scripts' => [SalesScript::class, fn (SalesScript $s) => $this->scriptPayload($s), false],
         ];
 
         foreach ($kinds as $kind => [$class, $shape, $shared]) {
@@ -645,6 +697,8 @@ class SyncService
             'amount_paise' => $e->amount_paise,
             'expense_date' => $e->expense_date->toDateString(),
             'note' => $e->note ?? '',
+            'work_area' => $e->work_area,
+            'bill_type' => $e->bill_type,
             'has_bill' => $e->hasBill(),
             'status' => $e->status,
             'reviewed_at' => $e->reviewed_at?->utc()->format('Y-m-d\TH:i:s\Z'),
@@ -673,6 +727,19 @@ class SyncService
         ];
     }
 
+    private function scriptPayload(SalesScript $s): array
+    {
+        return [
+            'uuid' => $s->uuid,
+            'product_uuid' => $s->product_uuid,
+            'product_name' => $s->product_name,
+            'title' => $s->title ?? '',
+            'body' => $s->body,
+            'updated_at' => $this->iso($s->client_updated_at),
+            'deleted' => $s->trashed(),
+        ];
+    }
+
     private function contactPayload(SalesContact $c): array
     {
         return [
@@ -684,6 +751,7 @@ class SyncService
             'email' => $c->email ?? '',
             'notes' => $c->notes ?? '',
             'created_by_code' => $c->addedBy?->salesProfile?->employee_code,
+            'created_by_name' => $c->addedBy?->name,
             'updated_at' => $this->iso($c->client_updated_at),
             'deleted' => $c->trashed(),
         ];
@@ -760,8 +828,21 @@ class SyncService
     // ---- small helpers ----------------------------------------------------------
 
     /**
+     * The pool is shared to READ, but only the rep who added a client or a person may change it (a manager does that in the admin).
+     * A record that is already deleted needs no answer here: earlyAnswer() calls it a duplicate.
+     */
+    private function notYours(mixed $model, User $user): ?array
+    {
+        if ($model && ! $model->trashed() && (int) $model->user_id !== (int) $user->id) {
+            return $this->rejected('NOT_ALLOWED', 'Only the person who added it, or a manager, can change this.');
+        }
+
+        return null;
+    }
+
+    /**
      * Answers that need no write: somebody else's private id, a deleted record, or nothing newer than what is stored.
-     * A shared record may be changed by any rep, so it is never "taken".
+     * A shared record is never "taken" (the rule about who may change it is notYours()).
      */
     private function earlyAnswer(mixed $model, User $user, string $updatedAt, bool $shared = false): ?array
     {

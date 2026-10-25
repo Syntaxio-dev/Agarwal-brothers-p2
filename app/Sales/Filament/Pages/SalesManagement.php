@@ -92,6 +92,7 @@ class SalesManagement extends Page
             'dailyMax' => max(1, ...array_column($daily, 'paise')),
             'categories' => $categories,
             'categoryTotal' => max(1, array_sum(array_column($categories, 'paise'))),
+            'expenseSplit' => SalesInsights::expenseSplit($days),
             'reps' => $reps,
             'selectedId' => $detail['rep']['id'] ?? null,
             'detail' => $detail,

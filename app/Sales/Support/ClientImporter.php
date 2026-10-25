@@ -184,7 +184,7 @@ class ClientImporter
             ->first();
 
         if ($contact) {
-            return $contact->name . ' (' . ($contact->client?->name ?? 'a client') . ')';
+            return $contact->client?->name ? $contact->name . ' (' . $contact->client->name . ')' : $contact->name;
         }
 
         $client = SalesClient::query()->where('phone_normalized', $normalized)

@@ -31,6 +31,8 @@ class SyncController extends Controller
             'calls' => ['sometimes', 'array', "max:$max"],
             'enquiries' => ['sometimes', 'array', "max:$max"],
             'reports' => ['sometimes', 'array', 'max:40'],
+            'scripts' => ['sometimes', 'array', 'max:100'],
+            'deleted.scripts' => ['sometimes', 'array', 'max:100'],
             'product_requests' => ['sometimes', 'array', 'max:40'],
             'positions' => ['sometimes', 'array', 'max:50'],
             'deleted' => ['sometimes', 'array'],

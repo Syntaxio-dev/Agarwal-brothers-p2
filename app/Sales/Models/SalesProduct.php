@@ -11,16 +11,32 @@ use Illuminate\Support\Str;
  */
 class SalesProduct extends Model
 {
+    /** Who the rep may be meeting (the "Who are you meeting today?" tiles on the phone). id => label. */
+    public const CLIENT_TYPES = [
+        'pharma_qc' => 'Pharma QC',
+        'hospital' => 'Hospital & pathology',
+        'university' => 'University & research',
+        'food_dairy' => 'Food & dairy',
+        'industrial_qc' => 'Industrial QC',
+        'water_environment' => 'Water & environment',
+    ];
+
     protected $table = 'sales_products';
 
     protected $fillable = [
         'name', 'group', 'sort', 'premium_brands', 'economy_brands', 'lite_brands', 'summary', 'variants', 'industries',
         'key_parameters', 'short_term_problems', 'long_term_problems', 'top_brands', 'is_active', 'updated_by',
+        'client_types', 'pitch', 'key_notes', 'formula', 'do_list', 'avoid_list', 'match_rules',
     ];
 
     protected function casts(): array
     {
         return [
+            'client_types' => 'array',
+            'key_notes' => 'array',
+            'do_list' => 'array',
+            'avoid_list' => 'array',
+            'match_rules' => 'array',
             'premium_brands' => 'array',
             'economy_brands' => 'array',
             'lite_brands' => 'array',
@@ -75,6 +91,7 @@ class SalesProduct extends Model
             ->map(fn (self $p) => $p->id . ':' . $p->updated_at?->getTimestamp())
             ->implode(',');
 
-        return substr(sha1($rows), 0, 16);
+        // "v2": the answer got the "before the meeting" fields, so every phone must fetch the list once more
+        return substr(sha1('v2|' . $rows), 0, 16);
     }
 }

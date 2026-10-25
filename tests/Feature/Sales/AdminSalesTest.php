@@ -26,7 +26,7 @@ use Livewire\Livewire;
 
 class AdminSalesTest extends SalesTestCase
 {
-    private const PAGES = ['/admin/sales-management', '/admin/sales-expenses', '/admin/sales-reps', '/admin/sales-meetings', '/admin/sales-clients', '/admin/sales-calls', '/admin/sales-positions', '/admin/sales-clients/create', '/admin/sales-reps/create', '/admin/sales-products', '/admin/sales-products/create', '/admin/sales-product-requests'];
+    private const PAGES = ['/admin/sales-management', '/admin/sales-expenses', '/admin/sales-reps', '/admin/sales-meetings', '/admin/sales-clients', '/admin/sales-contacts', '/admin/sales-calls', '/admin/sales-positions', '/admin/sales-clients/create', '/admin/sales-reps/create', '/admin/sales-products', '/admin/sales-products/create', '/admin/sales-product-requests'];
 
     public function test_managers_and_admins_open_every_sales_screen(): void
     {
@@ -72,7 +72,7 @@ class AdminSalesTest extends SalesTestCase
             ->assertSee('Ravi Sharma')
             ->assertDontSee('Acme Labs')   // a follow-up shows on its own tab
             ->call('setTab', 'followups')->assertSee('Acme Labs')
-            ->assertSee('Fuel')
+            ->assertSee('Petrol')
             ->assertSee('Waiting for approval')
             ->call('setRange', 7)->assertSet('range', 7)->assertSee('Last 7 days')
             ->call('setRange', 5)->assertSet('range', 30);   // only 7, 30 or 90 are allowed

@@ -17,10 +17,22 @@ class SalesExpense extends Model
     public const APPROVED = 'approved';
     public const REJECTED = 'rejected';
 
+    // The keys are what the phone sends (never rename them); the labels are what a manager reads.
+    public const CATEGORY_LABELS = [
+        'travel' => 'Travel', 'food' => 'Food', 'fuel' => 'Petrol', 'parking' => 'Parking charges', 'gifting' => 'Gifting',
+        'lodging' => 'Lodging', 'other' => 'Miscellaneous',
+    ];
+
+    /** Where the work was done: the rep must say so for every expense (older phones sent nothing: null). */
+    public const WORK_AREAS = ['local' => 'Local (in Jaipur)', 'outstation' => 'Outstation (outside Jaipur)'];
+
+    /** Whether there is a bill: the rep must say so for every expense (older phones sent nothing: null). */
+    public const BILL_TYPES = ['with_bill' => 'With bill', 'without_bill' => 'Without bill'];
+
     protected $table = 'sales_expenses';
 
     // status / reviewed_* are NOT fillable: only approve() and reject() can set them, never a push from the phone.
-    protected $fillable = ['uuid', 'user_id', 'category', 'amount_paise', 'expense_date', 'note', 'client_updated_at'];
+    protected $fillable = ['uuid', 'user_id', 'category', 'amount_paise', 'expense_date', 'note', 'work_area', 'bill_type', 'client_updated_at'];
 
     // A new expense is pending from the first moment, also before it is read back from the database.
     protected $attributes = ['status' => self::PENDING];
@@ -42,6 +54,11 @@ class SalesExpense extends Model
     public function reviewer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'reviewed_by');
+    }
+
+    public static function categoryLabel(?string $category): string
+    {
+        return self::CATEGORY_LABELS[$category] ?? ucfirst((string) $category);
     }
 
     public function isPending(): bool

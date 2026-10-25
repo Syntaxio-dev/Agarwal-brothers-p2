@@ -2,6 +2,7 @@
 
 namespace App\Sales\Support;
 
+use App\Sales\Models\SalesExpense;
 use App\Support\EnquiryExporter;
 use Illuminate\Database\Eloquent\Builder;
 use OpenSpout\Common\Entity\Row;
@@ -18,13 +19,15 @@ class SalesExporter
 {
     public static function expenses(Builder $query, string $format = 'xlsx'): StreamedResponse
     {
-        return static::send('expenses', ['Date', 'Rep', 'Employee code', 'Category', 'Amount (INR)', 'Note', 'Has bill', 'Status', 'Reviewed by', 'Reviewed at (IST)', 'Reject reason', 'Id'],
+        return static::send('expenses', ['Date', 'Rep', 'Employee code', 'Category', 'Amount (INR)', 'Work area', 'Bill', 'Note', 'Has bill photo', 'Status', 'Reviewed by', 'Reviewed at (IST)', 'Reject reason', 'Id'],
             $query->clone()->reorder()->with(['user.salesProfile', 'reviewer']), $format,
             fn ($e) => array_merge(static::texts([
                 $e->expense_date->format('Y-m-d'),
                 $e->user->name,
                 $e->user->salesProfile?->employee_code,
-            ]), [ucfirst($e->category), $e->amount_paise / 100], static::texts([
+            ]), [SalesExpense::categoryLabel($e->category), $e->amount_paise / 100], static::texts([
+                SalesExpense::WORK_AREAS[$e->work_area] ?? '',
+                SalesExpense::BILL_TYPES[$e->bill_type] ?? '',
                 $e->note,
                 $e->hasBill() ? 'yes' : 'no',
                 ucfirst($e->status),
