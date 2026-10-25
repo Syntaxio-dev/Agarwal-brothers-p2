@@ -24,7 +24,7 @@ class RepAccount
 
             $user = User::create([
                 'name' => $data['name'],
-                'email' => Str::lower($code) . '@' . config('sales.rep_email_domain'),
+                'email' => static::emailFor($code, $data['email'] ?? null),
                 'password' => $data['password'],
                 'role' => SalesProfile::ROLE,
                 'is_active' => $data['is_active'] ?? true,
@@ -37,6 +37,18 @@ class RepAccount
                 'is_active' => $data['is_active'] ?? true,
             ]);
         });
+    }
+
+    /** The rep's real e-mail when the manager typed one, else a placeholder made from the code (users.email must be unique and filled). */
+    public static function emailFor(string $code, ?string $email): string
+    {
+        return filled($email) ? Str::lower(trim($email)) : Str::lower($code) . '@' . config('sales.rep_email_domain');
+    }
+
+    /** The e-mail to show: nothing for a placeholder. */
+    public static function realEmail(?string $email): ?string
+    {
+        return $email && ! str_ends_with($email, '@' . config('sales.rep_email_domain')) ? $email : null;
     }
 
     /** A password a manager can read out or send: 10 letters and digits without look-alikes (no 0/O, 1/l/I). */

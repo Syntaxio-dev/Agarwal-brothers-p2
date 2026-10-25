@@ -6,6 +6,7 @@ use App\Filament\Concerns\RestrictedByRole;
 use App\Sales\Filament\Resources\SalesReps\Pages\CreateSalesRep;
 use App\Sales\Filament\Resources\SalesReps\Pages\EditSalesRep;
 use App\Sales\Filament\Resources\SalesReps\Pages\ListSalesReps;
+use App\Models\User;
 use App\Sales\Models\SalesProfile;
 use App\Sales\Support\Money;
 use App\Sales\Support\PhoneNumber;
@@ -23,6 +24,7 @@ use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Str;
 
 /** The field reps: who they are, whether they may use the app, when their phone last synced. */
 class SalesRepResource extends Resource
@@ -90,6 +92,16 @@ class SalesRepResource extends Resource
                 ->columns(2)
                 ->schema([
                     TextInput::make('name')->required()->minLength(2)->maxLength(100),
+                    TextInput::make('email')
+                        ->label('E-mail')
+                        ->email()
+                        ->maxLength(150)
+                        ->rule(fn ($record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($record) {
+                            if (filled($value) && User::where('email', Str::lower(trim((string) $value)))->when($record, fn ($q) => $q->where('id', '!=', $record->user_id))->exists()) {
+                                $fail('This e-mail already belongs to another login.');
+                            }
+                        })
+                        ->helperText('Optional: for your own records. The rep signs in to the app with the employee code (or the phone number) and the password, not with the e-mail.'),
                     TextInput::make('employee_code')
                         ->required()
                         ->maxLength(30)
@@ -102,8 +114,9 @@ class SalesRepResource extends Resource
                     TextInput::make('phone')
                         ->tel()
                         ->maxLength(20)
+                        ->required(fn (string $operation): bool => $operation === 'create')
                         ->rule(fn ($record) => $phoneRule($record))
-                        ->helperText('Optional. A rep can also sign in with it.'),
+                        ->helperText('The rep can also sign in to the app with this number.'),
                     Toggle::make('is_active')
                         ->label('Active')
                         ->default(true)
@@ -128,6 +141,8 @@ class SalesRepResource extends Resource
             ->columns([
                 TextColumn::make('user.name')->label('Name')->searchable()->weight('medium')->description(fn (SalesProfile $r) => $r->employee_code),
                 TextColumn::make('phone')->placeholder('—')->searchable()->copyable(),
+                TextColumn::make('email')->label('E-mail')->placeholder('—')->searchable(query: fn (Builder $q, string $search) => $q->whereHas('user', fn ($u) => $u->where('email', 'like', "%{$search}%")))
+                    ->getStateUsing(fn (SalesProfile $r) => RepAccount::realEmail($r->user->email))->copyable()->toggleable(),
                 ToggleColumn::make('is_active')
                     ->label('Active')
                     ->updateStateUsing(function (SalesProfile $record, $state) {

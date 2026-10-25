@@ -11,6 +11,7 @@ use App\Sales\Models\SalesEnquiry;
 use App\Sales\Models\SalesExpense;
 use App\Sales\Models\SalesMeeting;
 use App\Sales\Models\SalesPosition;
+use App\Sales\Models\SalesProductRequest;
 use App\Sales\Support\PhoneNumber;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Log;
@@ -33,7 +34,7 @@ use Illuminate\Validation\Rule;
 class SyncService
 {
     /** Kinds that carry records, in the order they are pushed (a client before the people at it). */
-    public const KINDS = ['expenses', 'clients', 'contacts', 'meetings', 'enquiries', 'calls', 'reports'];
+    public const KINDS = ['expenses', 'clients', 'contacts', 'meetings', 'enquiries', 'calls', 'reports', 'product_requests'];
 
     /** Kinds the phone may delete (a call is a log, a report is a record: never). */
     public const DELETABLE = ['expenses', 'clients', 'contacts', 'meetings', 'enquiries'];
@@ -47,7 +48,7 @@ class SyncService
 
         $methods = [
             'expenses' => 'upsertExpense', 'clients' => 'upsertClient', 'contacts' => 'upsertContact', 'meetings' => 'upsertMeeting',
-            'enquiries' => 'upsertEnquiry', 'calls' => 'upsertCall', 'reports' => 'upsertReport',
+            'enquiries' => 'upsertEnquiry', 'calls' => 'upsertCall', 'reports' => 'upsertReport', 'product_requests' => 'upsertProductRequest',
         ];
 
         foreach ($methods as $kind => $method) {
@@ -362,6 +363,44 @@ class SyncService
             'contact_name' => $this->text($r['contact_name'] ?? null),
             'started_at' => $this->time($r['started_at']),
             'duration_seconds' => (int) $r['duration_seconds'],
+            'client_updated_at' => $this->time($r['updated_at']),
+        ]);
+
+        return ['status' => 'accepted'];
+    }
+
+    // ---- product guide: a rep asks for a note (private, a log: sent once, never changed) ----------------
+
+    private const MAX_OPEN_PRODUCT_REQUESTS = 30;
+
+    private function upsertProductRequest(User $user, array $r): array
+    {
+        $invalid = $this->check($r, [
+            'uuid' => ['required', 'uuid'],
+            'product_uuid' => ['nullable', 'uuid'],
+            'product_name' => ['required', 'string', 'min:2', 'max:200'],
+            'body' => ['required', 'string', 'min:3', 'max:500'],
+            'updated_at' => ['required', 'date', $this->clockRule()],
+        ]);
+        if ($invalid) {
+            return $invalid;
+        }
+
+        $model = SalesProductRequest::query()->where('uuid', $r['uuid'])->first();
+        if ($model) {
+            return (int) $model->user_id === (int) $user->id ? ['status' => 'duplicate'] : $this->rejected('UUID_TAKEN', 'This id cannot be used.');
+        }
+
+        if (SalesProductRequest::query()->where('user_id', $user->id)->where('status', 'open')->count() >= self::MAX_OPEN_PRODUCT_REQUESTS) {
+            return $this->rejected('INVALID', 'Too many requests are waiting for your manager. Please wait for answers first.');
+        }
+
+        SalesProductRequest::create([
+            'uuid' => $r['uuid'],
+            'user_id' => $user->id,
+            'product_uuid' => $r['product_uuid'] ?? null,
+            'product_name' => trim($r['product_name']),
+            'body' => trim($r['body']),
             'client_updated_at' => $this->time($r['updated_at']),
         ]);
 

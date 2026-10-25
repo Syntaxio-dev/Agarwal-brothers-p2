@@ -18,6 +18,7 @@ class CreateSalesRep extends CreateRecord
             'name' => $data['name'],
             'employee_code' => $data['employee_code'],
             'phone' => $data['phone'] ?? null,
+            'email' => $data['email'] ?? null,
             'password' => $data['password'],
             'is_active' => (bool) ($data['is_active'] ?? true),
         ]);
@@ -25,6 +26,6 @@ class CreateSalesRep extends CreateRecord
 
     protected function getCreatedNotificationTitle(): ?string
     {
-        return 'Rep added. Give them the employee code and the password.';
+        return 'Rep added. Give them the employee code and the password: the app signs in with these two only.';
     }
 }

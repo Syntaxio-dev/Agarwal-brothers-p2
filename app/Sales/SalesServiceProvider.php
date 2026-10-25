@@ -12,6 +12,8 @@ use App\Sales\Models\SalesEnquiry;
 use App\Sales\Models\SalesExpense;
 use App\Sales\Models\SalesMeeting;
 use App\Sales\Models\SalesPosition;
+use App\Sales\Models\SalesProduct;
+use App\Sales\Models\SalesProductRequest;
 use App\Sales\Models\SalesProfile;
 use App\Sales\Policies\CallPolicy;
 use App\Sales\Policies\ClientPolicy;
@@ -20,6 +22,8 @@ use App\Sales\Policies\EnquiryPolicy;
 use App\Sales\Policies\ExpensePolicy;
 use App\Sales\Policies\MeetingPolicy;
 use App\Sales\Policies\PositionPolicy;
+use App\Sales\Policies\ProductPolicy;
+use App\Sales\Policies\ProductRequestPolicy;
 use App\Sales\Policies\ProfilePolicy;
 use App\Sales\Policies\ReportPolicy;
 use Illuminate\Auth\Middleware\Authenticate;
@@ -51,6 +55,12 @@ class SalesServiceProvider extends ServiceProvider
         Gate::policy(SalesPosition::class, PositionPolicy::class);
         Gate::policy(SalesEnquiry::class, EnquiryPolicy::class);
         Gate::policy(SalesDailyReport::class, ReportPolicy::class);
+        Gate::policy(SalesProduct::class, ProductPolicy::class);
+        Gate::policy(SalesProductRequest::class, ProductRequestPolicy::class);
+
+        if ($this->app->runningInConsole()) {
+            $this->commands([\App\Sales\Console\ImportProducts::class]);
+        }
 
         // A guest of the phone API is told "401 sign in" (JSON), never redirected to a login page.
         // (This site has no route named "login": the admin panel has its own sign-in, so a guest is simply refused.)

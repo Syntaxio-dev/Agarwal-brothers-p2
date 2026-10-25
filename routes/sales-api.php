@@ -2,6 +2,7 @@
 
 use App\Sales\Http\Controllers\Api\AuthController;
 use App\Sales\Http\Controllers\Api\BillController;
+use App\Sales\Http\Controllers\Api\ProductController;
 use App\Sales\Http\Controllers\Api\SyncController;
 use App\Sales\Http\Middleware\EnsureActiveRep;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,8 @@ Route::middleware(['auth:sanctum', EnsureActiveRep::class, 'throttle:sales-api']
 
     Route::post('sync/push', [SyncController::class, 'push']);
     Route::get('sync/pull', [SyncController::class, 'pull']);
+
+    Route::get('products', [ProductController::class, 'index']);   // the product guide (read only)
 
     Route::get('expenses/{uuid}/bill', [BillController::class, 'show'])->whereUuid('uuid');
     Route::post('uploads/bill', [BillController::class, 'store'])->middleware('throttle:sales-upload');

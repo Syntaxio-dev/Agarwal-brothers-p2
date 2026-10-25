@@ -26,7 +26,7 @@ use Livewire\Livewire;
 
 class AdminSalesTest extends SalesTestCase
 {
-    private const PAGES = ['/admin/sales-management', '/admin/sales-expenses', '/admin/sales-reps', '/admin/sales-meetings', '/admin/sales-clients', '/admin/sales-calls', '/admin/sales-positions', '/admin/sales-clients/create', '/admin/sales-reps/create'];
+    private const PAGES = ['/admin/sales-management', '/admin/sales-expenses', '/admin/sales-reps', '/admin/sales-meetings', '/admin/sales-clients', '/admin/sales-calls', '/admin/sales-positions', '/admin/sales-clients/create', '/admin/sales-reps/create', '/admin/sales-products', '/admin/sales-products/create', '/admin/sales-product-requests'];
 
     public function test_managers_and_admins_open_every_sales_screen(): void
     {

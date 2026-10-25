@@ -40,6 +40,7 @@ class EditSalesRep extends EditRecord
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $data['name'] = $this->record->user->name;
+        $data['email'] = RepAccount::realEmail($this->record->user->email);
 
         return $data;
     }
@@ -47,7 +48,7 @@ class EditSalesRep extends EditRecord
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
         DB::transaction(function () use ($record, $data) {
-            $record->user->update(['name' => $data['name']]);
+            $record->user->update(['name' => $data['name'], 'email' => RepAccount::emailFor($record->employee_code, $data['email'] ?? null)]);
             $record->update(['phone' => PhoneNumber::normalize($data['phone'] ?? null)]);
 
             if ((bool) $record->is_active !== (bool) ($data['is_active'] ?? true)) {
