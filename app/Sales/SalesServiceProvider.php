@@ -3,14 +3,26 @@
 namespace App\Sales;
 
 use App\Models\User;
+use App\Sales\Http\Middleware\ForceJson;
+use App\Sales\Models\SalesCall;
 use App\Sales\Models\SalesClient;
+use App\Sales\Models\SalesContact;
+use App\Sales\Models\SalesDailyReport;
+use App\Sales\Models\SalesEnquiry;
 use App\Sales\Models\SalesExpense;
 use App\Sales\Models\SalesMeeting;
+use App\Sales\Models\SalesPosition;
 use App\Sales\Models\SalesProfile;
+use App\Sales\Policies\CallPolicy;
 use App\Sales\Policies\ClientPolicy;
+use App\Sales\Policies\ContactPolicy;
+use App\Sales\Policies\EnquiryPolicy;
 use App\Sales\Policies\ExpensePolicy;
 use App\Sales\Policies\MeetingPolicy;
+use App\Sales\Policies\PositionPolicy;
 use App\Sales\Policies\ProfilePolicy;
+use App\Sales\Policies\ReportPolicy;
+use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Gate;
@@ -34,11 +46,20 @@ class SalesServiceProvider extends ServiceProvider
         Gate::policy(SalesExpense::class, ExpensePolicy::class);
         Gate::policy(SalesMeeting::class, MeetingPolicy::class);
         Gate::policy(SalesClient::class, ClientPolicy::class);
+        Gate::policy(SalesContact::class, ContactPolicy::class);
+        Gate::policy(SalesCall::class, CallPolicy::class);
+        Gate::policy(SalesPosition::class, PositionPolicy::class);
+        Gate::policy(SalesEnquiry::class, EnquiryPolicy::class);
+        Gate::policy(SalesDailyReport::class, ReportPolicy::class);
+
+        // A guest of the phone API is told "401 sign in" (JSON), never redirected to a login page.
+        // (This site has no route named "login": the admin panel has its own sign-in, so a guest is simply refused.)
+        Authenticate::redirectUsing(fn (Request $request) => null);
 
         $this->limiters();
 
         if (! $this->app->routesAreCached()) {
-            Route::middleware('api')
+            Route::middleware(['api', ForceJson::class])
                 ->prefix('api/sales/v1')
                 ->name('sales.api.')
                 ->group(base_path('routes/sales-api.php'));

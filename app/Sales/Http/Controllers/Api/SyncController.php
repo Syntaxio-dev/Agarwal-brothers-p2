@@ -27,10 +27,17 @@ class SyncController extends Controller
             'expenses' => ['sometimes', 'array', "max:$max"],
             'clients' => ['sometimes', 'array', "max:$max"],
             'meetings' => ['sometimes', 'array', "max:$max"],
+            'contacts' => ['sometimes', 'array', "max:$max"],
+            'calls' => ['sometimes', 'array', "max:$max"],
+            'enquiries' => ['sometimes', 'array', "max:$max"],
+            'reports' => ['sometimes', 'array', 'max:40'],
+            'positions' => ['sometimes', 'array', 'max:50'],
             'deleted' => ['sometimes', 'array'],
             'deleted.expenses' => ['sometimes', 'array', "max:$max"],
             'deleted.clients' => ['sometimes', 'array', "max:$max"],
+            'deleted.contacts' => ['sometimes', 'array', "max:$max"],
             'deleted.meetings' => ['sometimes', 'array', "max:$max"],
+            'deleted.enquiries' => ['sometimes', 'array', "max:$max"],
         ]);
 
         $user = $request->user();
@@ -55,7 +62,7 @@ class SyncController extends Controller
         ]);
     }
 
-    /** Everything of this rep that changed since `since` (everything when it is missing): status changes, and a full restore on a new phone. */
+    /** Everything that changed since `since` (everything when it is missing): status changes, and a full restore on a new phone. */
     public function pull(Request $request): JsonResponse
     {
         $data = $request->validate(['since' => ['nullable', 'date']]);

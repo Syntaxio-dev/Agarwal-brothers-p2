@@ -72,6 +72,8 @@ class SalesMeetingResource extends Resource
                 TextColumn::make('meeting_at')->label('When')->dateTime('d M Y, h:i A', $tz)->sortable(),
                 TextColumn::make('user.name')->label('Rep')->searchable()->weight('medium'),
                 TextColumn::make('client_name')->label('Client')->searchable(),
+                TextColumn::make('people_met')->label('People met')->placeholder('—')->wrap()
+                    ->getStateUsing(fn (SalesMeeting $r) => $r->contact_uuids ? \App\Sales\Models\SalesContact::withTrashed()->whereIn('uuid', $r->contact_uuids)->pluck('name')->implode(', ') : null),
                 TextColumn::make('purpose')->limit(40)->tooltip(fn (SalesMeeting $r) => $r->purpose)->placeholder('—')->searchable(),
                 TextColumn::make('discussion')->limit(60)->tooltip(fn (SalesMeeting $r) => $r->discussion)->placeholder('—')->toggleable(),
                 TextColumn::make('outcome')->limit(40)->placeholder('—')->toggleable(),

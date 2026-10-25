@@ -53,9 +53,55 @@ class SalesExporter
 
     public static function clients(Builder $query, string $format = 'xlsx'): StreamedResponse
     {
-        return static::send('clients', ['Name', 'Company', 'Phone', 'City', 'Rep', 'Notes', 'Id'],
-            $query->clone()->reorder()->with('owner'), $format,
-            fn ($c) => static::texts([$c->name, $c->company, $c->phone, $c->city, $c->owner->name, $c->notes, $c->uuid]));
+        return static::send('clients', ['Client', 'Group', 'Main number', 'Place', 'Works with', 'Added by', 'People', 'Notes', 'Id'],
+            $query->clone()->reorder()->with(['owner', 'assignee', 'contacts']), $format,
+            fn ($c) => static::texts([
+                $c->name, $c->company, $c->phone, $c->city, $c->assignee?->name, $c->owner?->name,
+                $c->contacts->map(fn ($p) => trim($p->name . ($p->position ? " ({$p->position})" : '') . ($p->phone ? " {$p->phone}" : '')))->implode('; '),
+                $c->notes, $c->uuid,
+            ]));
+    }
+
+    public static function enquiries(Builder $query, string $format = 'xlsx'): StreamedResponse
+    {
+        return static::send('enquiries', ['Opened (IST)', 'Rep', 'Client', 'Person', 'Status', 'Products', 'Preferred brands', 'Budget (INR)', 'Next follow-up (IST)', 'Last note', 'Id'],
+            $query->clone()->reorder()->with('user'), $format,
+            function ($e) {
+                $items = collect($e->items ?? []);
+                $last = collect($e->timeline ?? [])->last();
+
+                return array_merge(static::texts([
+                    $e->opened_at->timezone(config('sales.timezone'))->format('Y-m-d H:i'),
+                    $e->user->name,
+                    $e->client_name,
+                    $e->contact_name,
+                    $e->statusLabel(),
+                    $items->map(fn ($i) => $i['product'] . ' x' . ($i['quantity'] ?? 1))->implode('; '),
+                    $items->pluck('brands')->filter()->implode('; '),
+                ]), [$e->budgetPaise() / 100], static::texts([
+                    $e->next_followup_at?->timezone(config('sales.timezone'))->format('Y-m-d H:i'),
+                    $last['text'] ?? '',
+                    $e->uuid,
+                ]));
+            });
+    }
+
+    public static function reports(Builder $query, string $format = 'xlsx'): StreamedResponse
+    {
+        return static::send('reports', ['Date', 'Rep', 'Submitted (IST)', 'Calls', 'Talk time (min)', 'Meetings', 'New enquiries', 'Enquiries worked', 'Expenses (INR)', 'Notes', 'Tomorrow', 'Needs help with', 'Id'],
+            $query->clone()->reorder()->with('user'), $format,
+            fn ($r) => array_merge(static::texts([
+                $r->report_date->format('Y-m-d'),
+                $r->user->name,
+                $r->submitted_at?->timezone(config('sales.timezone'))->format('Y-m-d H:i'),
+            ]), [
+                (int) ($r->figures['calls'] ?? 0),
+                round(((int) ($r->figures['talk_seconds'] ?? 0)) / 60),
+                (int) ($r->figures['meetings'] ?? 0),
+                (int) ($r->figures['enquiries_new'] ?? 0),
+                (int) ($r->figures['enquiries_worked'] ?? 0),
+                ((int) ($r->figures['expenses_paise'] ?? 0)) / 100,
+            ], static::texts([$r->notes, $r->tomorrow_plan, $r->issues, $r->uuid])));
     }
 
     /** @param  callable(mixed): list<mixed>  $row */

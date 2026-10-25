@@ -5,7 +5,11 @@ namespace Tests\Feature\Sales;
 use App\Filament\Resources\Users\Pages\ListUsers;
 use App\Models\User;
 use App\Sales\Filament\Pages\SalesManagement;
+use App\Sales\Filament\Resources\SalesClients\Pages\CreateSalesClient;
+use App\Sales\Filament\Resources\SalesClients\Pages\EditSalesClient;
 use App\Sales\Filament\Resources\SalesClients\Pages\ListSalesClients;
+use App\Sales\Filament\Resources\SalesClients\RelationManagers\ContactsRelationManager;
+use App\Sales\Models\SalesContact;
 use App\Sales\Filament\Resources\SalesExpenses\Pages\ListSalesExpenses;
 use App\Sales\Filament\Resources\SalesMeetings\Pages\ListSalesMeetings;
 use App\Sales\Filament\Resources\SalesReps\Pages\CreateSalesRep;
@@ -22,7 +26,7 @@ use Livewire\Livewire;
 
 class AdminSalesTest extends SalesTestCase
 {
-    private const PAGES = ['/admin/sales-management', '/admin/sales-expenses', '/admin/sales-reps', '/admin/sales-meetings', '/admin/sales-clients', '/admin/sales-reps/create'];
+    private const PAGES = ['/admin/sales-management', '/admin/sales-expenses', '/admin/sales-reps', '/admin/sales-meetings', '/admin/sales-clients', '/admin/sales-calls', '/admin/sales-positions', '/admin/sales-clients/create', '/admin/sales-reps/create'];
 
     public function test_managers_and_admins_open_every_sales_screen(): void
     {
@@ -142,9 +146,10 @@ class AdminSalesTest extends SalesTestCase
             ->filterTable('date', ['from' => now()->subDays(5)->toDateString(), 'until' => null])->assertCanSeeTableRecords([$fuelA])->assertCanNotSeeTableRecords([$foodB]);
     }
 
-    public function test_meetings_and_clients_are_listed_read_only(): void
+    public function test_meetings_are_read_only_but_the_manager_runs_the_client_pool(): void
     {
-        $this->actingAs($this->manager());
+        $manager = $this->manager();
+        $this->actingAs($manager);
         $a = $this->rep();
         $m = SalesMeeting::create(['uuid' => (string) Str::uuid(), 'user_id' => $a->user_id, 'client_name' => 'Acme', 'meeting_at' => now(), 'client_updated_at' => now()]);
         $c = SalesClient::create(['uuid' => (string) Str::uuid(), 'user_id' => $a->user_id, 'name' => 'Lab Co', 'client_updated_at' => now()]);
@@ -153,8 +158,72 @@ class AdminSalesTest extends SalesTestCase
         Livewire::test(ListSalesClients::class)->assertCanSeeTableRecords([$c]);
 
         $this->get('/admin/sales-expenses/create')->assertNotFound();
-        $this->get('/admin/sales-clients/create')->assertNotFound();
         $this->get('/admin/sales-meetings/create')->assertNotFound();
+        $this->get('/admin/sales-clients/create')->assertOk();
+        $this->get('/admin/sales-clients/' . $c->id . '/edit')->assertOk();
+        $this->get('/admin/sales-calls')->assertOk();
+        $this->get('/admin/sales-positions')->assertOk();
+    }
+
+    public function test_a_manager_adds_a_client_with_people_and_gives_it_to_a_rep(): void
+    {
+        $this->actingAs($this->manager());
+        $rep = $this->rep();
+
+        Livewire::test(CreateSalesClient::class)
+            ->fillForm(['name' => 'JK Cement', 'city' => 'Nimbahera', 'assigned_to' => $rep->user_id])
+            ->call('create')
+            ->assertHasNoFormErrors();
+
+        $client = SalesClient::firstWhere('name', 'JK Cement');
+        $this->assertNotNull($client->uuid, 'a client made in the admin gets the id a phone would have made');
+        $this->assertSame($rep->user_id, $client->assigned_to);
+
+        Livewire::test(ContactsRelationManager::class, ['ownerRecord' => $client, 'pageClass' => EditSalesClient::class])
+            ->callTableAction('create', data: ['name' => 'Rohit Sharma', 'position' => 'Purchase Manager', 'phone' => '98765 43210'])
+            ->assertHasNoTableActionErrors();
+
+        $person = SalesContact::firstWhere('name', 'Rohit Sharma');
+        $this->assertSame($client->uuid, $person->client_uuid);
+        $this->assertSame('+919876543210', $person->phone_normalized);
+
+        // the same number cannot be saved twice anywhere in the pool
+        Livewire::test(ContactsRelationManager::class, ['ownerRecord' => $client, 'pageClass' => EditSalesClient::class])
+            ->callTableAction('create', data: ['name' => 'Someone Else', 'position' => 'Lab Head', 'phone' => '+91 98765-43210'])
+            ->assertHasTableActionErrors(['phone']);
+        $this->assertSame(1, SalesContact::count());
+    }
+
+    public function test_an_admin_edit_is_a_newer_version_for_the_phones_and_a_bulk_give_works(): void
+    {
+        $manager = $this->manager();
+        $this->actingAs($manager);
+        $rep = $this->rep();
+        $other = $this->rep('REP002', '9000000002');
+        $client = SalesClient::create(['uuid' => (string) Str::uuid(), 'user_id' => $rep->user_id, 'assigned_to' => $rep->user_id, 'name' => 'Lab Co', 'client_updated_at' => now()->subDay()]);
+        $before = $client->client_updated_at;
+
+        Livewire::test(ListSalesClients::class)->callTableBulkAction('assign', [$client], data: ['rep' => $other->user_id]);
+
+        $client->refresh();
+        $this->assertSame($other->user_id, $client->assigned_to);
+        $this->assertTrue($client->client_updated_at->gt($before), 'the phones must see the edit as newer');
+        $this->assertSame($manager->id, $client->updated_by);
+    }
+
+    public function test_the_csv_import_action_fills_the_pool(): void
+    {
+        $this->actingAs($this->manager());
+        $this->rep();
+        \Illuminate\Support\Facades\Storage::fake('local');
+        $file = \Illuminate\Http\UploadedFile::fake()->createWithContent('numbers.csv', "Client,Place,Contact,Position,Phone\nShree Cement,Beawar,Mohan Lal,Quality Chief,99999 11111\n");
+
+        Livewire::test(ListSalesClients::class)
+            ->callTableAction('import', data: ['file' => $file, 'rep' => null])
+            ->assertHasNoTableActionErrors();
+
+        $this->assertSame(1, SalesClient::where('name', 'Shree Cement')->count());
+        $this->assertSame(1, SalesContact::where('name', 'Mohan Lal')->count());
     }
 
     public function test_a_manager_adds_a_rep_who_can_then_sign_in(): void

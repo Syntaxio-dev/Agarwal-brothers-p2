@@ -27,20 +27,24 @@ class PolicyIsolationTest extends SalesTestCase
         $this->assertFalse($a->can('delete', $theirs));
     }
 
-    public function test_same_for_meetings_and_clients(): void
+    public function test_meetings_stay_private_but_the_client_pool_is_shared(): void
     {
         $a = $this->rep('REP001', '9000000001')->user;
         $b = $this->rep('REP002', '9000000002')->user;
 
         $meeting = SalesMeeting::create(['uuid' => (string) Str::uuid(), 'user_id' => $b->id, 'client_name' => 'X', 'meeting_at' => now(), 'client_updated_at' => now()]);
-        $client = SalesClient::create(['uuid' => (string) Str::uuid(), 'user_id' => $b->id, 'name' => 'Lab Co', 'client_updated_at' => now()]);
+        $this->assertFalse($a->can('view', $meeting));
+        $this->assertFalse($a->can('update', $meeting));
+        $this->assertFalse($a->can('delete', $meeting));
+        $this->assertTrue($b->can('view', $meeting));
 
-        foreach ([$meeting, $client] as $record) {
-            $this->assertFalse($a->can('view', $record), $record::class . ' view');
-            $this->assertFalse($a->can('update', $record), $record::class . ' update');
-            $this->assertFalse($a->can('delete', $record), $record::class . ' delete');
-            $this->assertTrue($b->can('view', $record), $record::class . ' owner view');
-        }
+        // the pool: everybody reads and improves, only the one who added it (or a manager) deletes
+        $client = SalesClient::create(['uuid' => (string) Str::uuid(), 'user_id' => $b->id, 'name' => 'Lab Co', 'client_updated_at' => now()]);
+        $this->assertTrue($a->can('view', $client));
+        $this->assertTrue($a->can('update', $client));
+        $this->assertFalse($a->can('delete', $client));
+        $this->assertTrue($b->can('delete', $client));
+        $this->assertTrue($this->manager()->can('delete', $client));
     }
 
     public function test_a_rep_cannot_change_an_expense_after_review_and_cannot_review(): void

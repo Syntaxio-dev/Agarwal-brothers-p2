@@ -2,7 +2,7 @@
 
 namespace App\Sales\Policies;
 
-class ClientPolicy extends OwnedRecordPolicy
+class ClientPolicy extends SharedRecordPolicy
 {
     protected function area(): string
     {

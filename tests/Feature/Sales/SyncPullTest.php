@@ -68,19 +68,25 @@ class SyncPullTest extends SalesTestCase
         $this->assertFalse($uuids->contains($old['uuid']));
     }
 
-    public function test_a_rep_never_sees_another_reps_records(): void
+    public function test_a_rep_never_sees_another_reps_private_records_but_shares_the_client_pool(): void
     {
         $a = $this->rep('REP001', '9000000001');
         $b = $this->rep('REP002', '9000000002');
         $theirs = $this->expense(['note' => 'private to A']);
-        $this->push($this->headers($a), ['expenses' => [$theirs], 'clients' => [$this->client()], 'meetings' => [$this->meeting()]])->assertOk();
+        $client = $this->client(['name' => 'Shared Lab']);
+        $this->push($this->headers($a), ['expenses' => [$theirs], 'clients' => [$client], 'meetings' => [$this->meeting()]])->assertOk();
 
         $answer = $this->pull($this->headers($b))->assertOk();
 
         $this->assertSame([], $answer->json('expenses'));
-        $this->assertSame([], $answer->json('clients'));
         $this->assertSame([], $answer->json('meetings'));
+        $this->assertSame([], $answer->json('calls'));
         $this->assertStringNotContainsString('private to A', $answer->getContent());
+
+        // the pool is the team's: B sees what A added, and who added it
+        $this->assertSame($client['uuid'], $answer->json('clients.0.uuid'));
+        $this->assertSame('REP001', $answer->json('clients.0.created_by_code'));
+        $this->assertSame('REP001', $answer->json('clients.0.assigned_to_code'));
     }
 
     public function test_deleted_records_are_flagged_so_a_phone_can_drop_them(): void

@@ -58,6 +58,12 @@ class SalesManagement extends Page
             'reps' => SalesInsights::reps($days),
             'stale' => SalesInsights::staleReps(),
             'followups' => SalesInsights::followups(),
+            'neglected' => SalesInsights::neglectedClients(),
+            'enquiryStatuses' => SalesInsights::enquiriesByStatus(),
+            'topProducts' => SalesInsights::topProducts($days),
+            'overdueEnquiries' => SalesInsights::overdueEnquiries(),
+            'withoutReport' => SalesInsights::repsWithoutReport(),
+            'talk' => fn (int $seconds) => SalesInsights::duration($seconds),
             'pending' => SalesInsights::pendingExpenses(),
             'money' => fn (int $paise, bool $withPaise = false) => Money::rupees($paise, $withPaise),
         ];

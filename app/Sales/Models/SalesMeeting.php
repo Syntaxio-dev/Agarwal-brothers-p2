@@ -15,7 +15,7 @@ class SalesMeeting extends Model
     protected $table = 'sales_meetings';
 
     protected $fillable = [
-        'uuid', 'user_id', 'client_uuid', 'client_name', 'meeting_at', 'purpose', 'discussion', 'outcome',
+        'uuid', 'user_id', 'client_uuid', 'client_name', 'contact_uuids', 'meeting_at', 'purpose', 'discussion', 'outcome',
         'next_followup_at', 'client_updated_at',
     ];
 
@@ -23,6 +23,7 @@ class SalesMeeting extends Model
     {
         return [
             'meeting_at' => 'datetime',
+            'contact_uuids' => 'array',
             'next_followup_at' => 'datetime',
         ];
     }

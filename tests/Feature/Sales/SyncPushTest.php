@@ -166,7 +166,7 @@ class SyncPushTest extends SalesTestCase
         $this->push($this->headers($a), ['expenses' => [$mine]])->assertOk();
 
         $attack = $this->push($this->headers($b), [
-            'expenses' => [array_merge($mine, ['amount_paise' => 1, 'note' => 'hijack', 'updated_at' => $this->moment('+1 hour')])],
+            'expenses' => [array_merge($mine, ['amount_paise' => 1, 'note' => 'hijack', 'updated_at' => $this->moment('+5 minutes')])],
             'deleted' => ['expenses' => [$mine['uuid']]],
         ]);
 
