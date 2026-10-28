@@ -19,7 +19,10 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 
-/** What the reps discussed with clients, and the follow-ups they set. Read only: it all comes from the phones. */
+/**
+ * What the reps discussed with clients, the visits they planned and the follow-ups they set. Read only: it all comes from the phones.
+ * A meeting without a status is an old one (written after it happened): "Done".
+ */
 class SalesMeetingResource extends Resource
 {
     use RestrictedByRole;
@@ -60,7 +63,7 @@ class SalesMeetingResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with('user');
+        return parent::getEloquentQuery()->with(['user', 'route']);
     }
 
     public static function table(Table $table): Table
@@ -72,6 +75,20 @@ class SalesMeetingResource extends Resource
                 TextColumn::make('meeting_at')->label('When')->dateTime('d M Y, h:i A', $tz)->sortable(),
                 TextColumn::make('user.name')->label('Rep')->searchable()->weight('medium'),
                 TextColumn::make('client_name')->label('Client')->searchable(),
+                TextColumn::make('status')->badge()
+                    ->formatStateUsing(fn (?string $state) => SalesMeeting::STATUSES[$state] ?? $state)
+                    ->color(fn (?string $state) => match ($state) {
+                        'done' => 'success', 'missed' => 'danger', 'planned' => 'info', 'moved' => 'warning', default => 'gray',
+                    })
+                    ->sortable(),
+                TextColumn::make('result')->badge()->placeholder('—')
+                    ->formatStateUsing(fn (?string $state) => SalesMeeting::RESULTS[$state] ?? $state)
+                    ->color(fn (?string $state) => match ($state) { 'order' => 'success', 'not_interested' => 'gray', default => 'primary' }),
+                // a route is only shown next to meetings of the same rep (the link is a uuid the phone sent)
+                TextColumn::make('route_title')->label('Route')->placeholder('—')->toggleable()
+                    ->getStateUsing(fn (SalesMeeting $r) => $r->route && (int) $r->route->user_id === (int) $r->user_id ? $r->route->title : null),
+                TextColumn::make('scheduled_at')->label('Planned for')->dateTime('d M Y, h:i A', $tz)->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('moved_from')->label('Moved from')->dateTime('d M Y, h:i A', $tz)->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('people_met')->label('People met')->placeholder('—')->wrap()
                     ->getStateUsing(fn (SalesMeeting $r) => $r->contact_uuids ? \App\Sales\Models\SalesContact::withTrashed()->whereIn('uuid', $r->contact_uuids)->pluck('name')->implode(', ') : null),
                 TextColumn::make('purpose')->limit(40)->tooltip(fn (SalesMeeting $r) => $r->purpose)->placeholder('—')->searchable(),
@@ -88,6 +105,12 @@ class SalesMeetingResource extends Resource
             ->filters([
                 SelectFilter::make('user_id')->label('Rep')
                     ->options(fn () => SalesProfile::with('user')->get()->pluck('user.name', 'user_id')->sort()->all()),
+                SelectFilter::make('status')->options(SalesMeeting::STATUSES)->multiple(),
+                SelectFilter::make('result')->options(SalesMeeting::RESULTS),
+                Filter::make('not_logged')->label('Not logged (planned, and the time has passed)')->toggle()
+                    ->query(fn ($query) => $query->whereIn('status', SalesMeeting::OPEN)->where('meeting_at', '<', now()->subHour())),
+                Filter::make('in_route')->label('Part of a route')->toggle()
+                    ->query(fn ($query) => $query->whereNotNull('route_uuid')),
                 Filter::make('followup_due')->label('Follow-up due (next 7 days or overdue)')->toggle()
                     ->query(fn ($query) => $query->whereNotNull('next_followup_at')->where('next_followup_at', '<=', now()->addDays(7))),
                 Filter::make('date')
@@ -117,7 +140,7 @@ class SalesMeetingResource extends Resource
                     ->action(fn (array $data, $livewire) => SalesExporter::meetings($livewire->getFilteredTableQuery(), $data['format'])),
             ])
             ->emptyStateHeading('No meetings yet')
-            ->emptyStateDescription('They appear here when a rep syncs the app.');
+            ->emptyStateDescription('Visits the reps planned or wrote down appear here when they sync the app.');
     }
 
     public static function getPages(): array

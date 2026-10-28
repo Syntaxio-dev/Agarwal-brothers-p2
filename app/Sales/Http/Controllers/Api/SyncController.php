@@ -27,6 +27,7 @@ class SyncController extends Controller
             'expenses' => ['sometimes', 'array', "max:$max"],
             'clients' => ['sometimes', 'array', "max:$max"],
             'meetings' => ['sometimes', 'array', "max:$max"],
+            'routes' => ['sometimes', 'array', "max:$max"],
             'contacts' => ['sometimes', 'array', "max:$max"],
             'calls' => ['sometimes', 'array', "max:$max"],
             'enquiries' => ['sometimes', 'array', "max:$max"],
@@ -40,6 +41,7 @@ class SyncController extends Controller
             'deleted.clients' => ['sometimes', 'array', "max:$max"],
             'deleted.contacts' => ['sometimes', 'array', "max:$max"],
             'deleted.meetings' => ['sometimes', 'array', "max:$max"],
+            'deleted.routes' => ['sometimes', 'array', "max:$max"],
             'deleted.enquiries' => ['sometimes', 'array', "max:$max"],
         ]);
 

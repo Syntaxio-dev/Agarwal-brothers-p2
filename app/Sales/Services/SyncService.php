@@ -12,6 +12,7 @@ use App\Sales\Models\SalesExpense;
 use App\Sales\Models\SalesMeeting;
 use App\Sales\Models\SalesPosition;
 use App\Sales\Models\SalesProductRequest;
+use App\Sales\Models\SalesRoute;
 use App\Sales\Models\SalesScript;
 use App\Sales\Support\PhoneNumber;
 use Carbon\CarbonImmutable;
@@ -35,10 +36,10 @@ use Illuminate\Validation\Rule;
 class SyncService
 {
     /** Kinds that carry records, in the order they are pushed (a client before the people at it). */
-    public const KINDS = ['expenses', 'clients', 'contacts', 'meetings', 'enquiries', 'calls', 'reports', 'product_requests', 'scripts'];
+    public const KINDS = ['expenses', 'clients', 'contacts', 'meetings', 'routes', 'enquiries', 'calls', 'reports', 'product_requests', 'scripts'];
 
     /** Kinds the phone may delete (a call is a log, a report is a record: never). */
-    public const DELETABLE = ['expenses', 'clients', 'contacts', 'meetings', 'enquiries', 'scripts'];
+    public const DELETABLE = ['expenses', 'clients', 'contacts', 'meetings', 'routes', 'enquiries', 'scripts'];
 
     private const MAX_POSITIONS = 300;
 
@@ -49,7 +50,7 @@ class SyncService
 
         $methods = [
             'expenses' => 'upsertExpense', 'clients' => 'upsertClient', 'contacts' => 'upsertContact', 'meetings' => 'upsertMeeting',
-            'enquiries' => 'upsertEnquiry', 'calls' => 'upsertCall', 'reports' => 'upsertReport', 'product_requests' => 'upsertProductRequest',
+            'routes' => 'upsertRoute', 'enquiries' => 'upsertEnquiry', 'calls' => 'upsertCall', 'reports' => 'upsertReport', 'product_requests' => 'upsertProductRequest',
             'scripts' => 'upsertScript',
         ];
 
@@ -293,9 +294,15 @@ class SyncService
 
     // ---- meetings (private) -----------------------------------------------------------
 
+    /** The planning fields a phone from app v1.7 sends for a planned meeting (older phones send none: what is stored is kept then). */
+    private const PLANNING_FIELDS = ['status', 'scheduled_at', 'ended_at', 'route_uuid', 'result', 'moved_from', 'time_manual'];
+
     private function upsertMeeting(User $user, array $r): array
     {
         $latest = $this->latestMoment();
+        // A meeting still to happen can be dated up to 90 days ahead (a meeting that happened can only be a day ahead, as before).
+        $planned = in_array($r['status'] ?? null, SalesMeeting::OPEN, true);
+        $planUpTo = CarbonImmutable::now(config('sales.timezone'))->addDays(SalesMeeting::PLAN_DAYS + 1)->endOfDay()->utc();
 
         $invalid = $this->check($r, [
             'uuid' => ['required', 'uuid'],
@@ -303,11 +310,18 @@ class SyncService
             'client_name' => ['required', 'string', 'min:1', 'max:150'],
             'contact_uuids' => ['nullable', 'array', 'max:20'],
             'contact_uuids.*' => ['uuid'],
-            'meeting_at' => ['required', 'date', 'after_or_equal:2020-01-01', 'before_or_equal:' . $latest->toIso8601String()],
+            'meeting_at' => ['required', 'date', 'after_or_equal:2020-01-01', 'before_or_equal:' . ($planned ? $planUpTo : $latest)->toIso8601String()],
             'purpose' => ['nullable', 'string', 'max:200'],
             'discussion' => ['nullable', 'string', 'max:2000'],
             'outcome' => ['nullable', 'string', 'max:200'],
             'next_followup_at' => ['nullable', 'date', 'after_or_equal:meeting_at', 'before_or_equal:' . now()->addYears(2)->toIso8601String()],
+            'status' => ['sometimes', 'nullable', Rule::in(array_keys(SalesMeeting::STATUSES))],
+            'scheduled_at' => ['sometimes', 'nullable', 'date', 'after_or_equal:2020-01-01', 'before_or_equal:' . $planUpTo->toIso8601String()],
+            'ended_at' => ['sometimes', 'nullable', 'date', 'after_or_equal:2020-01-01'],
+            'route_uuid' => ['sometimes', 'nullable', 'uuid'],
+            'result' => ['sometimes', 'nullable', Rule::in(array_keys(SalesMeeting::RESULTS))],
+            'moved_from' => ['sometimes', 'nullable', 'date', 'after_or_equal:2020-01-01'],
+            'time_manual' => ['sometimes', 'boolean'],
             'updated_at' => ['required', 'date', $this->clockRule()],
         ]);
         if ($invalid) {
@@ -330,6 +344,78 @@ class SyncService
             'discussion' => $this->text($r['discussion'] ?? null),
             'outcome' => $this->text($r['outcome'] ?? null),
             'next_followup_at' => filled($r['next_followup_at'] ?? null) ? $this->time($r['next_followup_at']) : null,
+            'client_updated_at' => $this->time($r['updated_at']),
+        ] + $this->planningFields($r));
+
+        // a result belongs to a visit that was done
+        if (($model->status ?? 'done') !== 'done') {
+            $model->result = null;
+        }
+        $model->save();
+
+        return ['status' => 'accepted'];
+    }
+
+    /** @return array<string, mixed> only the planning fields the phone really sent (a missing one keeps what is stored) */
+    private function planningFields(array $r): array
+    {
+        $out = [];
+
+        foreach (self::PLANNING_FIELDS as $field) {
+            if (! array_key_exists($field, $r)) {
+                continue;
+            }
+
+            $value = $r[$field];
+            $out[$field] = match ($field) {
+                'scheduled_at', 'ended_at', 'moved_from' => filled($value) ? $this->time($value) : null,
+                'time_manual' => filter_var($value, FILTER_VALIDATE_BOOLEAN),
+                'status' => filled($value) ? $value : 'done',
+                default => filled($value) ? $value : null,
+            };
+        }
+
+        return $out;
+    }
+
+    // ---- routes (private: several meetings of one day as one trip) ---------------------------
+
+    private function upsertRoute(User $user, array $r): array
+    {
+        $invalid = $this->check($r, [
+            'uuid' => ['required', 'uuid'],
+            'date' => ['required', 'date_format:Y-m-d', 'after_or_equal:2020-01-01', 'before_or_equal:' . CarbonImmutable::now(config('sales.timezone'))->addDays(SalesMeeting::PLAN_DAYS + 1)->toDateString()],
+            'title' => ['required', 'string', 'min:1', 'max:60'],
+            'area' => ['nullable', 'string', 'max:100'],
+            'start_time' => ['sometimes', 'regex:/^([01]\d|2[0-3]):[0-5]\d$/'],
+            'overnight' => ['sometimes', 'boolean'],
+            'stops_order' => ['required', 'array', 'min:1', 'max:10'],
+            'stops_order.*' => ['required', 'uuid', 'distinct'],
+            'updated_at' => ['required', 'date', $this->clockRule()],
+        ]);
+        if ($invalid) {
+            return $invalid;
+        }
+
+        // a route lists the rep's own meetings only
+        if (SalesMeeting::withTrashed()->whereIn('uuid', $r['stops_order'])->where('user_id', '!=', $user->id)->exists()) {
+            return $this->rejected('INVALID', 'A stop of this route is not one of your meetings.');
+        }
+
+        $model = SalesRoute::withTrashed()->where('uuid', $r['uuid'])->first();
+
+        if ($early = $this->earlyAnswer($model, $user, $r['updated_at'])) {
+            return $early;
+        }
+
+        $model ??= new SalesRoute(['uuid' => $r['uuid'], 'user_id' => $user->id]);
+        $model->fill([
+            'route_date' => $r['date'],
+            'title' => trim($r['title']),
+            'area' => $this->text($r['area'] ?? null),
+            'start_time' => $r['start_time'] ?? ($model->start_time ?: '09:00'),
+            'overnight' => filter_var($r['overnight'] ?? false, FILTER_VALIDATE_BOOLEAN),
+            'stops_order' => array_values($r['stops_order']),
             'client_updated_at' => $this->time($r['updated_at']),
         ])->save();
 
@@ -471,6 +557,7 @@ class SyncService
             'contact_uuid' => ['nullable', 'uuid'],
             'contact_name' => ['nullable', 'string', 'max:150'],
             'status' => ['required', Rule::in($statuses)],
+            'source' => ['sometimes', 'nullable', Rule::in(array_keys(SalesEnquiry::SOURCES))],
             'items' => ['required', 'array', 'min:1', 'max:10'],
             'items.*.product' => ['required', 'string', 'min:2', 'max:150'],
             'items.*.brands' => ['nullable', 'string', 'max:150'],
@@ -504,6 +591,8 @@ class SyncService
             'contact_uuid' => $r['contact_uuid'] ?? null,
             'contact_name' => $this->text($r['contact_name'] ?? null),
             'status' => $r['status'],
+            // "came through": a phone from before app v1.7 does not send it, and what is stored is kept then
+            ...(array_key_exists('source', $r) ? ['source' => filled($r['source']) ? $r['source'] : null] : []),
             // only the known keys, trimmed: nothing else the phone sends is stored
             'items' => collect($r['items'])->map(fn ($i) => [
                 'product' => trim($i['product']),
@@ -595,7 +684,7 @@ class SyncService
             return $this->rejected('INVALID', 'Not a valid id.');
         }
 
-        $class = ['expenses' => SalesExpense::class, 'clients' => SalesClient::class, 'contacts' => SalesContact::class, 'meetings' => SalesMeeting::class, 'enquiries' => SalesEnquiry::class, 'scripts' => SalesScript::class][$kind];
+        $class = ['expenses' => SalesExpense::class, 'clients' => SalesClient::class, 'contacts' => SalesContact::class, 'meetings' => SalesMeeting::class, 'routes' => SalesRoute::class, 'enquiries' => SalesEnquiry::class, 'scripts' => SalesScript::class][$kind];
         $model = $class::withTrashed()->where('uuid', $uuid)->first();
 
         // Unknown here (never reached the server) or already deleted: the wish is already true.
@@ -640,6 +729,7 @@ class SyncService
             'clients' => [SalesClient::class, fn (SalesClient $c) => $this->clientPayload($c), true],
             'contacts' => [SalesContact::class, fn (SalesContact $c) => $this->contactPayload($c), true],
             'meetings' => [SalesMeeting::class, fn (SalesMeeting $m) => $this->meetingPayload($m), false],
+            'routes' => [SalesRoute::class, fn (SalesRoute $x) => $this->routePayload($x), false],
             'enquiries' => [SalesEnquiry::class, fn (SalesEnquiry $e) => $this->enquiryPayload($e), false],
             'calls' => [SalesCall::class, fn (SalesCall $c) => $this->callPayload($c), false],
             'reports' => [SalesDailyReport::class, fn (SalesDailyReport $d) => $this->reportPayload($d), false],
@@ -769,8 +859,30 @@ class SyncService
             'discussion' => $m->discussion ?? '',
             'outcome' => $m->outcome ?? '',
             'next_followup_at' => $m->next_followup_at ? $this->iso($m->next_followup_at) : null,
+            'status' => $m->status ?? 'done',
+            'scheduled_at' => $m->scheduled_at ? $this->iso($m->scheduled_at) : null,
+            'ended_at' => $m->ended_at ? $this->iso($m->ended_at) : null,
+            'route_uuid' => $m->route_uuid,
+            'result' => $m->result,
+            'moved_from' => $m->moved_from ? $this->iso($m->moved_from) : null,
+            'time_manual' => (bool) $m->time_manual,
             'updated_at' => $this->iso($m->client_updated_at),
             'deleted' => $m->trashed(),
+        ];
+    }
+
+    private function routePayload(SalesRoute $x): array
+    {
+        return [
+            'uuid' => $x->uuid,
+            'date' => $x->route_date->toDateString(),
+            'title' => $x->title,
+            'area' => $x->area ?? '',
+            'start_time' => $x->start_time,
+            'overnight' => (bool) $x->overnight,
+            'stops_order' => $x->stops_order ?? [],
+            'updated_at' => $this->iso($x->client_updated_at),
+            'deleted' => $x->trashed(),
         ];
     }
 
@@ -783,6 +895,7 @@ class SyncService
             'contact_uuid' => $e->contact_uuid,
             'contact_name' => $e->contact_name,
             'status' => $e->status,
+            'source' => $e->source,
             'items' => $e->items ?? [],
             'opened_at' => $this->iso($e->opened_at),
             'next_followup_at' => $e->next_followup_at ? $this->iso($e->next_followup_at) : null,

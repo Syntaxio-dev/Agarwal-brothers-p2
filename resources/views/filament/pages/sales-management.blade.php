@@ -25,7 +25,13 @@
     // the eight small cards: label, value, sub-line parts [text, late?], icon, link
     $cards = [
         ['Waiting for approval', $s['pending_count'], $s['pending_count'] > 0, [[$s['pending_count'] ? $money($s['pending_paise']) . ' to review' : 'All caught up', false]], 'heroicon-o-clock', $to('sales-expenses', SalesExpenseResource::class, ['tableFilters' => ['status' => ['value' => 'pending']]])],
-        ['Meetings', $s['meetings'], false, [[$s['meetings_today'] . ' today', false], [$s['followups_due'] . ' follow-ups due', false]], 'heroicon-o-calendar-days', $to('sales-meetings', SalesMeetingResource::class)],
+        ['Meetings', $s['meetings'], false, array_values(array_filter([
+            [$s['meetings_today'] . ' today', false],
+            [$s['meetings_planned'] . ' planned ahead', false],
+            $s['meetings_not_logged'] ? [$s['meetings_not_logged'] . ' not logged', true] : null,
+            $s['meetings_missed'] ? [$s['meetings_missed'] . ' missed', true] : null,
+            [$s['followups_due'] . ' follow-ups due', false],
+        ])), 'heroicon-o-calendar-days', $to('sales-meetings', SalesMeetingResource::class)],
         ['Open enquiries', $s['enquiries_open'], false, [[$s['enquiries_overdue'] . ' overdue', $s['enquiries_overdue'] > 0], [$s['enquiries_due_today'] . ' due today', false]], 'heroicon-o-clipboard-document-list', $to('sales-enquiries', SalesEnquiryResource::class)],
         ["Today's reports", $s['reports_today'] . ' of ' . $s['reps_active'], false, [[$reportsMissing->isNotEmpty() ? 'Waiting: ' . $reportsMissing->take(3)->implode(', ') . ($reportsMissing->count() > 3 ? ' +' . ($reportsMissing->count() - 3) : '') : 'Everybody has reported', $reportsMissing->isNotEmpty()]], 'heroicon-o-document-text', $to('sales-reports', SalesReportResource::class)],
         ['Client calls', $s['calls'], false, [[$s['calls_out'] . ' out', false], [$s['calls_in'] . ' in', false], [$s['calls_missed'] . ' missed', $s['calls_missed'] > 0], [$talk($s['talk_seconds']) . ' talk', false]], 'heroicon-o-phone', $to('sales-calls', SalesCallResource::class)],

@@ -40,12 +40,16 @@ class SalesExporter
 
     public static function meetings(Builder $query, string $format = 'xlsx'): StreamedResponse
     {
-        return static::send('meetings', ['When (IST)', 'Rep', 'Client', 'Purpose', 'Discussion', 'Outcome', 'Follow-up (IST)', 'Id'],
-            $query->clone()->reorder()->with('user'), $format,
+        return static::send('meetings', ['When (IST)', 'Rep', 'Client', 'Status', 'Result', 'Planned for (IST)', 'Route', 'Purpose', 'Discussion', 'Outcome', 'Follow-up (IST)', 'Id'],
+            $query->clone()->reorder()->with(['user', 'route']), $format,
             fn ($m) => static::texts([
                 $m->meeting_at->timezone(config('sales.timezone'))->format('Y-m-d H:i'),
                 $m->user->name,
                 $m->client_name,
+                $m->statusLabel(),
+                $m->resultLabel(),
+                $m->scheduled_at?->timezone(config('sales.timezone'))->format('Y-m-d H:i'),
+                $m->route && (int) $m->route->user_id === (int) $m->user_id ? $m->route->title : null,
                 $m->purpose,
                 $m->discussion,
                 $m->outcome,
@@ -67,7 +71,7 @@ class SalesExporter
 
     public static function enquiries(Builder $query, string $format = 'xlsx'): StreamedResponse
     {
-        return static::send('enquiries', ['Opened (IST)', 'Rep', 'Client', 'Person', 'Status', 'Products', 'Preferred brands', 'Budget (INR)', 'Next follow-up (IST)', 'Last note', 'Id'],
+        return static::send('enquiries', ['Opened (IST)', 'Rep', 'Client', 'Person', 'Status', 'Came through', 'Products', 'Preferred brands', 'Budget (INR)', 'Next follow-up (IST)', 'Last note', 'Id'],
             $query->clone()->reorder()->with('user'), $format,
             function ($e) {
                 $items = collect($e->items ?? []);
@@ -79,6 +83,7 @@ class SalesExporter
                     $e->client_name,
                     $e->contact_name,
                     $e->statusLabel(),
+                    $e->sourceLabel(),
                     $items->map(fn ($i) => $i['product'] . ' x' . ($i['quantity'] ?? 1))->implode('; '),
                     $items->pluck('brands')->filter()->implode('; '),
                 ]), [$e->budgetPaise() / 100], static::texts([

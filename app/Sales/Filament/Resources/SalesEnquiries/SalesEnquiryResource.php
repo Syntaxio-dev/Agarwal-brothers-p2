@@ -100,6 +100,7 @@ class SalesEnquiryResource extends Resource
                 TextEntry::make('contact_name')->label('Person')->placeholder('—'),
                 TextEntry::make('user.name')->label('Rep'),
                 TextEntry::make('status')->badge()->formatStateUsing(fn (string $state) => SalesEnquiry::STATUSES[$state] ?? $state)->color(fn (string $state) => self::statusColor($state)),
+                TextEntry::make('source')->label('Came through')->placeholder('—')->formatStateUsing(fn (?string $state) => SalesEnquiry::SOURCES[$state] ?? $state),
                 TextEntry::make('opened_at')->label('Opened')->dateTime('d M Y, h:i A', $tz),
                 TextEntry::make('next_followup_at')->label('Next follow-up')->dateTime('d M Y, h:i A', $tz)->placeholder('—')
                     ->color(fn (SalesEnquiry $r) => $r->isOverdue() ? 'danger' : null),
@@ -145,6 +146,8 @@ class SalesEnquiryResource extends Resource
                 TextColumn::make('next_followup_at')->label('Follow-up')->dateTime('d M, h:i A', $tz)->placeholder('—')->sortable()
                     ->color(fn (SalesEnquiry $r) => $r->isOverdue() ? 'danger' : null)
                     ->description(fn (SalesEnquiry $r) => $r->isOverdue() ? 'Overdue' : null),
+                TextColumn::make('source')->label('Came through')->badge()->color('gray')->placeholder('—')
+                    ->formatStateUsing(fn (?string $state) => SalesEnquiry::SOURCES[$state] ?? $state)->toggleable(),
                 TextColumn::make('updated_at')->label('Last change')->since()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
             ->defaultSort('opened_at', 'desc')
@@ -152,6 +155,7 @@ class SalesEnquiryResource extends Resource
                 SelectFilter::make('user_id')->label('Rep')
                     ->options(fn () => SalesProfile::with('user')->get()->pluck('user.name', 'user_id')->sort()->all()),
                 SelectFilter::make('status')->options(SalesEnquiry::STATUSES)->multiple(),
+                SelectFilter::make('source')->label('Came through')->options(SalesEnquiry::SOURCES),
                 Filter::make('open')->label('Still open')->query(fn (Builder $q) => $q->whereIn('status', SalesEnquiry::OPEN)),
                 Filter::make('overdue')->label('Follow-up overdue')->query(fn (Builder $q) => $q->whereIn('status', SalesEnquiry::OPEN)->where('next_followup_at', '<', now())),
                 Filter::make('date')

@@ -32,10 +32,13 @@ class SalesEnquiry extends Model
 
     public const CLOSED = ['won', 'lost'];
 
+    /** source => label: how the enquiry came through (optional; the phone sends it from app v1.7). */
+    public const SOURCES = ['call' => 'Call', 'walkin' => 'Walk-in', 'whatsapp' => 'WhatsApp', 'reference' => 'Reference'];
+
     protected $table = 'sales_enquiries';
 
     protected $fillable = [
-        'uuid', 'user_id', 'client_uuid', 'client_name', 'contact_uuid', 'contact_name', 'status', 'items', 'opened_at',
+        'uuid', 'user_id', 'client_uuid', 'client_name', 'contact_uuid', 'contact_name', 'status', 'source', 'items', 'opened_at',
         'next_followup_at', 'closed_at', 'timeline', 'client_updated_at',
     ];
 
@@ -53,6 +56,11 @@ class SalesEnquiry extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    public function sourceLabel(): ?string
+    {
+        return $this->source ? (self::SOURCES[$this->source] ?? $this->source) : null;
     }
 
     public function isOpen(): bool

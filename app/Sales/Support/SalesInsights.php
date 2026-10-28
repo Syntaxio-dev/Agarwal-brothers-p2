@@ -58,8 +58,12 @@ class SalesInsights
             'approved_paise' => (int) (clone $expenses)->where('status', SalesExpense::APPROVED)->sum('amount_paise'),
             'pending_count' => (int) (clone $pending)->count(),
             'pending_paise' => (int) (clone $pending)->sum('amount_paise'),
-            'meetings' => (int) SalesMeeting::where('meeting_at', '>=', static::fromUtc($days))->count(),
-            'meetings_today' => (int) SalesMeeting::where('meeting_at', '>=', static::today()->utc())->where('meeting_at', '<', static::today()->addDay()->utc())->count(),
+            // a meeting that happened (an old meeting is "done"); a planned one is counted apart below
+            'meetings' => (int) SalesMeeting::where('status', 'done')->where('meeting_at', '>=', static::fromUtc($days))->count(),
+            'meetings_today' => (int) SalesMeeting::where('status', 'done')->where('meeting_at', '>=', static::today()->utc())->where('meeting_at', '<', static::today()->addDay()->utc())->count(),
+            'meetings_planned' => (int) SalesMeeting::whereIn('status', SalesMeeting::OPEN)->where('meeting_at', '>=', now())->count(),
+            'meetings_not_logged' => (int) SalesMeeting::whereIn('status', SalesMeeting::OPEN)->where('meeting_at', '<', now()->subHour())->count(),
+            'meetings_missed' => (int) SalesMeeting::where('status', 'missed')->where('meeting_at', '>=', static::fromUtc($days))->count(),
             'reps_active' => (int) SalesProfile::active()->count(),
             'reps_not_synced_today' => static::staleReps()->count(),
             'followups_due' => (int) static::followupQuery()->count(),
@@ -187,7 +191,7 @@ class SalesInsights
         return static::neglectedQuery($since)
             ->with('assignee')
             ->withMax('calls', 'started_at')
-            ->withMax('meetings', 'meeting_at')
+            ->withMax(['meetings' => fn ($q) => $q->where('status', 'done')], 'meeting_at')
             ->orderBy('name')
             ->limit($limit)
             ->get()
@@ -208,7 +212,7 @@ class SalesInsights
     {
         return SalesClient::query()
             ->whereDoesntHave('calls', fn ($q) => $q->where('started_at', '>=', $since))
-            ->whereDoesntHave('meetings', fn ($q) => $q->where('meeting_at', '>=', $since))
+            ->whereDoesntHave('meetings', fn ($q) => $q->where('status', 'done')->where('meeting_at', '>=', $since))
             ->where('created_at', '<', $since);   // a client added this week is not "neglected" yet
     }
 
@@ -272,7 +276,7 @@ class SalesInsights
         $range = [static::from($days)->toDateString(), static::today()->toDateString()];
         $spend = SalesExpense::selectRaw('user_id, SUM(amount_paise) as total, COUNT(*) as n')->whereBetween('expense_date', $range)->groupBy('user_id')->get()->keyBy('user_id');
         $pending = SalesExpense::selectRaw('user_id, COUNT(*) as n')->where('status', SalesExpense::PENDING)->groupBy('user_id')->pluck('n', 'user_id');
-        $meetings = SalesMeeting::selectRaw('user_id, COUNT(*) as n')->where('meeting_at', '>=', static::fromUtc($days))->groupBy('user_id')->pluck('n', 'user_id');
+        $meetings = SalesMeeting::selectRaw('user_id, COUNT(*) as n')->where('status', 'done')->where('meeting_at', '>=', static::fromUtc($days))->groupBy('user_id')->pluck('n', 'user_id');
         $enquiries = SalesEnquiry::selectRaw('user_id, COUNT(*) as n, SUM(CASE WHEN next_followup_at < ? THEN 1 ELSE 0 END) as late', [now()])->whereIn('status', SalesEnquiry::OPEN)->groupBy('user_id')->get()->keyBy('user_id');
         $calls = SalesCall::selectRaw('user_id, COUNT(*) as n, SUM(duration_seconds) as secs')->where('started_at', '>=', static::fromUtc($days))->groupBy('user_id')->get()->keyBy('user_id');
         $won = SalesEnquiry::selectRaw('user_id, COUNT(*) as n')->where('status', 'won')->where('closed_at', '>=', static::fromUtc($days))->groupBy('user_id')->pluck('n', 'user_id');
