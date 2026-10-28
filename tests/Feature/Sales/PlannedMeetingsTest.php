@@ -380,7 +380,7 @@ class PlannedMeetingsTest extends SalesTestCase
         $this->actingAs($this->manager());
         $rows = SalesEnquiry::all()->keyBy('client_name');
 
-        Livewire::test(ListSalesEnquiries::class)
+        Livewire::withQueryParams(["view" => "list"])->test(ListSalesEnquiries::class)
             ->assertCanSeeTableRecords($rows->values())
             ->assertTableColumnStateSet('source', 'whatsapp', $rows['JK Cement'])
             ->filterTable('source', 'whatsapp')->assertCanSeeTableRecords([$rows['JK Cement']])->assertCanNotSeeTableRecords([$rows['Plain Co']]);

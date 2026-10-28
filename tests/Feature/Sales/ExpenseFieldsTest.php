@@ -2,7 +2,6 @@
 
 namespace Tests\Feature\Sales;
 
-use App\Sales\Filament\Resources\SalesExpenses\Pages\ListSalesExpenses;
 use App\Sales\Models\SalesExpense;
 use App\Sales\Support\SalesInsights;
 use Illuminate\Support\Str;
@@ -88,14 +87,12 @@ class ExpenseFieldsTest extends SalesTestCase
 
         $outstation = SalesExpense::where('work_area', 'outstation')->first();
         $local = SalesExpense::where('work_area', 'local')->first();
-        Livewire::test(ListSalesExpenses::class)
-            ->filterTable('work_area', 'outstation')
-            ->assertCanSeeTableRecords([$outstation])
-            ->assertCanNotSeeTableRecords([$local]);
-        Livewire::test(ListSalesExpenses::class)
-            ->filterTable('bill_type', 'without_bill')
-            ->assertCanSeeTableRecords([$outstation])
-            ->assertCanNotSeeTableRecords([$local]);
+        // the queue's filters (work area, bill) are one query shared by the list and the export
+        $byArea = SalesInsights::expenseQuery(['area' => 'outstation'])->pluck('id')->all();
+        $this->assertSame([$outstation->id], $byArea);
+        $this->assertNotContains($local->id, $byArea);
+        $this->assertSame([$outstation->id], SalesInsights::expenseQuery(['bill' => 'without_bill'])->pluck('id')->all());
+        $this->assertCount(1, SalesInsights::expenseQuery(['area' => 'none'])->get(), 'an older app did not say: Not told');
 
         $split = SalesInsights::expenseSplit(30);
         $this->assertSame(['local' => 10000, 'outstation' => 30000, 'unknown' => 5000], $split['work_area']);

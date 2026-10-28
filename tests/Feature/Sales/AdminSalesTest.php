@@ -10,7 +10,6 @@ use App\Sales\Filament\Resources\SalesClients\Pages\EditSalesClient;
 use App\Sales\Filament\Resources\SalesClients\Pages\ListSalesClients;
 use App\Sales\Filament\Resources\SalesClients\RelationManagers\ContactsRelationManager;
 use App\Sales\Models\SalesContact;
-use App\Sales\Filament\Resources\SalesExpenses\Pages\ListSalesExpenses;
 use App\Sales\Filament\Resources\SalesMeetings\Pages\ListSalesMeetings;
 use App\Sales\Filament\Resources\SalesReps\Pages\CreateSalesRep;
 use App\Sales\Filament\Resources\SalesReps\Pages\EditSalesRep;
@@ -63,7 +62,7 @@ class AdminSalesTest extends SalesTestCase
     {
         $a = $this->rep('REP001', '9000000001', name: 'Ravi Sharma');
         $this->storedExpense($a, ['amount_paise' => 123456, 'category' => 'fuel']);
-        SalesMeeting::create(['uuid' => (string) Str::uuid(), 'user_id' => $a->user_id, 'client_name' => 'Acme Labs', 'meeting_at' => now()->subHour(), 'next_followup_at' => now()->addDay(), 'client_updated_at' => now()]);
+        SalesMeeting::create(['uuid' => (string) Str::uuid(), 'user_id' => $a->user_id, 'client_name' => 'Acme Labs', 'meeting_at' => now()->subDays(3), 'next_followup_at' => now()->addDay(), 'client_updated_at' => now()]);
 
         $this->actingAs($this->manager());
 
@@ -73,79 +72,12 @@ class AdminSalesTest extends SalesTestCase
             ->assertDontSee('Acme Labs')   // a follow-up shows on its own tab
             ->call('setTab', 'followups')->assertSee('Acme Labs')
             ->assertSee('Petrol')
-            ->assertSee('Waiting for approval')
-            ->call('setRange', 7)->assertSet('range', 7)->assertSee('Last 7 days')
+            ->assertSee('Needs your action')
+            ->call('setRange', 7)->assertSet('range', 7)->assertSee('7 days')
             ->call('setRange', 5)->assertSet('range', 30);   // only 7, 30 or 90 are allowed
     }
 
-    public function test_approving_and_rejecting(): void
-    {
-        $manager = $this->manager();
-        $this->actingAs($manager);
-        $profile = $this->rep();
-        $first = $this->storedExpense($profile);
-        $second = $this->storedExpense($profile);
-        $done = $this->storedExpense($profile);
-        $done->approve($manager);
-
-        Livewire::test(ListSalesExpenses::class)->assertCanSeeTableRecords([$first, $second, $done])
-            ->callTableAction('approve', $first)->assertHasNoTableActionErrors();
-
-        Livewire::test(ListSalesExpenses::class)
-            ->assertTableActionHidden('approve', $done)
-            ->assertTableActionHidden('reject', $done)
-            ->assertTableActionVisible('reject', $second);
-
-        Livewire::test(ListSalesExpenses::class)
-            ->callTableAction('reject', $second, data: ['reason' => ''])
-            ->assertHasTableActionErrors(['reason' => 'required']);
-        $this->assertSame('pending', $second->fresh()->status, 'no reason, no rejection');
-
-        Livewire::test(ListSalesExpenses::class)
-            ->callTableAction('reject', $second, data: ['reason' => 'Bill is missing'])
-            ->assertHasNoTableActionErrors();
-
-        $this->assertSame('approved', $first->fresh()->status);
-        $this->assertSame($manager->id, $first->fresh()->reviewed_by);
-        $this->assertNotNull($first->fresh()->reviewed_at);
-        $this->assertSame('rejected', $second->fresh()->status);
-        $this->assertSame('Bill is missing', $second->fresh()->reject_reason);
-
-        $this->assertDatabaseHas('activity_logs', ['user_id' => $manager->id, 'subject_type' => SalesExpense::class, 'subject_id' => $first->id, 'action' => 'updated']);
-    }
-
-    public function test_bulk_approve_skips_what_is_not_waiting(): void
-    {
-        $manager = $this->manager();
-        $this->actingAs($manager);
-        $profile = $this->rep();
-        $a = $this->storedExpense($profile);
-        $b = $this->storedExpense($profile);
-        $rejected = $this->storedExpense($profile);
-        $rejected->reject($manager, 'No bill');
-
-        Livewire::test(ListSalesExpenses::class)->callTableBulkAction('approve_selected', [$a, $b, $rejected]);
-
-        $this->assertSame('approved', $a->fresh()->status);
-        $this->assertSame('approved', $b->fresh()->status);
-        $this->assertSame('rejected', $rejected->fresh()->status, 'a decision that was already made is not overwritten');
-    }
-
-    public function test_the_expense_list_filters(): void
-    {
-        $this->actingAs($this->manager());
-        $a = $this->rep('REP001', '9000000001');
-        $b = $this->rep('REP002', '9000000002');
-        $fuelA = $this->storedExpense($a, ['category' => 'fuel']);
-        $foodB = $this->storedExpense($b, ['category' => 'food', 'expense_date' => now()->subDays(20)->toDateString()]);
-
-        Livewire::test(ListSalesExpenses::class)
-            ->filterTable('user_id', $a->user_id)->assertCanSeeTableRecords([$fuelA])->assertCanNotSeeTableRecords([$foodB])
-            ->resetTableFilters()
-            ->filterTable('category', 'food')->assertCanSeeTableRecords([$foodB])->assertCanNotSeeTableRecords([$fuelA])
-            ->resetTableFilters()
-            ->filterTable('date', ['from' => now()->subDays(5)->toDateString(), 'until' => null])->assertCanSeeTableRecords([$fuelA])->assertCanNotSeeTableRecords([$foodB]);
-    }
+    // approving, rejecting, bulk approve and the filters of the Expenses list moved to ExpensesQueueTest (the screen is a review queue now)
 
     public function test_meetings_are_read_only_but_the_manager_runs_the_client_pool(): void
     {
@@ -232,18 +164,20 @@ class AdminSalesTest extends SalesTestCase
         $this->actingAs($this->manager());
 
         Livewire::test(CreateSalesRep::class)
-            ->fillForm(['name' => 'Anita Verma', 'employee_code' => 'rep-007', 'phone' => '98765 43210', 'password' => 'Secret-pass-1', 'is_active' => true])
+            ->fillForm(['name' => 'Anita Verma', 'employee_code' => 'rep-007', 'phone' => '98765 43210'])
             ->call('create')
             ->assertHasNoFormErrors();
 
         $user = User::where('email', 'rep-007@reps.invalid')->first();
         $this->assertNotNull($user);
         $this->assertSame('field_rep', $user->role);
-        $this->assertTrue(Hash::check('Secret-pass-1', $user->password));
+        // the password is made for the manager and shown once on step 2
+        $password = Livewire::test(\App\Sales\Filament\Resources\SalesReps\Pages\RepSignInReady::class, ['record' => $user->salesProfile->getKey()])->get('password');
+        $this->assertTrue(Hash::check($password, $user->password));
         $this->assertDatabaseHas('sales_profiles', ['user_id' => $user->id, 'employee_code' => 'REP-007', 'phone' => '+919876543210', 'is_active' => 1]);
 
         auth()->logout();
-        $this->postJson('/api/sales/v1/auth/login', ['login' => '9876543210', 'password' => 'Secret-pass-1'])->assertOk()->assertJsonPath('account.name', 'Anita Verma');
+        $this->postJson('/api/sales/v1/auth/login', ['login' => '9876543210', 'password' => $password])->assertOk()->assertJsonPath('account.name', 'Anita Verma');
         $this->actingAs($user)->get('/admin')->assertForbidden();
     }
 
@@ -253,12 +187,12 @@ class AdminSalesTest extends SalesTestCase
         $this->rep('REP001', '9000000001');
 
         Livewire::test(CreateSalesRep::class)
-            ->fillForm(['name' => 'X', 'employee_code' => 'REP001', 'phone' => '12', 'password' => 'short'])
+            ->fillForm(['name' => 'X', 'employee_code' => 'REP001', 'phone' => '12'])
             ->call('create')
-            ->assertHasFormErrors(['name', 'employee_code', 'phone', 'password']);
+            ->assertHasFormErrors(['name', 'employee_code', 'phone']);
 
         Livewire::test(CreateSalesRep::class)
-            ->fillForm(['name' => 'Anita', 'employee_code' => 'NEW1', 'phone' => '90000 00001', 'password' => 'Secret-pass-1'])
+            ->fillForm(['name' => 'Anita', 'employee_code' => 'NEW1', 'phone' => '90000 00001'])
             ->call('create')
             ->assertHasFormErrors(['phone']);   // the same number as another rep, in another spelling
 
@@ -296,7 +230,7 @@ class AdminSalesTest extends SalesTestCase
         $a = $this->rep('REP001', '9000000001', name: 'Ravi');
         $this->storedExpense($a, ['amount_paise' => 70000]);
 
-        Livewire::test(ListSalesReps::class)->assertCanSeeTableRecords([$a])->assertSee('₹700');
+        Livewire::test(ListSalesReps::class)->assertSee('Ravi')->assertSee('₹700');
         Livewire::test(ListUsers::class)->assertCanNotSeeTableRecords([$a->user]);
     }
 

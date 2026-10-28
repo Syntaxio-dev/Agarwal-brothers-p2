@@ -142,7 +142,8 @@ class SalesPanelTest extends SalesTestCase
             ->assertSet('tab', 'approvals')
             ->assertSee('Report in')->assertSee('No report');
 
-        $page->call('selectRep', $b->id)->assertSet('selectedRep', $b->id)->assertSee('Anita wrote this report');
+        $page->call('selectRep', $b->id)->assertSet('selectedRep', $b->id);
+        $this->assertStringContainsString('Anita wrote this report', $page->instance()->getMountedAction()->getModalContent()->render(), 'the rep detail opens in a slide-over');
 
         $page->call('setTab', 'followups')->assertSet('tab', 'followups')->assertSee('Acme Labs');
         $page->call('setTab', 'nonsense')->assertSet('tab', 'approvals');
@@ -167,7 +168,11 @@ class SalesPanelTest extends SalesTestCase
 
     public function test_the_page_is_escaped_and_has_the_accessible_controls(): void
     {
+        // the page is one view with five parts
         $source = file_get_contents(resource_path('views/filament/pages/sales-management.blade.php'));
+        foreach (glob(resource_path('views/filament/pages/sales-management/*.blade.php')) as $part) {
+            $source .= file_get_contents($part);
+        }
 
         $this->assertStringNotContainsString('{!!', $source, 'every value goes through {{ }}');
         $this->assertStringContainsString('role="img"', $source);

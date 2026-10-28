@@ -45,10 +45,24 @@ class SalesRoute extends Model
      */
     public function stops(): Collection
     {
-        $mine = SalesMeeting::where('user_id', $this->user_id)->where('route_uuid', $this->uuid)->get();
+        return $this->orderedStops(SalesMeeting::where('user_id', $this->user_id)->where('route_uuid', $this->uuid)->get());
+    }
+
+    /**
+     * The same rule for meetings that are already loaded (a page that draws many routes must not ask the database once per route):
+     * only this rep's own meetings that point back at the route count, in the route's order, a stop missing from it last (by time).
+     *
+     * @param  Collection<int, SalesMeeting>  $meetings
+     * @return Collection<int, SalesMeeting>
+     */
+    public function orderedStops(Collection $meetings): Collection
+    {
         $order = array_flip($this->stops_order ?? []);
 
-        return $mine->sortBy(fn (SalesMeeting $m) => sprintf('%010d-%012d', $order[$m->uuid] ?? 9999999999, $m->plannedOrActualAt()->getTimestamp()))->values();
+        return $meetings
+            ->filter(fn (SalesMeeting $m) => (int) $m->user_id === (int) $this->user_id && $m->route_uuid === $this->uuid)
+            ->sortBy(fn (SalesMeeting $m) => sprintf('%010d-%012d', $order[$m->uuid] ?? 9999999999, $m->plannedOrActualAt()->getTimestamp()))
+            ->values();
     }
 
     /** "2 of 3 done": the stops that are no longer to happen (done or missed) out of all of them. */

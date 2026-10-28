@@ -14,12 +14,18 @@ use Livewire\Livewire;
  */
 class RepEmailTest extends SalesTestCase
 {
+    /** The password step 2 shows (read once from the manager's session). */
+    private function shownPassword(\App\Sales\Models\SalesProfile $profile): string
+    {
+        return Livewire::test(\App\Sales\Filament\Resources\SalesReps\Pages\RepSignInReady::class, ['record' => $profile->getKey()])->get('password');
+    }
+
     public function test_the_manager_makes_the_account_with_name_email_number_code_and_password(): void
     {
         $this->actingAs($this->manager());
 
         Livewire::test(CreateSalesRep::class)
-            ->fillForm(['name' => 'Anita Verma', 'email' => 'Anita.Verma@Example.com', 'employee_code' => 'rep-010', 'phone' => '98765 43210', 'password' => 'Secret-pass-1', 'is_active' => true])
+            ->fillForm(['name' => 'Anita Verma', 'email' => 'Anita.Verma@Example.com', 'employee_code' => 'rep-010', 'phone' => '98765 43210'])
             ->call('create')
             ->assertHasNoFormErrors();
 
@@ -30,10 +36,11 @@ class RepEmailTest extends SalesTestCase
         $this->assertSame('+919876543210', $user->salesProfile->phone);
 
         // the app signs in with the code (or the number) and the password: that is all that opens it
+        $password = $this->shownPassword($user->salesProfile);
         auth()->logout();
-        $this->postJson('/api/sales/v1/auth/login', ['login' => 'rep-010', 'password' => 'Secret-pass-1'])->assertOk()->assertJsonPath('account.name', 'Anita Verma');
-        $this->postJson('/api/sales/v1/auth/login', ['login' => '9876543210', 'password' => 'Secret-pass-1'])->assertOk();
-        $this->postJson('/api/sales/v1/auth/login', ['login' => 'anita.verma@example.com', 'password' => 'Secret-pass-1'])->assertStatus(401);
+        $this->postJson('/api/sales/v1/auth/login', ['login' => 'rep-010', 'password' => $password])->assertOk()->assertJsonPath('account.name', 'Anita Verma');
+        $this->postJson('/api/sales/v1/auth/login', ['login' => '9876543210', 'password' => $password])->assertOk();
+        $this->postJson('/api/sales/v1/auth/login', ['login' => 'anita.verma@example.com', 'password' => $password])->assertStatus(401);
 
         // and a rep with a real e-mail still cannot open the admin panel
         $this->actingAs($user)->get('/admin')->assertForbidden();
@@ -44,19 +51,19 @@ class RepEmailTest extends SalesTestCase
         $this->actingAs($this->manager());
 
         Livewire::test(CreateSalesRep::class)
-            ->fillForm(['name' => 'No Number', 'employee_code' => 'REP020', 'password' => 'Secret-pass-1'])
+            ->fillForm(['name' => 'No Number', 'employee_code' => 'REP020'])
             ->call('create')
             ->assertHasFormErrors(['phone' => 'required']);
 
         Livewire::test(CreateSalesRep::class)
-            ->fillForm(['name' => 'No Email', 'employee_code' => 'REP021', 'phone' => '90000 00021', 'password' => 'Secret-pass-1'])
+            ->fillForm(['name' => 'No Email', 'employee_code' => 'REP021', 'phone' => '90000 00021'])
             ->call('create')
             ->assertHasNoFormErrors();
         $this->assertSame('rep021@reps.invalid', User::where('name', 'No Email')->value('email'), 'without an e-mail a placeholder is used');
 
         $taken = User::factory()->create(['email' => 'taken@example.com', 'role' => 'editor', 'is_active' => true]);
         Livewire::test(CreateSalesRep::class)
-            ->fillForm(['name' => 'Copy', 'email' => 'TAKEN@example.com', 'employee_code' => 'REP022', 'phone' => '90000 00022', 'password' => 'Secret-pass-1'])
+            ->fillForm(['name' => 'Copy', 'email' => 'TAKEN@example.com', 'employee_code' => 'REP022', 'phone' => '90000 00022'])
             ->call('create')
             ->assertHasFormErrors(['email']);
         $this->assertNotNull($taken);

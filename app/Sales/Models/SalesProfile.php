@@ -21,7 +21,7 @@ class SalesProfile extends Model
 
     protected $table = 'sales_profiles';
 
-    protected $fillable = ['user_id', 'employee_code', 'phone', 'is_active', 'last_sync_at', 'app_version', 'device_model'];
+    protected $fillable = ['user_id', 'employee_code', 'phone', 'is_active', 'sort_order', 'last_sync_at', 'app_version', 'device_model'];
 
     protected function casts(): array
     {

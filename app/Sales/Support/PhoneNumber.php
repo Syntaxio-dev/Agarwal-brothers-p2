@@ -38,4 +38,14 @@ class PhoneNumber
             default => null,
         };
     }
+
+    /** The spelling shown on screens: "+91 98290 55671" for an Indian number, any other number as it is stored. */
+    public static function display(?string $phone): string
+    {
+        if (blank($phone)) {
+            return '';
+        }
+
+        return preg_match('/^\+91(\d{5})(\d{5})$/', $phone, $m) ? '+91 ' . $m[1] . ' ' . $m[2] : $phone;
+    }
 }

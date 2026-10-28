@@ -194,6 +194,6 @@ class GuideBriefTest extends SalesTestCase
         $a = $this->headers($this->rep('REP001', '9000000001'));
         $this->push($a, ['scripts' => [$this->script($this->product()->uuid)]])->assertOk();
 
-        $this->actingAs($this->manager())->get('/admin/sales-management')->assertOk()->assertSee('1 own scripts from 1 reps');
+        $this->actingAs($this->manager())->get('/admin/sales-management')->assertOk()->assertSee('1 own script from 1 rep');
     }
 }

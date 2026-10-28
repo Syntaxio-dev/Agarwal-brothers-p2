@@ -37,6 +37,12 @@ return [
 
     'expense_categories' => ['travel', 'food', 'fuel', 'parking', 'gifting', 'lodging', 'other'],
 
+    // The Reps screens: a daily report is expected from this hour (business time) on the working days (ISO weekdays, 1 = Monday),
+    // and a phone that runs an app older than this version is marked "update".
+    'report_hour' => (int) env('SALES_REPORT_HOUR', 18),
+    'working_days' => [1, 2, 3, 4, 5, 6],
+    'min_app_version' => env('SALES_MIN_APP_VERSION', '1.7'),
+
     // Field reps never get a real mailbox: users.email must be unique, so a placeholder is made from the employee code.
     'rep_email_domain' => 'reps.invalid',
 

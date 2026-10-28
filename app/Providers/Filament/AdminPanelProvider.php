@@ -49,6 +49,7 @@ class AdminPanelProvider extends PanelProvider
             ->brandLogoHeight('2.25rem')
             ->favicon(asset('favicon.png'))
             ->sidebarCollapsibleOnDesktop()
+            ->sidebarWidth('15rem')   // slimmer than the 20rem default: more room for the content, the longest label still fits
             ->unsavedChangesAlerts()   // browser asks before leaving a form with unsaved changes
             ->renderHook(PanelsRenderHook::BODY_END, fn () => view('filament.partials.admin-drafts'))
             ->globalSearch(\App\Filament\Support\AdminSearchProvider::class)

@@ -181,7 +181,8 @@ class SalesEnquiryResource extends Resource
                     ])
                     ->action(fn (array $data, $livewire) => SalesExporter::enquiries($livewire->getFilteredTableQuery(), $data['format'])),
             ])
-            ->recordActions([ViewAction::make()->label('Open')->schema(static::infolistComponents())])
+            // "Open" is the side panel of the board (the same window from the List)
+            ->recordActions([Action::make('open')->label('Open')->icon(Heroicon::OutlinedEye)->action(fn (SalesEnquiry $record, $livewire) => $livewire->openEnquiry($record->uuid))])
             ->emptyStateHeading('No enquiries yet')
             ->emptyStateDescription('They appear here when a rep writes one in the app and syncs.');
     }

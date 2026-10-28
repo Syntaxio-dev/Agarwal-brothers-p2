@@ -170,3 +170,12 @@ html:not(.dark) .fi-btn.fi-color.fi-color-gray:not(.fi-outlined):not(label) > .f
 :focus-visible {
     outline-color: #00B4D8;
 }
+
+/* Sidebar: no visible scrollbar (it still scrolls with the wheel, the finger and the keyboard) */
+.fi-sidebar-nav {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+.fi-sidebar-nav::-webkit-scrollbar {
+    display: none;
+}

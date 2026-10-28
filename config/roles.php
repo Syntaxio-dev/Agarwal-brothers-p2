@@ -44,7 +44,7 @@ return [
     'sales_manager' => [
         'label' => 'Sales team manager',
         'description' => 'Sees every field rep\'s expenses, meetings and clients; approves expenses; adds and switches reps.',
-        'access' => ['sales-dashboard', 'sales-reps', 'sales-expenses', 'sales-meetings', 'sales-clients', 'sales-calls', 'sales-positions', 'sales-enquiries', 'sales-reports', 'sales-products', 'sales-product-requests'],
+        'access' => ['sales-dashboard', 'sales-reps', 'sales-expenses', 'sales-meetings', 'sales-clients', 'sales-calls', 'sales-positions', 'sales-enquiries', 'sales-enquiries-move', 'sales-reports', 'sales-products', 'sales-product-requests'],
     ],
 
 ];

@@ -82,4 +82,66 @@ class RepAccount
         $profile->user->update(['password' => $password]);
         $profile->user->tokens()->delete();   // every phone signs in again with the new password
     }
+
+    /** Every kind of record a rep owns, by kind, as a number (what a delete would remove). Soft-deleted rows count too. */
+    public static function recordCounts(SalesProfile $profile): array
+    {
+        $uid = $profile->user_id;
+        $count = fn (string $model) => (int) (in_array(\Illuminate\Database\Eloquent\SoftDeletes::class, class_uses_recursive($model)) ? $model::withTrashed() : $model::query())->where('user_id', $uid)->count();
+
+        return [
+            'expenses' => $count(\App\Sales\Models\SalesExpense::class),
+            'meetings' => $count(\App\Sales\Models\SalesMeeting::class),
+            'routes' => $count(\App\Sales\Models\SalesRoute::class),
+            'enquiries' => $count(\App\Sales\Models\SalesEnquiry::class),
+            'reports' => $count(\App\Sales\Models\SalesDailyReport::class),
+            'calls' => $count(\App\Sales\Models\SalesCall::class),
+            'scripts' => $count(\App\Sales\Models\SalesScript::class),
+            'requests' => $count(\App\Sales\Models\SalesProductRequest::class),
+        ];
+    }
+
+    /**
+     * Delete a rep AND everything they own, for good (a manager asked for it; the screens ask first and only offer it for a rep who is switched
+     * off). The shared client pool stays: the clients and people this rep added now belong to the manager who deletes. Bill photos go too.
+     * Written to the activity log first (with the counts). Returns what was removed.
+     */
+    public static function deleteWithRecords(SalesProfile $profile, User $by): array
+    {
+        abort_if($profile->is_active, 422, 'Switch the rep off first.');
+        abort_if((int) $profile->user_id === (int) $by->id, 422, 'You cannot delete your own account.');
+        abort_unless($profile->user?->role === SalesProfile::ROLE, 422, 'Only a field rep can be deleted here.');
+
+        $counts = static::recordCounts($profile);
+        $uid = $profile->user_id;
+        $paths = \App\Sales\Models\SalesExpense::withTrashed()->where('user_id', $uid)->whereNotNull('bill_path')->pluck('bill_path')->all();
+
+        DB::transaction(function () use ($profile, $by, $uid, $counts) {
+            \App\Support\ActivityLogger::record('deleted', $profile, ['records' => ['old' => collect($counts)->map(fn ($n, $k) => $n . ' ' . $k)->implode(', '), 'new' => null]], $by);
+
+            foreach ([\App\Sales\Models\SalesExpense::class, \App\Sales\Models\SalesMeeting::class, \App\Sales\Models\SalesRoute::class, \App\Sales\Models\SalesEnquiry::class, \App\Sales\Models\SalesScript::class] as $model) {
+                $model::withTrashed()->where('user_id', $uid)->forceDelete();
+            }
+            \App\Sales\Models\SalesDailyReport::where('user_id', $uid)->delete();
+            \App\Sales\Models\SalesCall::where('user_id', $uid)->delete();
+            \App\Sales\Models\SalesProductRequest::where('user_id', $uid)->delete();
+
+            // the shared pool survives: what this rep added is handed to the manager
+            \App\Sales\Models\SalesClient::withTrashed()->where('user_id', $uid)->update(['user_id' => $by->id]);
+            \App\Sales\Models\SalesContact::withTrashed()->where('user_id', $uid)->update(['user_id' => $by->id]);
+
+            $user = $profile->user;
+            $user->tokens()->delete();
+            $profile->delete();
+            $user->delete();
+        });
+
+        // the photos go only once the database part has committed: a failure above must not leave expenses without their photo
+        foreach ($paths as $path) {
+            \Illuminate\Support\Facades\Storage::disk('local')->delete($path);
+        }
+        \Illuminate\Support\Facades\Storage::disk('local')->deleteDirectory("sales/bills/{$uid}");
+
+        return $counts;
+    }
 }

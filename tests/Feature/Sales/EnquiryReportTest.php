@@ -269,7 +269,7 @@ class EnquiryReportTest extends SalesTestCase
         $this->get('/admin/sales-management')->assertOk();
 
         $enquiry = SalesEnquiry::first();
-        Livewire::test(ListSalesEnquiries::class)
+        Livewire::withQueryParams(["view" => "list"])->test(ListSalesEnquiries::class)
             ->assertCanSeeTableRecords([$enquiry])
             ->assertSee('Muffle Furnace')
             ->filterTable('status', ['new'])->assertCanSeeTableRecords([$enquiry])
