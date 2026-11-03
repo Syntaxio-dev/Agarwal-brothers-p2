@@ -26,18 +26,47 @@ class MapLinkTest extends SalesTestCase
         Http::assertNothingSent();
     }
 
-    public function test_a_short_share_link_is_followed_and_read(): void
+    /** What Google really answers for a business share link: a redirect to the place page (no numbers in it), then the embed page with the position. */
+    private function fakeGoogle(string $ftidInEmbed = '0x396db3c9049b73ad:0x15aeb384d982bc97'): void
+    {
+        $place = 'https://www.google.com/maps/place/XQ4P%2B7VJ+Welham+Senior+Secondary+School,+Sector+4,+Jaipur+302039/data=!4m2!3m1!1s0x396db3c9049b73ad:0x15aeb384d982bc97!18m1!1e1?entry=gps';
+
+        Http::fake([
+            'maps.app.goo.gl/*' => Http::response('', 302, ['Location' => $place]),
+            'www.google.com/maps/place/*' => Http::response('<html>the page shell, no numbers</html>', 200),
+            'www.google.com/maps/embed*' => Http::response('x[[[3556.35,75.7871329,26.9557035],[0,0,0],null,13.1],null,null,[["' . $ftidInEmbed . '","XQ4P+7VJ Welham Senior Secondary School, Sector 4, Jaipur",null]]]', 200),
+        ]);
+    }
+
+    public function test_a_short_share_link_of_a_business_is_followed_and_the_place_is_read(): void
+    {
+        $this->fakeGoogle();
+        $headers = $this->headers($this->rep());
+
+        $answer = $this->ask($headers, "Welham Senior Secondary School\nSector 4, Jaipur\nhttps://maps.app.goo.gl/2anvFoV913eV3ik97?g_st=ic")->assertOk();
+
+        $this->assertSame(26.955704, $answer->json('lat'));
+        $this->assertSame(75.787133, $answer->json('lng'));
+        $this->assertSame('Welham Senior Secondary School', $answer->json('name'));
+    }
+
+    public function test_a_place_with_another_internal_id_is_not_taken(): void
+    {
+        $this->fakeGoogle('0x111111111111111:0x2222222222222222');
+
+        $this->ask($this->headers($this->rep()), 'https://maps.app.goo.gl/2anvFoV913eV3ik97')->assertNotFound();
+    }
+
+    public function test_a_short_link_whose_redirect_carries_the_numbers_needs_no_second_trip(): void
     {
         Http::fake([
             'maps.app.goo.gl/*' => Http::response('', 302, ['Location' => 'https://www.google.com/maps/place/Agarwal+Brothers/@26.91,75.78,17z/data=!3d26.9124!4d75.7873']),
         ]);
-        $headers = $this->headers($this->rep());
 
-        $answer = $this->ask($headers, "Agarwal Brothers\nSitapura, Jaipur\nhttps://maps.app.goo.gl/abc123XYZ")->assertOk();
+        $answer = $this->ask($this->headers($this->rep()), 'https://maps.app.goo.gl/abc123XYZ')->assertOk();
 
         $this->assertSame(26.9124, $answer->json('lat'));
-        $this->assertSame(75.7873, $answer->json('lng'));
-        $this->assertSame('Agarwal Brothers', $answer->json('name'));
+        Http::assertSentCount(1);
     }
 
     public function test_the_office_opens_google_maps_addresses_only(): void

@@ -58,6 +58,13 @@ class MapLinkResolver
                 continue;
             }
 
+            // The page of a business: Google's share link carries its name and address and an internal id (0x...:0x...), but no numbers.
+            // The same name asked of Google's key-free embed page returns the place with its position; the internal id must match, so the
+            // pin is never put on a different shop that has a similar name.
+            if ($place = self::placeNamedInUrl($url)) {
+                return self::lookUp($place['query'], $place['ftid']);
+            }
+
             // a page, not a redirect: Google puts the place in the page address it served or in the page itself
             $body = substr((string) $response->body(), 0, 400_000);
 
@@ -75,6 +82,71 @@ class MapLinkResolver
         }
 
         return null;
+    }
+
+    /** "/maps/place/NAME+AND+ADDRESS/data=!4m2!3m1!1s0x...:0x..." -> the words and the internal id of the place. */
+    private static function placeNamedInUrl(string $url): ?array
+    {
+        $path = (string) parse_url($url, PHP_URL_PATH);
+
+        if (! preg_match('~/maps/place/([^/]+)~', $path, $m)) {
+            return null;
+        }
+
+        $query = trim(preg_replace('/\s+/', ' ', urldecode($m[1])));   // urldecode turns "+" into a space and %2B into a real plus
+
+        if (mb_strlen($query) < 3 || preg_match('/^-?\d+(\.\d+)?\s*,\s*-?\d/', $query)) {
+            return null;
+        }
+
+        $ftid = preg_match('/!1s(0x[0-9a-f]+:0x[0-9a-f]+)/i', urldecode($path), $f) ? strtolower($f[1]) : null;
+
+        return ['query' => mb_substr($query, 0, 250), 'ftid' => $ftid];
+    }
+
+    /**
+     * Asks Google's embed page (no key) for a place by its words. Its answer holds the place's internal id and its position; when the share
+     * link told us the id it must be the same one. -> { lat, lng, name } or null.
+     */
+    private static function lookUp(string $query, ?string $ftid): ?array
+    {
+        try {
+            $response = Http::withOptions(['allow_redirects' => false])
+                ->withHeaders(['Accept-Language' => 'en', 'Accept' => 'text/html'])
+                ->withUserAgent('Mozilla/5.0 (Linux; Android 13) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0 Mobile Safari/537.36')
+                ->timeout(8)
+                ->get('https://www.google.com/maps/embed?origin=mfe&pb=!1m2!2m1!1s' . urlencode($query));   // where Google's own ?output=embed address leads to
+        } catch (\Throwable) {
+            return null;
+        }
+
+        if (! $response->successful()) {
+            return null;
+        }
+
+        $body = substr((string) $response->body(), 0, 400_000);
+
+        // [[<distance>,<longitude>,<latitude>],[0,0,0], ... the place: ["0x...:0x...","<name and address>"
+        if (! preg_match('/\[\[-?\d+(?:\.\d+)?,(-?\d{1,3}\.\d{3,}),(-?\d{1,3}\.\d{3,})\],\[0,0,0\]/', $body, $m)) {
+            return null;
+        }
+
+        $seen = preg_match('/"(0x[0-9a-f]+:0x[0-9a-f]+)","([^"]{0,200})/i', $body, $p) ? strtolower($p[1]) : null;
+
+        if ($ftid !== null && $seen !== null && $ftid !== $seen) {
+            return null;
+        }
+
+        $spot = SalesClient::parseSpot($m[2] . ', ' . $m[1]);   // the page writes longitude first
+
+        if (! $spot) {
+            return null;
+        }
+
+        $name = isset($p[2]) ? trim(explode(',', html_entity_decode($p[2]))[0]) : null;
+        $name = $name !== null && preg_match('/^[A-Z0-9]{4,8}\+[A-Z0-9]{2,}\s+(.+)$/', $name, $n) ? $n[1] : $name;
+
+        return $spot + ['name' => $name !== '' ? mb_substr((string) $name, 0, 120) : null];
     }
 
     /** The first https address in a text ("Agarwal Brothers\nSitapura\nhttps://maps.app.goo.gl/abc" -> the link). */
