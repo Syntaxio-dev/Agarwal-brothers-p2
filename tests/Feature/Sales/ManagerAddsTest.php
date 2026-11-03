@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Sales;
 
+use App\Sales\Filament\Resources\SalesClients\Pages\ListSalesClients;
 use App\Sales\Filament\Resources\SalesContacts\Pages\ManageSalesContacts;
 use App\Sales\Models\SalesClient;
 use App\Sales\Models\SalesContact;
@@ -63,5 +64,24 @@ class ManagerAddsTest extends SalesTestCase
         $clients = $this->getJson('/api/sales/v1/sync/pull', $headers)->assertOk()->json('clients');
         $this->assertSame('IIT Jodhpur', $clients[0]['name']);
         $this->assertSame('office', $clients[0]['location_source']);
+    }
+
+    public function test_the_clients_page_has_add_client_and_add_contact_person(): void
+    {
+        $this->actingAs($this->manager());
+        $client = SalesClient::create(['name' => 'IIT Jodhpur', 'city' => 'Jodhpur', 'lat' => 26.47, 'lng' => 73.11]);
+
+        Livewire::test(ListSalesClients::class)
+            ->assertActionExists('create')
+            ->assertActionExists('addContactPerson')
+            ->callAction('addContactPerson', ['name' => 'Prof Meena', 'client_uuid' => $client->uuid, 'phone' => '9829011223'])
+            ->assertHasNoActionErrors();
+
+        $this->assertSame($client->uuid, SalesContact::firstWhere('name', 'Prof Meena')->client_uuid);
+
+        Livewire::test(ListSalesClients::class)
+            ->callAction('addContactPerson', ['name' => 'Walk In Buyer', 'phone' => '9829011224'])
+            ->assertHasNoActionErrors();
+        $this->assertNull(SalesContact::firstWhere('name', 'Walk In Buyer')->client_uuid, 'a person without a company');
     }
 }

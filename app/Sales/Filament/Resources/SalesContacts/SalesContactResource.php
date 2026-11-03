@@ -50,6 +50,12 @@ class SalesContactResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
+        return $schema->components(self::personFields())->columns(2);
+    }
+
+    /** The boxes of a person; shared by this page and the "Add contact person" button on the Clients page. */
+    public static function personFields(): array
+    {
         // One number, one person: a number that is already saved somewhere in the pool is refused.
         $numberRule = fn (?Model $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($record) {
             if (! filled($value)) {
@@ -69,7 +75,7 @@ class SalesContactResource extends Resource
             }
         };
 
-        return $schema->components([
+        return [
             TextInput::make('name')->label('Name')->required()->minLength(2)->maxLength(150),
             Select::make('client_uuid')->label('Company')
                 ->options(fn () => SalesClient::query()->orderBy('name')->pluck('name', 'uuid')->all())
@@ -83,7 +89,7 @@ class SalesContactResource extends Resource
             TextInput::make('phone')->tel()->maxLength(30)->rule(fn (?Model $record) => $numberRule($record)),
             TextInput::make('email')->email()->maxLength(150),
             TextInput::make('notes')->maxLength(1000)->columnSpanFull(),
-        ])->columns(2);
+        ];
     }
 
     public static function table(Table $table): Table
