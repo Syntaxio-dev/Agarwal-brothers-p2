@@ -39,4 +39,10 @@ return [
         ],
     ],
 
+    // Google Maps for the client-location picker in the Sales admin (Maps JavaScript API + Places API (New)). Restrict the key to this
+    // site's address in Google Cloud. Empty = no map, the latitude / longitude boxes and the paste box still work.
+    'google_maps' => [
+        'key' => env('GOOGLE_MAPS_KEY'),
+    ],
+
 ];
