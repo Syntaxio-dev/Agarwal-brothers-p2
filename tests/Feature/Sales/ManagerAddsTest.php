@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Sales;
 
+use App\Sales\Filament\Resources\SalesClients\Pages\CreateSalesClient;
 use App\Sales\Filament\Resources\SalesClients\Pages\ListSalesClients;
 use App\Sales\Filament\Resources\SalesContacts\Pages\ManageSalesContacts;
 use App\Sales\Models\SalesClient;
@@ -64,6 +65,25 @@ class ManagerAddsTest extends SalesTestCase
         $clients = $this->getJson('/api/sales/v1/sync/pull', $headers)->assertOk()->json('clients');
         $this->assertSame('IIT Jodhpur', $clients[0]['name']);
         $this->assertSame('office', $clients[0]['location_source']);
+    }
+
+    public function test_the_map_picker_fills_the_latitude_and_longitude(): void
+    {
+        $this->actingAs($this->manager());
+
+        $page = Livewire::test(CreateSalesClient::class)
+            ->assertFormFieldExists('map_spot')
+            ->assertSee('Search the shop, area or address')
+            ->set('data.map_spot', 'https://www.google.com/maps/place/Jodhpur/@26.4719,73.1153,17z')
+            ->assertSet('data.lat', 26.4719)
+            ->assertSet('data.lng', 73.1153);
+
+        $page->set('data.map_spot', '26.9124, 75.7873')->assertSet('data.lat', 26.9124);
+
+        $page->fillForm(['name' => 'IIT Jodhpur', 'city' => 'Jodhpur'])->call('create')->assertHasNoFormErrors();
+        $client = SalesClient::firstWhere('name', 'IIT Jodhpur');
+        $this->assertSame(26.9124, $client->lat);
+        $this->assertSame('office', $client->location_source);
     }
 
     public function test_the_clients_page_has_add_client_and_add_contact_person(): void

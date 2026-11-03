@@ -7,6 +7,7 @@ use App\Sales\Filament\Resources\SalesClients\Pages\CreateSalesClient;
 use App\Sales\Filament\Resources\SalesClients\Pages\EditSalesClient;
 use App\Sales\Filament\Resources\SalesClients\Pages\ListSalesClients;
 use App\Sales\Filament\Resources\SalesClients\RelationManagers\ContactsRelationManager;
+use App\Sales\Filament\Forms\MapSpotPicker;
 use App\Sales\Models\SalesClient;
 use App\Sales\Models\SalesProfile;
 use App\Sales\Support\ClientImporter;
@@ -83,17 +84,7 @@ class SalesClientResource extends Resource
                         $fail("This number is already saved under $owner.");
                     }
                 }),
-            TextInput::make('map_link')->label('Paste a Google Maps link or "lat, lng"')->dehydrated(false)->live(onBlur: true)
-                ->helperText('Open the client\'s place in Google Maps, copy the address bar, paste it here. Reps cannot set this: they only check in at it.')
-                ->afterStateUpdated(function ($state, \Filament\Schemas\Components\Utilities\Set $set) {
-                    if ($spot = SalesClient::parseSpot($state)) {
-                        $set('lat', $spot['lat']);
-                        $set('lng', $spot['lng']);
-                        $set('map_link', null);
-                    } elseif (filled($state)) {
-                        Notification::make()->title('Could not read a location from that. Use the long Google Maps link, or type "26.9124, 75.7873".')->warning()->send();
-                    }
-                })->columnSpanFull(),
+            MapSpotPicker::make('map_spot')->label('Exact location on the map')->columnSpanFull(),
             TextInput::make('lat')->label('Latitude')->numeric()->minValue(-90)->maxValue(90)->required()
                 ->helperText('The spot a rep\'s check-in is compared with (within 300 m = at the client).'),
             TextInput::make('lng')->label('Longitude')->numeric()->minValue(-180)->maxValue(180)->required(),
@@ -118,16 +109,7 @@ class SalesClientResource extends Resource
         return [
             TextInput::make('name')->label('Client')->required()->minLength(2)->maxLength(150),
             TextInput::make('city')->label('Place')->required()->maxLength(100),
-            TextInput::make('map_link')->label('Paste a Google Maps link or "lat, lng"')->dehydrated(false)->live(onBlur: true)
-                ->afterStateUpdated(function ($state, \Filament\Schemas\Components\Utilities\Set $set) {
-                    if ($spot = SalesClient::parseSpot($state)) {
-                        $set('lat', $spot['lat']);
-                        $set('lng', $spot['lng']);
-                        $set('map_link', null);
-                    } elseif (filled($state)) {
-                        Notification::make()->title('Could not read a location from that. Use the long Google Maps link, or type "26.9124, 75.7873".')->warning()->send();
-                    }
-                })->columnSpanFull(),
+            MapSpotPicker::make('map_spot')->label('Exact location on the map')->columnSpanFull(),
             TextInput::make('lat')->label('Latitude')->numeric()->minValue(-90)->maxValue(90)->required(),
             TextInput::make('lng')->label('Longitude')->numeric()->minValue(-180)->maxValue(180)->required(),
             TextInput::make('phone')->label('Main number (optional)')->tel()->maxLength(30)
