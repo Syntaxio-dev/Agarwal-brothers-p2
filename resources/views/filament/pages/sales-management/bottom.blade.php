@@ -36,6 +36,32 @@
         @endif
     </div>
 
+    <div class="sx-card">
+        <p class="sx-eyebrow" style="margin-bottom:.25rem">Proof of visits</p>
+        @if ($visitProof['total'] === 0)
+            <p class="sx-empty">No visits done in the last {{ $days }} days.</p>
+        @else
+            @foreach ([
+                ['At the client', $visitProof['verified']],
+                ['Away from the client', $visitProof['away']],
+                ['Client has no location', $visitProof['no_client_location']],
+                ['No check-in', $visitProof['none']],
+            ] as [$label, $n])
+                @continue($n === 0 && $label === 'Client has no location')
+                <div style="margin-top:.75rem">
+                    <div class="sx-line" style="margin-top:0"><span style="font-weight:500">{{ $label }}</span><span class="sx-mute">{{ $n }} of {{ $visitProof['total'] }}</span></div>
+                    <div class="sx-track"><div class="sx-fill" style="width: {{ round(100 * $n / $visitProof['total']) }}%"></div></div>
+                </div>
+            @endforeach
+            @if ($visitProof['no_selfie'] > 0)
+                <p class="sx-mute" style="margin-top:.75rem">{{ $visitProof['no_selfie'] }} check-in{{ $visitProof['no_selfie'] === 1 ? '' : 's' }} still without a selfie picture.</p>
+            @endif
+            @foreach ($visitProof['away_rows'] as $m)
+                <div class="sx-line"><span class="sx-trunc">{{ $m->user?->name }} &middot; {{ $m->client_name }}</span><span class="sx-mute">{{ $m->checkin_distance_m >= 1000 ? round($m->checkin_distance_m / 1000, 1) . ' km' : $m->checkin_distance_m . ' m' }} away</span></div>
+            @endforeach
+        @endif
+    </div>
+
     @if ($showMoney)
         <div class="sx-card">
             <p class="sx-eyebrow" style="margin-bottom:.25rem">Spend by category</p>

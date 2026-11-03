@@ -47,6 +47,7 @@ class ReviewFixesTest extends SalesTestCase
 
     public function test_the_same_number_cannot_be_saved_twice_even_by_two_phones_that_were_offline(): void
     {
+        config(['sales.private_pool' => false]);
         $a = $this->headers($this->rep('REP001', '9000000001'));
         $b = $this->headers($this->rep('REP002', '9000000002'));
         $one = $this->client(['phone' => '']);
@@ -57,7 +58,8 @@ class ReviewFixesTest extends SalesTestCase
 
         $this->assertSame('rejected', $second->json('results.contacts.0.status'));
         $this->assertSame('INVALID', $second->json('results.contacts.0.code'));
-        $this->assertStringContainsString('already saved under Rohit Sharma', $second->json('results.contacts.0.message'));
+        $this->assertStringContainsString('already saved in the company contacts', $second->json('results.contacts.0.message'));
+        $this->assertStringNotContainsString('Rohit', $second->json('results.contacts.0.message'), 'another reps name is not given away');
         $this->assertSame(1, SalesContact::count());
 
         // the same goes for a client's own number

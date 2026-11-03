@@ -260,6 +260,7 @@ class SalesManagement extends Page
             'enquiryStatuses' => SalesInsights::enquiriesByStatus(),
             'enquirySources' => SalesInsights::enquirySources($days),
             'meetingResults' => SalesInsights::meetingResults($days),
+            'visitProof' => SalesInsights::visitProof($days),
             'topProducts' => SalesInsights::topProducts($days, 5),
             'activeTab' => $tab,
             'visibleTabs' => $tabs,

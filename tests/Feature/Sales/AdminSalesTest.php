@@ -104,7 +104,7 @@ class AdminSalesTest extends SalesTestCase
         $rep = $this->rep();
 
         Livewire::test(CreateSalesClient::class)
-            ->fillForm(['name' => 'JK Cement', 'city' => 'Nimbahera', 'assigned_to' => $rep->user_id])
+            ->fillForm(['name' => 'JK Cement', 'city' => 'Nimbahera', 'lat' => 24.62, 'lng' => 74.68, 'assigned_to' => $rep->user_id])
             ->call('create')
             ->assertHasNoFormErrors();
 

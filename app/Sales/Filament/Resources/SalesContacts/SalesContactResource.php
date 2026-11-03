@@ -74,7 +74,9 @@ class SalesContactResource extends Resource
             Select::make('client_uuid')->label('Company')
                 ->options(fn () => SalesClient::query()->orderBy('name')->pluck('name', 'uuid')->all())
                 ->searchable()->native(false)
-                ->placeholder('No company (buys on their own)'),
+                ->placeholder('No company (buys on their own)')
+                ->createOptionForm(\App\Sales\Filament\Resources\SalesClients\SalesClientResource::quickClientFields())
+                ->createOptionUsing(fn (array $data) => \App\Sales\Filament\Resources\SalesClients\SalesClientResource::createQuickClient($data)->uuid),
             Select::make('position')
                 ->options(fn (?Model $record) => collect(SalesPosition::names())->when($record?->position, fn ($c, $p) => $c->push($p))->unique()->mapWithKeys(fn ($n) => [$n => $n])->all())
                 ->searchable()->native(false),

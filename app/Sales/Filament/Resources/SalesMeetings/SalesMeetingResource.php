@@ -12,6 +12,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
+use Filament\Tables\Columns\ImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -85,6 +86,23 @@ class SalesMeetingResource extends Resource
                     ->formatStateUsing(fn (?string $state) => SalesMeeting::RESULTS[$state] ?? $state)
                     ->color(fn (?string $state) => match ($state) { 'order' => 'success', 'not_interested' => 'gray', default => 'primary' }),
                 // a route is only shown next to meetings of the same rep (the link is a uuid the phone sent)
+                TextColumn::make('checkin_state')->label('Check-in')->badge()
+                    ->getStateUsing(fn (SalesMeeting $r) => match ($r->checkinState()) {
+                        'verified' => 'At client · ' . $r->checkin_distance_m . ' m',
+                        'away' => 'Away from client · ' . ($r->checkin_distance_m >= 1000 ? round($r->checkin_distance_m / 1000, 1) . ' km' : $r->checkin_distance_m . ' m'),
+                        'no_client_location' => 'Client has no location',
+                        default => 'No check-in',
+                    })
+                    ->color(fn (SalesMeeting $r) => match ($r->checkinState()) { 'verified' => 'success', 'away' => 'danger', 'no_client_location' => 'warning', default => 'gray' })
+                    ->url(fn (SalesMeeting $r) => $r->selfie_path ? route('sales.selfie', $r->uuid) : null, shouldOpenInNewTab: true)
+                    ->tooltip(fn (SalesMeeting $r) => $r->checkin_at ? 'Checked in ' . $r->checkin_at->setTimezone(config('sales.timezone'))->format('d M, h:i A') . ($r->selfie_path ? ' · click to see the selfie' : ' · selfie not received yet') : null),
+                ImageColumn::make('selfie')->label('Selfie')->circular()->size(44)
+                    ->getStateUsing(fn (SalesMeeting $r) => $r->selfie_path ? route('sales.selfie', $r->uuid) : null)
+                    ->url(fn (SalesMeeting $r) => $r->selfie_path ? route('sales.selfie', $r->uuid) : null, shouldOpenInNewTab: true)
+                    ->placeholder('—'),
+                TextColumn::make('checkin_accuracy_m')->label('GPS accuracy')->suffix(' m')->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
+                TextColumn::make('checkin_received_at')->label('Check-in reached office')->dateTime('d M Y, h:i A', $tz)->placeholder('—')->toggleable(isToggledHiddenByDefault: true)
+                    ->tooltip('The office\'s own clock: if it is far from the phone\'s time, the phone\'s clock was wrong.'),
                 TextColumn::make('route_title')->label('Route')->placeholder('—')->toggleable()
                     ->getStateUsing(fn (SalesMeeting $r) => $r->route && (int) $r->route->user_id === (int) $r->user_id ? $r->route->title : null),
                 TextColumn::make('scheduled_at')->label('Planned for')->dateTime('d M Y, h:i A', $tz)->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
@@ -107,6 +125,14 @@ class SalesMeetingResource extends Resource
                     ->options(fn () => SalesProfile::with('user')->get()->pluck('user.name', 'user_id')->sort()->all()),
                 SelectFilter::make('status')->options(SalesMeeting::STATUSES)->multiple(),
                 SelectFilter::make('result')->options(SalesMeeting::RESULTS),
+                SelectFilter::make('checkin')->label('Check-in')
+                    ->options(['none' => 'No check-in', 'verified' => 'At client', 'away' => 'Away from client'])
+                    ->query(fn ($query, array $data) => match ($data['value'] ?? null) {
+                        'none' => $query->whereNull('checkin_at'),
+                        'verified' => $query->whereNotNull('checkin_at')->where('checkin_distance_m', '<=', SalesMeeting::CHECKIN_RADIUS_M),
+                        'away' => $query->whereNotNull('checkin_at')->where('checkin_distance_m', '>', SalesMeeting::CHECKIN_RADIUS_M),
+                        default => $query,
+                    }),
                 Filter::make('not_logged')->label('Not logged (planned, and the time has passed)')->toggle()
                     ->query(fn ($query) => $query->whereIn('status', SalesMeeting::OPEN)->where('meeting_at', '<', now()->subHour())),
                 Filter::make('in_route')->label('Part of a route')->toggle()
@@ -122,6 +148,24 @@ class SalesMeetingResource extends Resource
                     ->query(fn ($query, array $data) => $query
                         ->when($data['from'] ?? null, fn ($q, $d) => $q->where('meeting_at', '>=', \Carbon\CarbonImmutable::parse($d, config('sales.timezone'))->startOfDay()->utc()))
                         ->when($data['until'] ?? null, fn ($q, $d) => $q->where('meeting_at', '<=', \Carbon\CarbonImmutable::parse($d, config('sales.timezone'))->endOfDay()->utc()))),
+            ])
+            ->recordActions([
+                Action::make('useAsClientSpot')
+                    ->label('Use as client location')
+                    ->icon(Heroicon::OutlinedMapPin)
+                    ->color('gray')
+                    ->visible(fn (SalesMeeting $r) => $r->checkin_at && $r->client_uuid && auth()->user()?->canManage('sales-clients')
+                        && \App\Sales\Models\SalesClient::where('uuid', $r->client_uuid)->whereNull('lat')->exists())
+                    ->requiresConfirmation()
+                    ->modalHeading('Use this check-in as the client\'s location?')
+                    ->modalDescription('Only do this after you have seen the selfie and are sure the rep was at the client. From then on, check-ins are compared with this spot.')
+                    ->action(function (SalesMeeting $r) {
+                        abort_unless(auth()->user()?->canManage('sales-clients'), 403);
+
+                        $client = \App\Sales\Models\SalesClient::where('uuid', $r->client_uuid)->whereNull('lat')->first();
+                        $client?->forceFill(['lat' => $r->checkin_lat, 'lng' => $r->checkin_lng, 'location_accuracy_m' => $r->checkin_accuracy_m, 'location_at' => now()])->save();
+                        \Filament\Notifications\Notification::make()->title($client ? 'Location saved for ' . $client->name : 'That client already has a location')->success()->send();
+                    }),
             ])
             ->headerActions([
                 Action::make('export')

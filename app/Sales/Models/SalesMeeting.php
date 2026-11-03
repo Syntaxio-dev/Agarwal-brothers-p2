@@ -28,7 +28,32 @@ class SalesMeeting extends Model
     protected $fillable = [
         'uuid', 'user_id', 'client_uuid', 'client_name', 'contact_uuids', 'meeting_at', 'purpose', 'discussion', 'outcome',
         'next_followup_at', 'status', 'scheduled_at', 'ended_at', 'route_uuid', 'result', 'moved_from', 'time_manual', 'client_updated_at',
+        'checkin_at', 'checkin_lat', 'checkin_lng', 'checkin_accuracy_m', 'checkin_distance_m', 'checkin_received_at', 'selfie_path', 'selfie_mime',
     ];
+
+    /** A check-in further than this from the client's saved spot is flagged "away from client" (the phone uses the same number). */
+    public const CHECKIN_RADIUS_M = 300;
+
+    /** Straight-line metres between two spots (haversine). */
+    public static function distanceBetween(float $latA, float $lngA, float $latB, float $lngB): int
+    {
+        $x = sin(deg2rad($latB - $latA) / 2) ** 2 + cos(deg2rad($latA)) * cos(deg2rad($latB)) * sin(deg2rad($lngB - $lngA) / 2) ** 2;
+
+        return (int) round(2 * 6371000 * asin(min(1, sqrt($x))));
+    }
+
+    /** none | verified | away | no_client_location */
+    public function checkinState(): string
+    {
+        if (! $this->checkin_at) {
+            return 'none';
+        }
+        if ($this->checkin_distance_m === null) {
+            return 'no_client_location';
+        }
+
+        return $this->checkin_distance_m <= self::CHECKIN_RADIUS_M ? 'verified' : 'away';
+    }
 
     protected function casts(): array
     {
@@ -40,6 +65,10 @@ class SalesMeeting extends Model
             'ended_at' => 'datetime',
             'moved_from' => 'datetime',
             'time_manual' => 'boolean',
+            'checkin_at' => 'datetime',
+            'checkin_received_at' => 'datetime',
+            'checkin_lat' => 'float',
+            'checkin_lng' => 'float',
         ];
     }
 

@@ -182,10 +182,18 @@ class SyncService
             'phone' => ['nullable', 'string', 'max:30', $this->phoneRule()],
             'city' => ['nullable', 'string', 'max:100'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            // the exact spot the rep took from Google Maps (phones from app v1.10): both numbers or none
+            'lat' => ['nullable', 'numeric', 'between:-90,90', 'required_with:lng'],
+            'lng' => ['nullable', 'numeric', 'between:-180,180', 'required_with:lat'],
+            'location_accuracy_m' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:100000'],
+            'location_at' => ['sometimes', 'nullable', 'date'],
             'updated_at' => ['required', 'date', $this->clockRule()],
         ]);
         if ($invalid) {
             return $invalid;
+        }
+        if (isset($r['lat'], $r['lng']) && (float) $r['lat'] === 0.0 && (float) $r['lng'] === 0.0) {
+            return $this->rejected('INVALID', 'The client location is not a real place.');
         }
 
         $model = SalesClient::withTrashed()->where('uuid', $r['uuid'])->first();
@@ -197,11 +205,12 @@ class SyncService
             return $early;
         }
         if ($taken = $this->numberTaken($r['phone'] ?? null, exceptClient: $r['uuid'])) {
-            return $this->rejected('INVALID', "This number is already saved under {$taken}.");
+            return $this->rejected('INVALID', 'This number is already saved in the company contacts (it may belong to another rep). Ask your manager.');
         }
 
         // A client the rep adds is worked by that rep; who it is assigned to is only ever changed in the admin.
         $model ??= new SalesClient(['uuid' => $r['uuid'], 'user_id' => $user->id, 'assigned_to' => $user->id]);
+        $model->fromPhone = true;
         $model->fill([
             'name' => trim($r['name']),
             'company' => $this->text($r['company'] ?? null),
@@ -210,9 +219,32 @@ class SyncService
             'notes' => $this->text($r['notes'] ?? null),
             'updated_by' => $user->id,
             'client_updated_at' => $this->time($r['updated_at']),
-        ])->save();
+        ] + $this->spotFields($r, $model))->save();
 
         return ['status' => 'accepted'];
+    }
+
+    /** @return array<string, mixed> the spot a phone sent: only while the office has not set one itself (then it is the office's) */
+    private function spotFields(array $r, SalesClient $model): array
+    {
+        if ((! array_key_exists('lat', $r) && ! array_key_exists('lng', $r)) || $model->location_source === 'office') {
+            return [];
+        }
+
+        $has = isset($r['lat'], $r['lng']);
+
+        return [
+            'lat' => $has ? round((float) $r['lat'], 6) : null,
+            'lng' => $has ? round((float) $r['lng'], 6) : null,
+            'location_accuracy_m' => $has ? ($r['location_accuracy_m'] ?? null) : null,
+            'location_at' => $has && filled($r['location_at'] ?? null) ? $this->time($r['location_at']) : null,
+            'location_source' => $has ? 'rep' : null,
+        ];
+    }
+
+    private function distanceTo(SalesClient $client, float $lat, float $lng): ?int
+    {
+        return $client->hasLocation() ? SalesMeeting::distanceBetween($client->lat, $client->lng, $lat, $lng) : null;
     }
 
     // ---- contacts: the people at a client (shared pool) -------------------------------
@@ -242,7 +274,13 @@ class SyncService
             return $early;
         }
         if ($taken = $this->numberTaken($r['phone'] ?? null, exceptContact: $r['uuid'])) {
-            return $this->rejected('INVALID', "This number is already saved under {$taken}.");
+            return $this->rejected('INVALID', 'This number is already saved in the company contacts (it may belong to another rep). Ask your manager.');
+        }
+
+        // a person can only be added to a client the rep can see
+        if (filled($r['client_uuid'] ?? null) && ! $model && SalesClient::withTrashed()->where('uuid', $r['client_uuid'])->exists()
+            && ! SalesClient::withTrashed()->visibleTo($user)->where('uuid', $r['client_uuid'])->exists()) {
+            return $this->rejected('NOT_ALLOWED', 'This client is not open to you. Ask your manager.');
         }
 
         $model ??= new SalesContact(['uuid' => $r['uuid'], 'user_id' => $user->id]);
@@ -322,6 +360,12 @@ class SyncService
             'result' => ['sometimes', 'nullable', Rule::in(array_keys(SalesMeeting::RESULTS))],
             'moved_from' => ['sometimes', 'nullable', 'date', 'after_or_equal:2020-01-01'],
             'time_manual' => ['sometimes', 'boolean'],
+            // the check-in (phones from app v1.8): the spot is judged here; the selfie arrives afterwards (uploads/selfie)
+            'checkin_at' => ['sometimes', 'nullable', 'date', 'after_or_equal:2020-01-01', 'before_or_equal:' . now()->addMinutes(10)->toIso8601String()],
+            'checkin_lat' => ['required_with:checkin_at', 'nullable', 'numeric', 'between:-90,90'],
+            'checkin_lng' => ['required_with:checkin_at', 'nullable', 'numeric', 'between:-180,180'],
+            'checkin_accuracy_m' => ['sometimes', 'nullable', 'integer', 'min:0', 'max:100000'],
+            'has_selfie' => ['sometimes', 'boolean'],
             'updated_at' => ['required', 'date', $this->clockRule()],
         ]);
         if ($invalid) {
@@ -345,7 +389,7 @@ class SyncService
             'outcome' => $this->text($r['outcome'] ?? null),
             'next_followup_at' => filled($r['next_followup_at'] ?? null) ? $this->time($r['next_followup_at']) : null,
             'client_updated_at' => $this->time($r['updated_at']),
-        ] + $this->planningFields($r));
+        ] + $this->planningFields($r) + $this->checkinFields($r, $model));
 
         // a result belongs to a visit that was done
         if (($model->status ?? 'done') !== 'done') {
@@ -354,6 +398,29 @@ class SyncService
         $model->save();
 
         return ['status' => 'accepted'];
+    }
+
+    /** @return array<string, mixed> the check-in the phone sent (a new or retaken one stamps the office's own arrival time and works out the distance) */
+    private function checkinFields(array $r, SalesMeeting $model): array
+    {
+        if (! filled($r['checkin_at'] ?? null) || ! isset($r['checkin_lat'], $r['checkin_lng'])) {
+            return [];
+        }
+
+        $at = $this->time($r['checkin_at']);
+        $lat = round((float) $r['checkin_lat'], 6);
+        $lng = round((float) $r['checkin_lng'], 6);
+        $same = $model->checkin_at && $model->checkin_at->equalTo($at) && (float) $model->checkin_lat === $lat && (float) $model->checkin_lng === $lng;
+        $client = filled($r['client_uuid'] ?? null) ? SalesClient::where('uuid', $r['client_uuid'])->first() : null;
+
+        return [
+            'checkin_at' => $at,
+            'checkin_lat' => $lat,
+            'checkin_lng' => $lng,
+            'checkin_accuracy_m' => $r['checkin_accuracy_m'] ?? null,
+            'checkin_distance_m' => $client ? $this->distanceTo($client, $lat, $lng) : null,
+            'checkin_received_at' => $same ? $model->checkin_received_at : now(),
+        ];
     }
 
     /** @return array<string, mixed> only the planning fields the phone really sent (a missing one keeps what is stored) */
@@ -708,6 +775,10 @@ class SyncService
             }
         }
 
+        if ($model instanceof SalesMeeting && $model->selfie_path) {
+            Storage::disk('local')->delete($model->selfie_path);
+        }
+
         $model->delete();
 
         return ['status' => 'accepted'];
@@ -748,6 +819,7 @@ class SyncService
 
             $base = fn () => (clone $query)
                 ->when(! $shared, fn ($q) => $q->where('user_id', $user->id))
+                ->when(in_array($kind, ['clients', 'contacts'], true), fn ($q) => $q->visibleTo($user))
                 ->orderBy('updated_at')->orderBy('id');
 
             $rows = $base()
@@ -773,10 +845,21 @@ class SyncService
 
         return $out + [
             'positions' => SalesPosition::names(),
+            // a fingerprint of the clients and people this rep may see: when it changes (access given or taken away) the phone fetches everything
+            // once and drops what is no longer open to it
+            'scope' => $this->scopeOf($user),
             'has_more' => (bool) $capped,
             'cursor' => CarbonImmutable::instance($cursor)->utc()->format('Y-m-d\TH:i:s\Z'),
             'server_time' => $startedAt->format('Y-m-d\TH:i:s\Z'),
         ];
+    }
+
+    private function scopeOf(User $user): string
+    {
+        $clients = SalesClient::visibleTo($user)->orderBy('uuid')->pluck('uuid')->implode(',');
+        $people = SalesContact::visibleTo($user)->orderBy('uuid')->pluck('uuid')->implode(',');
+
+        return sha1($clients . '|' . $people);
     }
 
     private function expensePayload(SalesExpense $e): array
@@ -807,6 +890,11 @@ class SyncService
             'phone' => $c->phone ?? '',
             'city' => $c->city ?? '',
             'notes' => $c->notes ?? '',
+            'lat' => $c->lat,
+            'lng' => $c->lng,
+            'location_accuracy_m' => $c->location_accuracy_m,
+            'location_at' => $c->location_at ? $this->iso($c->location_at) : null,
+            'location_source' => $c->location_source,
             // set by the office only; the phone shows them and never sends them back
             'assigned_to_code' => $c->assignee?->salesProfile?->employee_code,
             'assigned_to_name' => $c->assignee?->name,
@@ -866,6 +954,12 @@ class SyncService
             'result' => $m->result,
             'moved_from' => $m->moved_from ? $this->iso($m->moved_from) : null,
             'time_manual' => (bool) $m->time_manual,
+            'checkin_at' => $m->checkin_at ? $this->iso($m->checkin_at) : null,
+            'checkin_lat' => $m->checkin_at ? (float) $m->checkin_lat : null,
+            'checkin_lng' => $m->checkin_at ? (float) $m->checkin_lng : null,
+            'checkin_accuracy_m' => $m->checkin_accuracy_m,
+            'checkin_distance_m' => $m->checkin_distance_m,
+            'has_selfie' => (bool) $m->selfie_path,
             'updated_at' => $this->iso($m->client_updated_at),
             'deleted' => $m->trashed(),
         ];

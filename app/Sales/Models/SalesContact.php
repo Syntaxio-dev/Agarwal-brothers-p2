@@ -36,6 +36,19 @@ class SalesContact extends Model
         });
     }
 
+    /** What a rep sees: the people they added, and the people at any client the rep can see. */
+    public function scopeVisibleTo($query, User $user)
+    {
+        if (! config('sales.private_pool', true)) {
+            return $query;
+        }
+
+        return $query->where(function ($w) use ($user) {
+            $w->where('user_id', $user->id)
+                ->orWhereIn('client_uuid', SalesClient::withTrashed()->visibleTo($user)->select('uuid'));
+        });
+    }
+
     public function client(): BelongsTo
     {
         return $this->belongsTo(SalesClient::class, 'client_uuid', 'uuid');

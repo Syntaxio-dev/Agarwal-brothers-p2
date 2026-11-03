@@ -885,6 +885,32 @@ class SalesInsights
         return ['total' => array_sum(array_column($items, 'count')), 'max' => max(1, ...array_column($items, 'count')), 'items' => $items];
     }
 
+    /**
+     * Proof of the visits done in the window: how many had a check-in with a selfie at the client, how many were far from the client's spot
+     * (the office works the distance out itself), how many had no check-in at all (an older app, or none taken). The "away" visits are listed.
+     *
+     * @return array{total: int, verified: int, away: int, no_client_location: int, none: int, no_selfie: int, away_rows: Collection}
+     */
+    public static function visitProof(int $days, int $limit = 5): array
+    {
+        $done = SalesMeeting::where('status', 'done')->where('meeting_at', '>=', static::fromUtc($days));
+        $radius = SalesMeeting::CHECKIN_RADIUS_M;
+
+        $count = fn ($query) => (int) $query->count();
+        $checked = (clone $done)->whereNotNull('checkin_at');
+
+        return [
+            'total' => $count(clone $done),
+            'verified' => $count((clone $checked)->where('checkin_distance_m', '<=', $radius)),
+            'away' => $count((clone $checked)->where('checkin_distance_m', '>', $radius)),
+            'no_client_location' => $count((clone $checked)->whereNull('checkin_distance_m')),
+            'none' => $count((clone $done)->whereNull('checkin_at')),
+            // checked in, but the picture never arrived (offline, or it was refused)
+            'no_selfie' => $count((clone $checked)->whereNull('selfie_path')),
+            'away_rows' => (clone $checked)->where('checkin_distance_m', '>', $radius)->with('user')->orderByDesc('meeting_at')->limit($limit)->get(),
+        ];
+    }
+
     /** Planned meetings whose time passed more than an hour ago and nobody wrote down what happened, the oldest first. */
     public static function notLoggedMeetings(int $limit = 8): Collection
     {

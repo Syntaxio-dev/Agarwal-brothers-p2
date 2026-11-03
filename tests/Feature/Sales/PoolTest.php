@@ -49,6 +49,13 @@ class PoolTest extends SalesTestCase
     }
 
     // ---- the shared pool -------------------------------------------------------------
+    // These tests were written for the team-wide pool (SALES_PRIVATE_POOL=false); the private pool is tested in RepVisibilityTest.
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        config(['sales.private_pool' => false]);
+    }
 
     public function test_a_client_one_rep_adds_reaches_the_other_rep_but_only_the_one_who_added_it_can_change_it(): void
     {

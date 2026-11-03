@@ -408,6 +408,37 @@ class RepsScreensTest extends SalesTestCase
         $this->postJson('/api/sales/v1/auth/login', ['login' => 'REP001', 'password' => self::PASSWORD])->assertStatus(401);
     }
 
+    public function test_the_manager_can_type_a_new_password_for_a_rep(): void
+    {
+        $this->actingAs($this->manager());
+        $rep = $this->rep();
+        $this->headers($rep);
+
+        Livewire::test(ViewSalesRep::class, ['record' => $rep->getKey()])
+            ->callAction('resetPassword', ['new_password' => 'Fresh-pass-77'])
+            ->assertHasNoActionErrors();
+
+        $this->assertDatabaseCount('personal_access_tokens', 0);
+        $this->postJson('/api/sales/v1/auth/login', ['login' => 'REP001', 'password' => self::PASSWORD])->assertStatus(401);
+        $this->postJson('/api/sales/v1/auth/login', ['login' => 'REP001', 'password' => 'Fresh-pass-77'])->assertOk();
+    }
+
+    public function test_a_typed_password_must_be_long_enough_and_an_empty_one_is_made_for_you(): void
+    {
+        $this->actingAs($this->manager());
+        $rep = $this->rep();
+
+        Livewire::test(ViewSalesRep::class, ['record' => $rep->getKey()])
+            ->callAction('resetPassword', ['new_password' => 'short'])
+            ->assertHasActionErrors(['new_password']);
+        $this->postJson('/api/sales/v1/auth/login', ['login' => 'REP001', 'password' => self::PASSWORD])->assertOk();
+
+        Livewire::test(ViewSalesRep::class, ['record' => $rep->getKey()])
+            ->callAction('resetPassword', ['new_password' => ''])
+            ->assertHasNoActionErrors();
+        $this->postJson('/api/sales/v1/auth/login', ['login' => 'REP001', 'password' => self::PASSWORD])->assertStatus(401);
+    }
+
     // ---- add a rep ------------------------------------------------------------------------------------------
 
     public function test_adding_a_rep_ends_with_the_sign_in_details_and_they_work(): void

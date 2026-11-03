@@ -72,13 +72,22 @@ class SalesRepResource extends Resource
             ->label('Reset password')
             ->color('gray')
             ->requiresConfirmation()
-            ->modalDescription('A new password is made and every phone of this rep is signed out. Tell the new password to the rep.')
-            ->action(function () use ($record) {
+            ->modalDescription('The old password cannot be read by anybody (it is stored scrambled). Set a new one for this rep: type your own, or leave the box empty and one is made for you. Every phone of this rep is signed out and the rep signs in again with the new password.')
+            ->modalSubmitActionLabel('Set the new password')
+            ->schema([
+                TextInput::make('new_password')
+                    ->label('New password (optional)')
+                    ->password()->revealable()
+                    ->autocomplete('new-password')
+                    ->minLength(8)->maxLength(64)
+                    ->helperText('At least 8 characters. Leave empty to have one made for you.'),
+            ])
+            ->action(function (array $data) use ($record) {
                 abort_unless(static::canViewAny(), 403);
 
                 /** @var SalesProfile $profile */
                 $profile = $record();
-                $password = RepAccount::newPassword();
+                $password = filled($data['new_password'] ?? null) ? (string) $data['new_password'] : RepAccount::newPassword();
                 RepAccount::resetPassword($profile, $password);
 
                 Notification::make()

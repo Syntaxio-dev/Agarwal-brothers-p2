@@ -70,6 +70,7 @@ class SyncPullTest extends SalesTestCase
 
     public function test_a_rep_never_sees_another_reps_private_records_but_shares_the_client_pool(): void
     {
+        config(['sales.private_pool' => false]); // the team-wide pool; the private pool is tested in RepVisibilityTest
         $a = $this->rep('REP001', '9000000001');
         $b = $this->rep('REP002', '9000000002');
         $theirs = $this->expense(['note' => 'private to A']);

@@ -81,6 +81,7 @@ class SalesServiceProvider extends ServiceProvider
                 ->group(base_path('routes/sales-api.php'));
 
             $this->billViewer();
+            $this->selfieViewer();
         }
     }
 
@@ -98,6 +99,24 @@ class SalesServiceProvider extends ServiceProvider
 
         // Bill uploads are heavier: fewer per minute.
         RateLimiter::for('sales-upload', fn (Request $request) => Limit::perMinute(40)->by('sales-upload|' . ($request->user()?->getAuthIdentifier() ?? $request->ip())));
+    }
+
+    /** A manager looks at a check-in selfie through this address (private disk, login session, same role check as the Meetings screen). */
+    private function selfieViewer(): void
+    {
+        Route::middleware('web')->get('admin/sales/selfies/{uuid}', function (string $uuid) {
+            abort_unless(auth()->user()?->canManage('sales-meetings'), 403);
+
+            $meeting = SalesMeeting::withTrashed()->where('uuid', $uuid)->firstOrFail();
+            abort_unless($meeting->selfie_path && Storage::disk('local')->exists($meeting->selfie_path), 404);
+
+            return Storage::disk('local')->response($meeting->selfie_path, null, [
+                'Content-Type' => $meeting->selfie_mime ?: 'application/octet-stream',
+                'Content-Disposition' => 'inline',
+                'X-Content-Type-Options' => 'nosniff',
+                'Cache-Control' => 'private, max-age=300',
+            ]);
+        })->whereUuid('uuid')->name('sales.selfie');
     }
 
     /**

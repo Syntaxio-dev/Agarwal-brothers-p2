@@ -474,6 +474,24 @@ class SalesManagementPageTest extends SalesTestCase
         $this->assertSame(['No result written', 1], [$items['none']['label'], $items['none']['count']]);
     }
 
+    public function test_visit_proof_counts_check_ins_the_far_ones_and_the_visits_without_one(): void
+    {
+        $rep = $this->rep();
+        $at = $this->local('11:00')->subDay();
+        $in = fn (?int $distance) => ['status' => 'done', 'checkin_at' => $at, 'checkin_lat' => 26.9, 'checkin_lng' => 75.8, 'checkin_distance_m' => $distance];
+
+        $this->meeting_($rep, $at, $in(40) + ['selfie_path' => 'x.jpg']);
+        $this->meeting_($rep, $at, $in(2500));
+        $this->meeting_($rep, $at, $in(null) + ['selfie_path' => 'y.jpg']);
+        $this->meeting_($rep, $at, ['status' => 'done']);
+        $this->meeting_($rep, $at, ['status' => 'planned']);
+
+        $p = SalesInsights::visitProof(30);
+
+        $this->assertSame([4, 1, 1, 1, 1, 1], [$p['total'], $p['verified'], $p['away'], $p['no_client_location'], $p['none'], $p['no_selfie']]);
+        $this->assertCount(1, $p['away_rows']);
+    }
+
     public function test_planned_visits_an_hour_late_are_not_logged(): void
     {
         $rep = $this->rep();

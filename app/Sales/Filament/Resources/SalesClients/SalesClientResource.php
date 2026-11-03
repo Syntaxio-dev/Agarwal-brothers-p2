@@ -61,7 +61,7 @@ class SalesClientResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()->with(['assignee', 'owner'])->withCount('contacts');
+        return parent::getEloquentQuery()->with(['assignee', 'owner'])->withCount(['contacts', 'viewers']);
     }
 
     public static function form(Schema $schema): Schema
@@ -69,7 +69,7 @@ class SalesClientResource extends Resource
         return $schema->components([
             TextInput::make('name')->label('Client')->required()->minLength(2)->maxLength(150)
                 ->helperText('The company or customer, for example "JK Cement". The people who work there are added below, after saving.'),
-            TextInput::make('city')->label('Place')->maxLength(100)->helperText('Town or city: the team filters on it.'),
+            TextInput::make('city')->label('Place')->required()->maxLength(100)->helperText('Required. Town or city: the team filters on it.'),
             TextInput::make('company')->label('Group / company (optional)')->maxLength(150),
             TextInput::make('phone')->label('Main number (optional)')->tel()->maxLength(30)
                 ->rule(fn (?Model $record): Closure => function (string $attribute, mixed $value, Closure $fail) use ($record) {
@@ -83,16 +83,86 @@ class SalesClientResource extends Resource
                         $fail("This number is already saved under $owner.");
                     }
                 }),
+            TextInput::make('map_link')->label('Paste a Google Maps link or "lat, lng"')->dehydrated(false)->live(onBlur: true)
+                ->helperText('Open the client\'s place in Google Maps, copy the address bar, paste it here. Reps cannot set this: they only check in at it.')
+                ->afterStateUpdated(function ($state, \Filament\Schemas\Components\Utilities\Set $set) {
+                    if ($spot = SalesClient::parseSpot($state)) {
+                        $set('lat', $spot['lat']);
+                        $set('lng', $spot['lng']);
+                        $set('map_link', null);
+                    } elseif (filled($state)) {
+                        Notification::make()->title('Could not read a location from that. Use the long Google Maps link, or type "26.9124, 75.7873".')->warning()->send();
+                    }
+                })->columnSpanFull(),
+            TextInput::make('lat')->label('Latitude')->numeric()->minValue(-90)->maxValue(90)->required()
+                ->helperText('The spot a rep\'s check-in is compared with (within 300 m = at the client).'),
+            TextInput::make('lng')->label('Longitude')->numeric()->minValue(-180)->maxValue(180)->required(),
             Select::make('assigned_to')->label('Works with (rep)')
                 ->options(fn () => self::repOptions())
                 ->searchable()->native(false)
                 ->placeholder('Nobody yet')
                 ->helperText('The rep who calls and visits this client. Everybody can still see it.'),
+            Select::make('viewers')->label('Also open for these reps')
+                ->relationship('viewers', 'name', fn (Builder $query) => $query->where('role', SalesProfile::ROLE)->where('is_active', true))
+                ->multiple()->preload()->searchable()->native(false)
+                ->helperText('A rep sees the clients they added and the ones given to them. Pick more reps here to let them see this client and all the people at it (for example one college with all its teachers).')
+                ->columnSpanFull(),
             Textarea::make('notes')->rows(3)->maxLength(1000)->columnSpanFull(),
         ])->columns(2);
     }
 
     /** @return array<int, string> user id => "Name (CODE)" for active reps */
+    /** The short form a manager fills to add a client from anywhere: name, place and the exact spot are required (as on the phone). */
+    public static function quickClientFields(): array
+    {
+        return [
+            TextInput::make('name')->label('Client')->required()->minLength(2)->maxLength(150),
+            TextInput::make('city')->label('Place')->required()->maxLength(100),
+            TextInput::make('map_link')->label('Paste a Google Maps link or "lat, lng"')->dehydrated(false)->live(onBlur: true)
+                ->afterStateUpdated(function ($state, \Filament\Schemas\Components\Utilities\Set $set) {
+                    if ($spot = SalesClient::parseSpot($state)) {
+                        $set('lat', $spot['lat']);
+                        $set('lng', $spot['lng']);
+                        $set('map_link', null);
+                    } elseif (filled($state)) {
+                        Notification::make()->title('Could not read a location from that. Use the long Google Maps link, or type "26.9124, 75.7873".')->warning()->send();
+                    }
+                })->columnSpanFull(),
+            TextInput::make('lat')->label('Latitude')->numeric()->minValue(-90)->maxValue(90)->required(),
+            TextInput::make('lng')->label('Longitude')->numeric()->minValue(-180)->maxValue(180)->required(),
+            TextInput::make('phone')->label('Main number (optional)')->tel()->maxLength(30)
+                ->rule(fn (): Closure => function (string $attribute, mixed $value, Closure $fail) {
+                    if (! filled($value)) {
+                        return;
+                    }
+                    $normal = PhoneNumber::normalize((string) $value);
+                    if ($normal === null) {
+                        $fail('Enter a valid phone number (10 digits, or with the country code).');
+                    } elseif ($owner = ClientImporter::numberOwner($normal)) {
+                        $fail("This number is already saved under $owner.");
+                    }
+                }),
+            Select::make('assigned_to')->label('Works with (rep, optional)')->options(fn () => self::repOptions())->searchable()->native(false),
+        ];
+    }
+
+    /** Makes the client for the short form (a manager's client: added by the manager, the spot is the office's). */
+    public static function createQuickClient(array $data): SalesClient
+    {
+        abort_unless(auth()->user()?->canManage('sales-clients'), 403);
+
+        return SalesClient::create([
+            'name' => trim($data['name']),
+            'city' => trim($data['city']),
+            'phone' => $data['phone'] ?? null,
+            'lat' => $data['lat'],
+            'lng' => $data['lng'],
+            'location_at' => now(),
+            'assigned_to' => filled($data['assigned_to'] ?? null) ? (int) $data['assigned_to'] : null,
+            'user_id' => auth()->id(),
+        ]);
+    }
+
     public static function repOptions(): array
     {
         return SalesProfile::active()->with('user')->get()
@@ -107,8 +177,15 @@ class SalesClientResource extends Resource
                 TextColumn::make('name')->label('Client')->searchable()->weight('medium')->description(fn (SalesClient $r) => $r->company),
                 TextColumn::make('city')->label('Place')->placeholder('—')->searchable()->sortable(),
                 TextColumn::make('contacts_count')->label('People')->alignCenter()->sortable(),
+                TextColumn::make('location')->label('Location')->placeholder('Not saved')
+                    ->getStateUsing(fn (SalesClient $r) => $r->hasLocation() ? round($r->lat, 5) . ', ' . round($r->lng, 5) : null)
+                    ->url(fn (SalesClient $r) => $r->hasLocation() ? 'https://www.google.com/maps?q=' . $r->lat . ',' . $r->lng : null, shouldOpenInNewTab: true),
                 TextColumn::make('phone')->label('Main number')->placeholder('—')->searchable()->copyable(),
                 TextColumn::make('assignee.name')->label('Works with')->placeholder('Nobody')->searchable(),
+                TextColumn::make('viewers_count')->label('Opened for')->suffix(' reps')->placeholder('—')->alignCenter()->toggleable()
+                    ->formatStateUsing(fn ($state) => $state ?: null),
+                TextColumn::make('location_source')->label('Spot set by')->placeholder('No spot')->toggleable(isToggledHiddenByDefault: true)
+                    ->formatStateUsing(fn (?string $state) => $state === 'office' ? 'Office' : ($state === 'rep' ? 'Rep (Google Maps)' : null)),
                 TextColumn::make('owner.name')->label('Added by')->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('notes')->limit(60)->tooltip(fn (SalesClient $r) => $r->notes)->placeholder('—')->toggleable(isToggledHiddenByDefault: true),
                 TextColumn::make('created_at')->label('Added')->since()->sortable()->toggleable(isToggledHiddenByDefault: true),
@@ -154,6 +231,33 @@ class SalesClientResource extends Resource
                             abort_unless(auth()->user()?->canManage('sales-clients'), 403);
                             $records->each(fn (SalesClient $c) => $c->update(['assigned_to' => (int) $data['rep']]));
                             Notification::make()->title($records->count() . ' ' . str('client')->plural($records->count()) . ' given to the rep')->success()->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
+                    BulkAction::make('openFor')
+                        ->label('Open for reps')
+                        ->icon(Heroicon::OutlinedEye)
+                        ->modalDescription('The reps you pick will see these clients and all the people at them on their phones, next to their own.')
+                        ->schema([
+                            Select::make('reps')->label('Reps')->options(fn () => self::repOptions())->multiple()->required()->searchable()->native(false),
+                        ])
+                        ->action(function (Collection $records, array $data) {
+                            abort_unless(auth()->user()?->canManage('sales-clients'), 403);
+                            $records->each(fn (SalesClient $c) => $c->viewers()->syncWithoutDetaching(array_map('intval', $data['reps'])));
+                            Notification::make()->title($records->count() . ' ' . str('client')->plural($records->count()) . ' opened for ' . count($data['reps']) . ' ' . str('rep')->plural(count($data['reps'])))->success()->send();
+                        })
+                        ->deselectRecordsAfterCompletion(),
+                    BulkAction::make('closeFor')
+                        ->label('Close for reps')
+                        ->icon(Heroicon::OutlinedEyeSlash)
+                        ->color('gray')
+                        ->modalDescription('The reps you pick no longer see these clients (unless they added them or they are given to them). They disappear from the phone on its next sync.')
+                        ->schema([
+                            Select::make('reps')->label('Reps')->options(fn () => self::repOptions())->multiple()->required()->searchable()->native(false),
+                        ])
+                        ->action(function (Collection $records, array $data) {
+                            abort_unless(auth()->user()?->canManage('sales-clients'), 403);
+                            $records->each(fn (SalesClient $c) => $c->viewers()->detach(array_map('intval', $data['reps'])));
+                            Notification::make()->title('Access closed')->success()->send();
                         })
                         ->deselectRecordsAfterCompletion(),
                 ]),

@@ -14,6 +14,10 @@ return [
     // All business rules are checked in this timezone; the database stores UTC.
     'timezone' => env('SALES_TIMEZONE', 'Asia/Kolkata'),
 
+    // true (default): a rep sees only the clients and people they added, the ones given to them and the ones the manager opened for them.
+    // false: the old way, every rep sees the whole client pool.
+    'private_pool' => env('SALES_PRIVATE_POOL', true),
+
     // App login tokens expire after this many days (the rep signs in again).
     'token_days' => (int) env('SALES_TOKEN_DAYS', 30),
 
