@@ -36,7 +36,7 @@ class SalesClient extends Model
         $text = urldecode(trim((string) $text));
         $number = '(-?\d{1,3}\.\d{3,})';
 
-        foreach (['/@' . $number . ',' . $number . '/', '/!3d' . $number . '!4d' . $number . '/', '/[?&](?:q|ll|query)=' . $number . ',' . $number . '/', '/^\s*' . $number . '\s*[,; ]\s*' . $number . '\s*$/'] as $pattern) {
+        foreach (['/!3d' . $number . '!4d' . $number . '/', '/@' . $number . ',' . $number . '/', '/[?&](?:q|ll|query)=' . $number . ',' . $number . '/', '/^\s*' . $number . '\s*[,; ]\s*' . $number . '\s*$/'] as $pattern) {
             if (preg_match($pattern, $text, $m)) {
                 [$lat, $lng] = [round((float) $m[1], 6), round((float) $m[2], 6)];
 

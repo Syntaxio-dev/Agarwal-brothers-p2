@@ -7,7 +7,7 @@ use App\Sales\Filament\Resources\SalesClients\Pages\CreateSalesClient;
 use App\Sales\Filament\Resources\SalesClients\Pages\EditSalesClient;
 use App\Sales\Filament\Resources\SalesClients\Pages\ListSalesClients;
 use App\Sales\Filament\Resources\SalesClients\RelationManagers\ContactsRelationManager;
-use App\Sales\Filament\Forms\MapSpotPicker;
+use App\Sales\Support\MapLinkResolver;
 use App\Sales\Models\SalesClient;
 use App\Sales\Models\SalesProfile;
 use App\Sales\Support\ClientImporter;
@@ -84,7 +84,7 @@ class SalesClientResource extends Resource
                         $fail("This number is already saved under $owner.");
                     }
                 }),
-            MapSpotPicker::make('map_spot')->label('Exact location on the map')->columnSpanFull(),
+            self::mapSpotField(),
             TextInput::make('lat')->label('Latitude')->numeric()->minValue(-90)->maxValue(90)->required()
                 ->helperText('The spot a rep\'s check-in is compared with (within 300 m = at the client).'),
             TextInput::make('lng')->label('Longitude')->numeric()->minValue(-180)->maxValue(180)->required(),
@@ -104,12 +104,47 @@ class SalesClientResource extends Resource
 
     /** @return array<int, string> user id => "Name (CODE)" for active reps */
     /** The short form a manager fills to add a client from anywhere: name, place and the exact spot are required (as on the phone). */
+    /**
+     * The exact location of a client: paste the numbers ("26.9124, 75.7873") or a Google Maps link (a short "Share" link works too: the office
+     * opens it and reads the place). Fills the latitude and longitude boxes next to it.
+     */
+    public static function mapSpotField(): TextInput
+    {
+        return TextInput::make('map_spot')
+            ->label('Exact location (Google Maps link or numbers)')
+            ->placeholder('Paste the link from Google Maps, or 26.9124, 75.7873')
+            ->dehydrated(false)->live(onBlur: true)->maxLength(1500)
+            ->afterStateHydrated(function (TextInput $component, $record) {
+                if ($record && $record->lat !== null && $record->lng !== null) {
+                    $component->state(round((float) $record->lat, 6) . ', ' . round((float) $record->lng, 6));
+                }
+            })
+            ->helperText('In Google Maps open the exact place, tap Share, Copy link, and paste it here. The latitude and longitude fill in by themselves.')
+            ->suffixAction(Action::make('openGoogleMaps')->icon(Heroicon::OutlinedMapPin)->tooltip('Open Google Maps')->url('https://www.google.com/maps', shouldOpenInNewTab: true))
+            ->afterStateUpdated(function ($state, \Filament\Schemas\Components\Utilities\Set $set) {
+                if (! filled($state)) {
+                    return;
+                }
+
+                $found = MapLinkResolver::resolve((string) $state);
+
+                if ($found) {
+                    $set('lat', $found['lat']);
+                    $set('lng', $found['lng']);
+                    Notification::make()->title('Location found' . ($found['name'] ? ': ' . $found['name'] : ''))->success()->send();
+                } else {
+                    Notification::make()->title('Could not find a place in that. Open the place in Google Maps, tap Share, Copy link, and paste it here.')->warning()->send();
+                }
+            })
+            ->columnSpanFull();
+    }
+
     public static function quickClientFields(): array
     {
         return [
             TextInput::make('name')->label('Client')->required()->minLength(2)->maxLength(150),
             TextInput::make('city')->label('Place')->required()->maxLength(100),
-            MapSpotPicker::make('map_spot')->label('Exact location on the map')->columnSpanFull(),
+            self::mapSpotField(),
             TextInput::make('lat')->label('Latitude')->numeric()->minValue(-90)->maxValue(90)->required(),
             TextInput::make('lng')->label('Longitude')->numeric()->minValue(-180)->maxValue(180)->required(),
             TextInput::make('phone')->label('Main number (optional)')->tel()->maxLength(30)

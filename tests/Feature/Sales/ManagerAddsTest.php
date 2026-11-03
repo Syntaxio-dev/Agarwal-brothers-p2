@@ -73,7 +73,6 @@ class ManagerAddsTest extends SalesTestCase
 
         $page = Livewire::test(CreateSalesClient::class)
             ->assertFormFieldExists('map_spot')
-            ->assertSee('Search the shop, college or address')
             ->set('data.map_spot', 'https://www.google.com/maps/place/Jodhpur/@26.4719,73.1153,17z')
             ->assertSet('data.lat', 26.4719)
             ->assertSet('data.lng', 73.1153);

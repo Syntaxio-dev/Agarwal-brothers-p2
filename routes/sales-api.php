@@ -2,6 +2,7 @@
 
 use App\Sales\Http\Controllers\Api\AuthController;
 use App\Sales\Http\Controllers\Api\BillController;
+use App\Sales\Http\Controllers\Api\MapLinkController;
 use App\Sales\Http\Controllers\Api\ProductController;
 use App\Sales\Http\Controllers\Api\SelfieController;
 use App\Sales\Http\Controllers\Api\SyncController;
@@ -23,6 +24,8 @@ Route::middleware(['auth:sanctum', EnsureActiveRep::class, 'throttle:sales-api']
 
     Route::post('sync/push', [SyncController::class, 'push']);
     Route::get('sync/pull', [SyncController::class, 'pull']);
+
+    Route::post('tools/resolve-map-link', MapLinkController::class)->middleware('throttle:30,1');   // a Google Maps link -> the exact spot
 
     Route::get('products', [ProductController::class, 'index']);   // the product guide (read only)
 
