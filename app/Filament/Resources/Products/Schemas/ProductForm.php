@@ -81,6 +81,8 @@ class ProductForm
                                     ->preload()
                                     ->required(fn () => \App\Models\Vertical::exists())
                                     ->helperText('A category is listed under the vertical(s) you pick, so visitors can find its products there. You can change this later under Catalogue, Categories.'),
+                                \App\Filament\Resources\Categories\Schemas\CategoryForm::cardImageField(),
+                                \App\Filament\Resources\Categories\Schemas\CategoryForm::cardSummaryField(),
                             ])
                             ->createOptionUsing(function (array $data) {
                                 abort_unless(auth()->user()?->canManage('categories'), 403);
@@ -95,6 +97,8 @@ class ProductForm
                                     'brand_id' => $data['brand_id'],
                                     'name' => $data['name'],
                                     'slug' => $slug,
+                                    'image' => $data['image'] ?? null,
+                                    'short_description' => filled($data['short_description'] ?? null) ? $data['short_description'] : null,
                                 ]);
                                 $category->verticals()->sync($data['verticals'] ?? []);
 

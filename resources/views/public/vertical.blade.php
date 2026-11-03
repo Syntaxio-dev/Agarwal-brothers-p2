@@ -1,5 +1,5 @@
 <x-layouts.app :title="$vertical->seoTitle()" :description="$vertical->seoDescription()" :image="$vertical->seoImage()">
-  <div class="relative overflow-hidden">
+  <div class="relative overflow-x-clip">
     <div class="pointer-events-none absolute inset-x-0 top-0 h-[520px]
                 bg-[radial-gradient(900px_420px_at_50%_-8%,rgba(0,180,216,0.16),transparent_70%),radial-gradient(700px_380px_at_6%_16%,rgba(0,119,182,0.08),transparent_70%),radial-gradient(700px_380px_at_96%_22%,rgba(0,180,216,0.10),transparent_70%),linear-gradient(to_bottom,rgba(244,249,251,1),rgba(255,255,255,0))]"></div>
 
@@ -27,54 +27,88 @@
             @endif
         </div>
 
-        {{-- Brand-wise menu --}}
-        @if ($brandGroups->count())
-            <div class="mt-8 grid grid-cols-1 items-start gap-3 sm:mt-10 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
+        {{-- Jump to: only when there is more than one brand --}}
+        @if ($brandGroups->count() > 1)
+            <nav data-reveal class="mt-9 flex flex-wrap items-center gap-2" aria-label="Jump to a brand">
+                <span class="mr-1 font-mono text-[10.5px] uppercase tracking-[0.2em] text-slate">Jump to</span>
                 @foreach ($brandGroups as $group)
-                    @php $brand = $group['brand']; @endphp
-                    {{-- phones: with more than 3 brands each card folds (the first one starts open); from 768px every list is always open --}}
-                    <div data-reveal x-data="{ open: {{ $brandGroups->count() <= 3 || $loop->first ? 'true' : 'false' }} }" class="rounded-2xl border border-gray-200 bg-white p-4 sm:p-5 shadow-sm transition-all duration-300 hover:border-cyan/50 hover:shadow-lg">
+                    <a href="#brand-{{ $group['brand']->slug }}" class="chip">
+                        {{ $group['brand']->name }}
+                        <span class="ml-1.5 font-mono text-[11px] text-slate">{{ $group['categories']->count() }}</span>
+                    </a>
+                @endforeach
+            </nav>
+        @endif
 
-                        <div class="flex items-center justify-between gap-3">
-                            <a href="{{ route('brand.show', $brand->slug) }}" class="flex h-12 w-40 min-w-0 items-center" title="{{ $brand->name }}">
-                                @if ($brand->logo)
-                                    <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="img-load max-h-full max-w-full object-contain object-left" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($brand->logo) !!} onload="this.classList.add('is-loaded')">
-                                @else
-                                    <span class="truncate text-lg font-bold text-navy">{{ $brand->name }}</span>
-                                @endif
-                            </a>
-                            <span class="flex shrink-0 items-center gap-2">
-                                <span class="rounded-md bg-cyan/10 px-2 py-1 font-mono text-[11px] text-link">
-                                    {{ $group['categories']->count() }} {{ \Illuminate\Support\Str::plural('line', $group['categories']->count()) }}
-                                </span>
-                                @if ($brandGroups->count() > 3)
+        {{-- One full-width row per brand --}}
+        @if ($brandGroups->count())
+            <div class="mt-8 flex flex-col gap-5 sm:mt-10">
+                @foreach ($brandGroups as $group)
+                    @php $brand = $group['brand']; $folds = $brandGroups->count() > 3; @endphp
+                    {{-- no overflow-hidden on the row: the hover card must be able to grow past it. Phones: with more than 3 brands a row folds (the first one starts open). --}}
+                    <div id="brand-{{ $brand->slug }}" data-reveal x-data="{ open: {{ ! $folds || $loop->first ? 'true' : 'false' }} }"
+                         class="relative grid rounded-[20px] border border-gray-200 bg-white shadow-sm hover:z-20 focus-within:z-20 md:grid-cols-[300px_minmax(0,1fr)]">
+
+                        {{-- left panel --}}
+                        <div class="flex flex-col justify-between gap-5 border-b border-gray-200 bg-ice p-5 shadow-[inset_3px_0_0_#00B4D8] max-md:rounded-t-[20px] sm:p-7 md:gap-7 md:rounded-l-[20px] md:border-b-0 md:border-r">
+                            <div class="flex items-start justify-between gap-3">
+                                <a href="{{ route('brand.show', $brand->slug) }}" class="min-w-0" title="{{ $brand->name }}">
+                                    @if ($brand->logo)
+                                        <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="img-load h-[46px] max-w-full object-contain object-left mix-blend-multiply" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($brand->logo) !!} onload="this.classList.add('is-loaded')">
+                                    @else
+                                        <span class="block text-[26px] font-bold leading-tight text-navy">{{ $brand->name }}</span>
+                                    @endif
+                                </a>
+                                @if ($folds)
                                     <button type="button" @click="open = !open" :aria-expanded="open" aria-label="Show or hide the {{ $brand->name }} product lines"
-                                            class="flex h-8 w-8 items-center justify-center rounded-full bg-ice text-navy transition active:bg-navy active:text-white md:hidden">
+                                            class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-white text-navy transition active:bg-navy active:text-white md:hidden">
                                         <svg class="h-4 w-4 transition-transform duration-200" :class="open ? 'rotate-180' : ''" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
                                     </button>
                                 @endif
-                            </span>
+                            </div>
+                            <div class="flex items-center justify-between gap-3 md:flex-col md:items-start md:gap-4">
+                                <span class="rounded-md bg-cyan/10 px-2 py-1 font-mono text-[11px] text-link">
+                                    {{ $group['categories']->count() }} {{ \Illuminate\Support\Str::plural('line', $group['categories']->count()) }}
+                                </span>
+                                <a href="{{ route('brand.show', $brand->slug) }}" class="group inline-flex items-center gap-1 text-[13.5px] font-semibold text-link hover:text-navy">
+                                    View {{ $brand->name }}
+                                    <svg class="arrow-nudge h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></svg>
+                                </a>
+                            </div>
                         </div>
 
-                        <ul class="mt-4 space-y-2" @if ($brandGroups->count() > 3) :class="open ? '' : 'max-md:hidden'" @endif>
+                        {{-- right panel: product-line tiles (28px padding so the hover card can grow sideways inside the row) --}}
+                        <div class="grid grid-cols-1 content-start gap-3 p-4 sm:grid-cols-2 sm:p-7 lg:grid-cols-3" @if ($folds) :class="open ? '' : 'max-md:hidden'" @endif>
                             @foreach ($group['categories'] as $category)
-                                <li>
-                                    <a href="{{ route('category.show', [$brand->slug, $category->slug, 'v' => $vertical->slug]) }}"
-                                       class="group flex items-center justify-between gap-3 rounded-lg bg-ice px-3.5 py-3 text-sm font-medium text-navy md:py-2.5
-                                              transition-colors duration-200 hover:bg-navy hover:text-white">
-                                        <span class="min-w-0 truncate">{{ $category->name }}</span>
-                                        <span class="flex shrink-0 items-center gap-2">
-                                            @if ($category->products_count)
-                                                <span class="font-mono text-[11px] text-slate group-hover:text-cyan">{{ $category->products_count }}</span>
-                                            @endif
-                                            <svg class="h-3.5 w-3.5 text-link transition-transform duration-200 group-hover:translate-x-0.5 group-hover:text-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/>
-                                            </svg>
+                                @php $cardText = $category->cardText(); @endphp
+                                <a href="{{ route('category.show', [$brand->slug, $category->slug, 'v' => $vertical->slug]) }}" class="line-tile group/tile">
+                                    <span class="line-card">
+                                        <span class="line-head">
+                                            <span class="line-top">
+                                                <span class="line-idx">{{ sprintf('%02d', $loop->iteration) }}</span>
+                                                <svg class="line-chev h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m9 18 6-6-6-6"/></svg>
+                                            </span>
+                                            <span class="line-name">{{ $category->name }}</span>
                                         </span>
-                                    </a>
-                                </li>
+                                        <span class="line-body" aria-hidden="true">
+                                            @if ($category->image)
+                                                <span class="line-pic block"><img src="{{ asset('storage/' . $category->image) }}" alt="" class="img-load" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($category->image) !!} onload="this.classList.add('is-loaded')"></span>
+                                            @else
+                                                <span class="line-pic line-pic-empty">
+                                                    @if ($brand->logo)<img src="{{ asset('storage/' . $brand->logo) }}" alt="" loading="lazy" decoding="async">@endif
+                                                </span>
+                                            @endif
+                                            <span class="line-text block">
+                                                @if ($cardText)<span class="line-desc block line-clamp-3">{{ $cardText }}</span>@endif
+                                                <span class="line-more">View category
+                                                    <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></svg>
+                                                </span>
+                                            </span>
+                                        </span>
+                                    </span>
+                                </a>
                             @endforeach
-                        </ul>
+                        </div>
                     </div>
                 @endforeach
             </div>

@@ -131,7 +131,7 @@ class SearchTypoTest extends TestCase
         $html = $this->get('/search?q=rotanta')->assertOk()->getContent();
 
         // the wrapper (picture link + compare + list buttons) lifts; the link itself no longer lifts alone
-        $this->assertStringContainsString('group transition-all duration-300 hover:-translate-y-1 relative flex', $html);
+        $this->assertStringContainsString('group relative flex transition-all duration-300 hover:-translate-y-1', $html);
         $this->assertStringContainsString('group-hover:border-cyan/50 group-hover:shadow-xl', $html);
         $this->assertStringNotContainsString('duration-300 hover:-translate-y-1 hover:border-cyan/50', $html);
     }

@@ -13,7 +13,7 @@ class Brand extends Model
     use HasSeo;
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'logo', 'country_id', 'description', 'is_active', 'seo_title', 'seo_description', 'og_image',];
+    protected $fillable = ['name', 'slug', 'logo', 'brochure', 'country_id', 'description', 'is_active', 'seo_title', 'seo_description', 'og_image',];
 
     protected $casts = [
         'is_active' => 'boolean',

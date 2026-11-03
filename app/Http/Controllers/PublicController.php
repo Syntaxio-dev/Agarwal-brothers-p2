@@ -216,7 +216,15 @@ class PublicController extends Controller
 
         $vertical = $this->contextVertical($request, $category);
 
-        return view('public.category', compact('brand', 'category', 'groups', 'products', 'vertical'));
+        // Other product lines of the same brand ("More from <Brand>")
+        $siblings = $brand->categories()
+            ->where('id', '!=', $category->id)
+            ->orderBy('sort_order')
+            ->orderBy('name')
+            ->limit(8)
+            ->get(['id', 'brand_id', 'name', 'slug']);
+
+        return view('public.category', compact('brand', 'category', 'groups', 'products', 'vertical', 'siblings'));
     }
 
     public function product(Request $request, Product $product)

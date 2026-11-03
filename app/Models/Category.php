@@ -13,7 +13,7 @@ class Category extends Model
     use HasSeo;
     use HasFactory;
 
-    protected $fillable = ['brand_id', 'name', 'slug', 'heading', 'description', 'content', 'faqs', 'image', 'sort_order', 'seo_title', 'seo_description', 'og_image',];
+    protected $fillable = ['brand_id', 'name', 'slug', 'heading', 'description', 'short_description', 'content', 'faqs', 'image', 'sort_order', 'seo_title', 'seo_description', 'og_image',];
 
     protected $casts = [
         'faqs' => 'array',
@@ -23,6 +23,17 @@ class Category extends Model
     {
         // products are ON DELETE CASCADE; never wipe them implicitly.
         static::deleting(fn (Category $category) => $category->products()->exists() ? false : null);
+    }
+
+    /** Text on the vertical page's hover card: the short summary, else the start of the intro paragraph. */
+    public function cardText(): ?string
+    {
+        $text = trim((string) $this->short_description);
+        if ($text === '') {
+            $text = \Illuminate\Support\Str::limit(trim(strip_tags((string) $this->description)), 110);
+        }
+
+        return $text !== '' ? $text : null;
     }
 
     public function brand()

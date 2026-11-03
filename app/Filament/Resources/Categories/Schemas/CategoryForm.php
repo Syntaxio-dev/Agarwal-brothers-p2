@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Categories\Schemas;
 
+use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\Select;
@@ -51,6 +52,15 @@ class CategoryForm
                             ->helperText('Lower number appears first inside the brand card.'),
                     ]),
 
+                Section::make('Card on the vertical page')
+                    ->description('When a visitor moves the mouse over this category on the vertical page, a card opens with this picture and line.')
+                    ->columnSpanFull()
+                    ->columns(2)
+                    ->schema([
+                        self::cardImageField(),
+                        self::cardSummaryField(),
+                    ]),
+
                 Section::make('Category page content')
                     ->description('Shown on the category page above the model list. Products are grouped there by their "Model group".')
                     ->columnSpanFull()
@@ -86,5 +96,29 @@ class CategoryForm
 
                 \App\Filament\Support\SeoSection::make(),
             ]);
+    }
+
+    /** Shared with the "add a category" box inside the product form. */
+    public static function cardImageField(): FileUpload
+    {
+        return FileUpload::make('image')
+            ->label('Card image')
+            ->helperText('Shown when someone hovers the category on the vertical page. Landscape, about 600x260.')
+            ->image()
+            ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
+            ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))
+            ->maxSize(\App\Filament\Support\Uploads::IMAGE_MAX_KB)
+            ->disk('public')
+            ->visibility('public')
+            ->directory('categories');
+    }
+
+    public static function cardSummaryField(): Textarea
+    {
+        return Textarea::make('short_description')
+            ->label('Card summary')
+            ->helperText('One short line shown with the image on hover (up to 160 letters). Empty = the start of the intro paragraph is used.')
+            ->maxLength(160)
+            ->rows(3);
     }
 }

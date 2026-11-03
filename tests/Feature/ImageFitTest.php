@@ -35,9 +35,8 @@ class ImageFitTest extends TestCase
         $html = $this->get(route('vertical.show', $vertical->slug))->assertOk()->getContent();
 
         // a width-less box collapsed to 0 px and hid the logo (SVG logos have no fixed size)
-        $this->assertStringContainsString('class="flex h-12 w-40 min-w-0 items-center"', $html);
         $this->assertStringContainsString('storage/brands/sartorius.svg', $html);
-        $this->assertStringContainsString('max-h-full max-w-full object-contain object-left', $html);
+        $this->assertStringContainsString('h-[46px] max-w-full object-contain object-left', $html);
     }
 
     public function test_product_photos_blend_into_their_box_and_fill_it_on_every_listing(): void
@@ -45,7 +44,7 @@ class ImageFitTest extends TestCase
         [$brand, $cat, , $product] = $this->catalogue();
 
         $category = $this->get(route('category.show', [$brand->slug, $cat->slug]))->assertOk()->getContent();
-        $this->assertStringContainsString('flex h-48 items-center justify-center bg-ice p-2', $category);
+        $this->assertStringContainsString('relative flex h-[176px] items-center justify-center bg-ice p-2', $category);
         $this->assertStringContainsString('max-h-full max-w-full mix-blend-multiply object-contain', $category);
         $this->assertStringNotContainsString('bg-ice p-5', $category);
 
@@ -54,14 +53,14 @@ class ImageFitTest extends TestCase
         $this->assertStringContainsString('mix-blend-multiply', $brandPage);
 
         $search = $this->get('/search?q=Standard')->assertOk()->getContent();
-        $this->assertStringContainsString('relative flex h-48 items-center justify-center bg-ice p-2', $search);
+        $this->assertStringContainsString('relative flex h-[176px] items-center justify-center bg-ice p-2', $search);
         $this->assertStringContainsString('mix-blend-multiply', $search);
 
         $page = $this->get(route('product.show', $product->slug))->assertOk()->getContent();
         $this->assertStringContainsString('mix-blend-multiply object-contain drop-shadow-xl', $page);   // the big photo too
     }
 
-    public function test_the_category_form_and_list_no_longer_have_the_unused_image(): void
+    public function test_the_category_form_has_the_card_image_again_but_the_list_has_no_image_column(): void
     {
         $this->actingAs(User::factory()->create(['role' => 'admin', 'is_active' => true]));
 
@@ -69,7 +68,7 @@ class ImageFitTest extends TestCase
             ->assertFormFieldExists('name')
             ->assertFormFieldExists('verticals')
             ->assertFormFieldExists('sort_order')
-            ->assertFormFieldDoesNotExist('image');
+            ->assertFormFieldExists('image');
 
         Livewire::test(ListCategories::class)->assertTableColumnDoesNotExist('image');
     }

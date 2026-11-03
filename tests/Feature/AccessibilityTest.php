@@ -64,13 +64,14 @@ class AccessibilityTest extends TestCase
             ->assertSee('Showing');
     }
 
-    public function test_short_category_lists_stay_uncluttered(): void
+    public function test_short_category_lists_also_get_the_search_toolbar(): void
     {
+        // since 3 Nov 2026 the toolbar is always shown, whatever the number of models
         $cat = $this->category(4);
 
         $this->get(route('category.show', [$cat->brand->slug, $cat->slug]))->assertOk()
-            ->assertDontSee('catalogueFilter', false)
-            ->assertDontSee('Search these models');
+            ->assertSee('catalogueFilter', false)
+            ->assertSee('Search these models');
     }
 
     public function test_slide_image_needs_a_description_in_admin(): void

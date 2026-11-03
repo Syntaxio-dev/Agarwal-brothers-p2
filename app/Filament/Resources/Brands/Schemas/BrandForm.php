@@ -63,6 +63,19 @@ class BrandForm
                             ->directory('brands'),
                     ]),
 
+                Section::make('Brand brochure')
+                    ->description('Optional PDF. Shown as a "Read the brochure" card on every product line page of this brand.')
+                    ->columnSpanFull()
+                    ->schema([
+                        FileUpload::make('brochure')
+                            ->label('Brand brochure (PDF)')
+                            ->disk('public')
+                            ->visibility('public')
+                            ->directory('brands/brochures')
+                            ->maxSize(30720)
+                            ->acceptedFileTypes(['application/pdf']),
+                    ]),
+
                 \App\Filament\Support\SeoSection::make(),
             ]);
     }

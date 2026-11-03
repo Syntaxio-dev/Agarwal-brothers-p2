@@ -37,6 +37,11 @@ class BrandsTable
                     ->counts('categories')
                     ->label('Categories')
                     ->sortable(),
+                TextColumn::make('brochure')
+                    ->label('Brochure')
+                    ->badge()
+                    ->formatStateUsing(fn ($state) => filled($state) ? 'Attached' : 'Missing')
+                    ->color(fn ($state) => filled($state) ? 'success' : 'warning'),
                 ToggleColumn::make('is_active')
                     ->label('Active'),
             ])
@@ -49,6 +54,8 @@ class BrandsTable
                 // "To do" filters (the dashboard cards link here)
                 Filter::make('no_country')->label('Without a country')->toggle()
                     ->query(fn ($query) => $query->withoutCountry()),
+                Filter::make('no_brochure')->label('Without a brochure')->toggle()
+                    ->query(fn ($query) => $query->where(fn ($q) => $q->whereNull('brochure')->orWhere('brochure', ''))),
                 Filter::make('no_logo')->label('Without a logo')->toggle()
                     ->query(fn ($query) => $query->withoutLogo()),
             ])

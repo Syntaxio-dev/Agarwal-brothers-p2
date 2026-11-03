@@ -1,10 +1,19 @@
-{{-- One product card (picture, brand, name, compare + enquiry buttons). Needs $product. --}}
-    <div data-reveal class="group transition-all duration-300 hover:-translate-y-1 relative flex">
-    <a href="{{ route('product.show', $product->slug) }}"
-       class="w-full group flex flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 group-hover:border-cyan/50 group-hover:shadow-xl">
-        <div class="relative flex h-48 items-center justify-center bg-ice p-2">
+{{-- One product card: picture (Compare in its corner), brand, name, short text, two specs, "View details" and the Add-to-list button.
+     Needs $product. Optional: $reason (chip on the picture), $q (query for the product link, e.g. the vertical),
+     $filterable (category page: the card takes part in the Alpine filter), $showCategory (default true).
+     The WRAPPER lifts, so the buttons that sit on the card move with it. Phones: compact card (picture + name, icon buttons in the corner). --}}
+@php
+    $specs = collect($product->specs ?? [])
+        ->filter(fn ($v, $k) => filled($v) && is_scalar($v) && mb_strtolower(trim((string) $k)) !== 'model')
+        ->take(2);
+@endphp
+<div data-reveal class="group relative flex transition-all duration-300 hover:-translate-y-1"
+     @if ($filterable ?? false) x-show="matches({{ $product->id }})" :style="{ order: order({{ $product->id }}) }" @endif>
+    <a href="{{ route('product.show', [$product->slug] + ($q ?? [])) }}"
+       class="flex w-full flex-col overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm transition-all duration-300 group-hover:border-cyan/50 group-hover:shadow-xl">
+        <div class="relative flex h-[176px] items-center justify-center bg-ice p-2 max-sm:h-36">
             @if (! empty($reason))
-                <span class="absolute left-3 top-3 z-10 rounded-md border border-cyan/30 bg-white/95 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-link shadow-sm">{{ $reason }}</span>
+                <span class="absolute left-3 top-3 z-10 rounded-md border border-cyan/30 bg-white/95 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-link shadow-sm max-sm:hidden">{{ $reason }}</span>
             @endif
             @if ($product->image)
                 <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
@@ -16,20 +25,30 @@
             @endif
         </div>
 
-        <div class="flex flex-1 flex-col p-5">
+        <div class="flex flex-1 flex-col px-[18px] pb-[18px] pt-4 max-sm:p-3">
             @if ($product->category?->brand)
-                <p class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-link">{{ $product->category->brand->name }}</p>
+                <p class="font-mono text-[10.5px] font-medium uppercase tracking-[0.16em] text-link max-sm:hidden">{{ $product->category->brand->name }}</p>
             @endif
-            <h3 class="mt-1.5 text-base font-bold leading-snug text-navy transition-colors group-hover:text-link">{{ $product->name }}</h3>
-            @if ($product->category)
-                <p class="mt-1 text-xs text-slate">{{ $product->category->name }}</p>
+            <h3 class="mt-1.5 text-base font-bold leading-snug text-navy transition-colors group-hover:text-link max-sm:mt-0 max-sm:text-sm">{{ $product->name }}</h3>
+            @if (($showCategory ?? true) && $product->category)
+                <p class="mt-1 text-xs text-slate max-sm:hidden">{{ $product->category->name }}</p>
             @endif
             @if ($product->short_description)
-                <p class="mt-2 line-clamp-2 text-sm leading-relaxed text-slate">{{ $product->short_description }}</p>
+                <p class="mt-2 line-clamp-2 text-[13px] leading-relaxed text-slate max-sm:hidden">{{ $product->short_description }}</p>
             @endif
-            <span class="mt-auto pt-4 text-xs font-semibold text-link">View details <span class="inline-block transition-transform duration-200 group-hover:translate-x-1">&rarr;</span></span>
+            @if ($specs->count() >= 2)
+                <div class="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-[10px] bg-[#E5EEF3] max-sm:hidden">
+                    @foreach ($specs as $label => $value)
+                        <div class="min-w-0 bg-ice px-2.5 py-2">
+                            <p class="truncate text-[10.5px] text-slate">{{ $label }}</p>
+                            <p class="truncate font-mono text-[12.5px] font-medium text-navy">{{ $value }}</p>
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+            <span class="mt-auto flex h-[34px] items-center pt-4 text-[12.5px] font-semibold text-link max-sm:hidden" style="box-sizing:content-box">View details <span class="ml-1 inline-block transition-transform duration-200 group-hover:translate-x-1">&rarr;</span></span>
         </div>
     </a>
-        @include('public.partials.compare-toggle', ['product' => $product])
-        @include('public.partials.enquiry-list-toggle', ['product' => $product])
-    </div>
+    @include('public.partials.compare-toggle', ['product' => $product, 'card' => true])
+    @include('public.partials.enquiry-list-toggle', ['product' => $product, 'card' => true])
+</div>
