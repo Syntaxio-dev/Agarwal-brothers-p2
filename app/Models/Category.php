@@ -53,7 +53,9 @@ class Category extends Model
 
     protected function seoName(): string
     {
-        return $this->name . ($this->brand ? ' by ' . $this->brand->name : '');
+        $title = $this->name . ($this->brand ? ' by ' . $this->brand->name : '');
+
+        return mb_strlen($title) <= 27 ? $title . ': Specs & Quote' : $title;
     }
 
     protected function seoFallbackDescription(): ?string

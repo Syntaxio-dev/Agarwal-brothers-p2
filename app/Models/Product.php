@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use App\Models\Concerns\LogsActivity;
 use App\Models\Concerns\HasSeo;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
@@ -75,7 +76,15 @@ class Product extends Model
 
     protected function seoName(): string
     {
-        return $this->name;
+        // "BSA224S Standard Laboratory Balance by Sartorius": model + type + brand, the way buyers search.
+        $title = filled($this->heading) ? $this->heading : $this->name;
+        $brand = $this->category?->brand?->name;
+
+        if ($brand && ! Str::contains($title, $brand)) {
+            $title .= ' by ' . $brand;
+        }
+
+        return mb_strlen($title) <= 27 ? $title . ': Specs & Quote' : $title;
     }
 
     protected function seoFallbackDescription(): ?string

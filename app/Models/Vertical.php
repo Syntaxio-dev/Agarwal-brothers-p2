@@ -26,12 +26,13 @@ class Vertical extends Model
 
     protected function seoName(): string
     {
-        return $this->name;
+        return mb_strlen($this->name) <= 24 ? $this->name . ' Supplier, Jaipur' : $this->name;
     }
 
     protected function seoFallbackDescription(): ?string
     {
-        return $this->description ?: "Explore {$this->name} instruments and solutions from leading global brands, supplied and supported by Agarwal Brothers.";
+        // Always the same clear promise (a long page description used to be cut in the middle of a sentence).
+        return "{$this->name}: models, specifications and quotes from leading global brands, supplied and supported in India by Agarwal Brothers, Jaipur.";
     }
 
     protected function seoFallbackImage(): ?string

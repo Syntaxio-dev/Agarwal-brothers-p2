@@ -35,10 +35,14 @@
     $select = 'h-11 w-full min-w-0 rounded-lg sm:w-auto sm:min-w-[10rem] border border-gray-200 bg-white px-4 text-sm text-navy outline-none focus:border-cyan focus:ring-2 focus:ring-cyan/20 transition';
 @endphp
 
-<x-layouts.app :title="$title" :description="[
-        'blog' => 'Blogs and insights from Agarwal Brothers on laboratory instruments, applications and scientific research.',
+<x-layouts.app :title="[
+        'blog' => 'Lab Instrument Blogs & Application Guides',
+        'news' => 'Lab Industry News & Events in India',
+        'webinar' => 'Lab Instrument Webinars & Recordings',
+     ][$type] ?? $title" :description="[
+        'blog' => 'Practical blogs and guides from Agarwal Brothers on choosing and using laboratory balances, analytical instruments and lab equipment, with application notes for Indian labs.',
         'news' => 'News, events and exhibitions from Agarwal Brothers: where to meet our specialists and see instruments in action.',
-        'webinar' => 'Upcoming and recorded webinars on analytical instruments and laboratory workflows.',
+        'webinar' => 'Upcoming and recorded webinars on analytical instruments and laboratory workflows, presented with our principal brands. Register for the next one or watch the recordings.',
      ][$type] ?? null">
   <div class="relative overflow-hidden">
     <div class="pointer-events-none absolute inset-x-0 top-0 h-[620px]

@@ -1,4 +1,4 @@
-<x-layouts.app title="Scientific Verticals" description="Explore Agarwal Brothers' scientific verticals: analytical, life sciences, pharma, materials, environmental and more, with instruments from leading global brands.">
+<x-layouts.app title="Lab Equipment & Instruments by Category" description="Browse laboratory equipment and scientific instruments by category, from weighing to analytical, from leading global brands. Supplied by Agarwal Brothers, Jaipur.">
   <div class="relative overflow-hidden">
     {{-- Soft blue tint fading into white --}}
     <div class="pointer-events-none absolute inset-x-0 top-0 h-[620px]

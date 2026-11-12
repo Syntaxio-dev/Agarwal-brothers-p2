@@ -9,7 +9,7 @@ class Seo
 {
     public const SITE = 'Agarwal Brothers';
 
-    public const DEFAULT_TITLE = 'Laboratory Equipment Supplier in Jaipur, India';
+    public const DEFAULT_TITLE = 'Laboratory Equipment Supplier in Jaipur';
 
     /** Default meta description; the years come from the company facts so they never go stale. */
     public static function defaultDescription(): string
@@ -84,7 +84,13 @@ class Seo
 
         $default = SiteSetting::current()?->default_og_image;
 
-        return $default ? self::storage($default) : self::absolute('sidebar-logo.png');
+        return $default ? self::storage($default) : self::absolute('images/share-card.png');
+    }
+
+    /** Square brand image (1200x1200) for Google's search-result thumbnail and the company logo. */
+    public static function squareImage(): string
+    {
+        return self::absolute('images/share-square.png');
     }
 
     /** Canonical URL: APP_URL + current path, no query string (so ?v=... pages don't duplicate). */

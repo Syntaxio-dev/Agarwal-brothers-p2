@@ -6,8 +6,10 @@
         '@id' => \App\Support\Seo::absolute('/') . '#organization',
         'name' => 'Agarwal Brothers',
         'url' => \App\Support\Seo::absolute('/'),
-        'logo' => \App\Support\Seo::absolute('sidebar-logo.png'),
-        'image' => \App\Support\Seo::image(),
+        'logo' => \App\Support\Seo::squareImage(),
+        // Square first: that is the shape Google crops for the picture beside a search result,
+        // so it shows our brand instead of a client logo from the page.
+        'image' => [\App\Support\Seo::squareImage(), \App\Support\Seo::image()],
         'description' => $siteSeo?->seo_description ?: \App\Support\Seo::defaultDescription(),
         'foundingDate' => (string) \App\Support\Company::foundedYear(),
         'telephone' => config('contact.call'),
@@ -36,7 +38,7 @@
                :image="$siteSeo?->default_og_image ? \App\Support\Seo::storage($siteSeo->default_og_image) : null"
                :schema="$orgSchema">
 
-    <h1 class="sr-only">Laboratory equipment, scientific instruments and chemicals supplier in India</h1>
+    <h1 class="sr-only">Laboratory equipment, scientific instruments and chemicals supplier in Jaipur, India</h1>
 
 
 

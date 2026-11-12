@@ -37,12 +37,17 @@ class Brand extends Model
 
     protected function seoName(): string
     {
-        return $this->name;
+        // The words people type into Google: brand + what we do + where.
+        // Kept short enough for the whole title to stay near 60 characters.
+        return $this->name . (mb_strlen($this->name) <= 16 ? ' Supplier in Jaipur, India' : ' Supplier, Jaipur');
     }
 
     protected function seoFallbackDescription(): ?string
     {
-        return $this->description ?: "{$this->name} laboratory instruments and solutions, supplied and supported in India by Agarwal Brothers.";
+        $lead = "{$this->name} laboratory instruments supplied and supported in India by Agarwal Brothers, Jaipur.";
+        $first = $this->description ? trim(strtok(strip_tags((string) $this->description), '.')) : '';
+
+        return $first !== '' ? "{$lead} {$first}." : $lead;
     }
 
     protected function seoFallbackImage(): ?string
