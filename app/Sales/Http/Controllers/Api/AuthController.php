@@ -75,19 +75,7 @@ class AuthController extends Controller
 
     private function find(string $login): ?SalesProfile
     {
-        $login = trim($login);
-        $phone = PhoneNumber::normalize($login);
-
-        return SalesProfile::query()
-            ->with('user')
-            ->where(function ($query) use ($login, $phone) {
-                $query->where('employee_code', Str::upper($login));
-
-                if ($phone) {
-                    $query->orWhere('phone', $phone);
-                }
-            })
-            ->first();
+        return SalesProfile::findByLogin($login);
     }
 
     private function account(SalesProfile $profile): array

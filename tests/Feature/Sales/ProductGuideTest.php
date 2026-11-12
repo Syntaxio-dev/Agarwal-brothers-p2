@@ -80,9 +80,9 @@ class ProductGuideTest extends SalesTestCase
         $rep = $this->rep()->user;
 
         $this->actingAs($rep);
-        $this->get('/admin/sales-products')->assertForbidden();
-        $this->get('/admin/sales-products/create')->assertForbidden();
-        $this->get('/admin/sales-product-requests')->assertForbidden();
+        $this->get('/sales/sales-products')->assertForbidden();
+        $this->get('/sales/sales-products/create')->assertForbidden();
+        $this->get('/sales/sales-product-requests')->assertForbidden();
     }
 
     public function test_the_phone_reads_the_guide_and_gets_nothing_new_when_it_already_has_it(): void

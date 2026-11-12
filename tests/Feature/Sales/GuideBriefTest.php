@@ -186,7 +186,7 @@ class GuideBriefTest extends SalesTestCase
         $this->assertFalse($other->user->can('view', $row), 'another rep cannot read it');
         $this->assertFalse($other->user->can('delete', $row));
 
-        $this->actingAs($manager)->get('/admin/sales-scripts')->assertOk()->assertSee('Lab Weighing Balance');
+        $this->actingAs($manager)->get('/sales/sales-scripts')->assertOk()->assertSee('Lab Weighing Balance');
     }
 
     public function test_the_management_page_counts_the_scripts(): void
@@ -194,6 +194,6 @@ class GuideBriefTest extends SalesTestCase
         $a = $this->headers($this->rep('REP001', '9000000001'));
         $this->push($a, ['scripts' => [$this->script($this->product()->uuid)]])->assertOk();
 
-        $this->actingAs($this->manager())->get('/admin/sales-management')->assertOk()->assertSee('1 own script from 1 rep');
+        $this->actingAs($this->manager())->get('/sales/sales-management')->assertOk()->assertSee('1 own script from 1 rep');
     }
 }

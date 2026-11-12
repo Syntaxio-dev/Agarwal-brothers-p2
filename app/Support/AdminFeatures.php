@@ -108,7 +108,12 @@ class AdminFeatures
                     continue;
                 }
 
-                $url = $target === SiteSettingResource::class ? SiteSettingResource::getNavigationUrl() : $target::getUrl();
+                // The Sales screens live in their own panel (the sales sub-domain), so their link is built for that panel.
+                $url = match (true) {
+                    $target === SiteSettingResource::class => SiteSettingResource::getNavigationUrl(),
+                    str_starts_with($target, 'App\\Sales\\') => $target::getUrl(panel: 'sales'),
+                    default => $target::getUrl(),
+                };
                 $out[$group][] = ['key' => \Illuminate\Support\Str::slug($title), 'title' => $title, 'text' => $text, 'url' => $url];
             }
         }

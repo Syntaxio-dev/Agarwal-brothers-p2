@@ -75,14 +75,33 @@ class SalesServiceProvider extends ServiceProvider
         $this->limiters();
 
         if (! $this->app->routesAreCached()) {
-            Route::middleware(['api', ForceJson::class])
-                ->prefix('api/sales/v1')
-                ->name('sales.api.')
-                ->group(base_path('routes/sales-api.php'));
+            $domain = config('sales.domain');
 
-            $this->billViewer();
-            $this->selfieViewer();
+            // The phone API: on the sales sub-domain when there is one, and (while old builds are out) also on the main site.
+            if ($domain) {
+                Route::domain($domain)->middleware(['api', ForceJson::class])
+                    ->prefix('api/sales/v1')
+                    ->name('sales.api.')
+                    ->group(base_path('routes/sales-api.php'));
+            }
+            if (! $domain || config('sales.legacy_api')) {
+                Route::middleware(['api', ForceJson::class])
+                    ->prefix('api/sales/v1')
+                    ->name($domain ? 'sales.api.legacy.' : 'sales.api.')
+                    ->group(base_path('routes/sales-api.php'));
+            }
+
+            $this->billViewer($domain);
+            $this->selfieViewer($domain);
         }
+    }
+
+    /** The routes of the Sales panel's own helpers: at the root of the sub-domain, or under /sales on a single host. */
+    private function panelRoute(?string $domain)
+    {
+        return $domain
+            ? Route::domain($domain)->middleware('web')
+            : Route::prefix('sales')->middleware('web');
     }
 
     /** Own counters, like the website's forms: a busy sync must not use up the login allowance. */
@@ -102,9 +121,9 @@ class SalesServiceProvider extends ServiceProvider
     }
 
     /** A manager looks at a check-in selfie through this address (private disk, login session, same role check as the Meetings screen). */
-    private function selfieViewer(): void
+    private function selfieViewer(?string $domain): void
     {
-        Route::middleware('web')->get('admin/sales/selfies/{uuid}', function (string $uuid) {
+        $this->panelRoute($domain)->get('selfies/{uuid}', function (string $uuid) {
             abort_unless(auth()->user()?->canManage('sales-meetings'), 403);
 
             $meeting = SalesMeeting::withTrashed()->where('uuid', $uuid)->firstOrFail();
@@ -123,9 +142,9 @@ class SalesServiceProvider extends ServiceProvider
      * A manager looks at a bill photo through this address (the files are on the private disk, there is no public link).
      * It uses the admin panel's login session and the same role check as the Expenses screen.
      */
-    private function billViewer(): void
+    private function billViewer(?string $domain): void
     {
-        Route::middleware('web')->get('admin/sales/bills/{uuid}', function (string $uuid) {
+        $this->panelRoute($domain)->get('bills/{uuid}', function (string $uuid) {
             abort_unless(auth()->user()?->canManage('sales-expenses'), 403);
 
             $expense = SalesExpense::withTrashed()->where('uuid', $uuid)->firstOrFail();

@@ -38,6 +38,8 @@ abstract class SalesTestCase extends TestCase
     {
         parent::setUp();
 
+        \Filament\Facades\Filament::setCurrentPanel('sales');   // a real request to the Sales panel sets this itself
+
         $this->defaultGuard = config('auth.defaults.guard');   // shouldUse() overwrites this very setting, so remember it now
     }
 

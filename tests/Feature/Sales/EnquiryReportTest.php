@@ -21,7 +21,7 @@ class EnquiryReportTest extends SalesTestCase
             'client_name' => 'JK Cement',
             'contact_uuid' => null,
             'contact_name' => 'Rohit Sharma',
-            'status' => 'new',
+            'status' => 'qualification',
             'items' => [
                 ['product' => 'Muffle Furnace', 'brands' => 'Labtech, Remi', 'quantity' => 1, 'budget_paise' => 15000000],
                 ['product' => 'Hot Air Oven', 'brands' => '', 'quantity' => 2, 'budget_paise' => null],
@@ -29,7 +29,7 @@ class EnquiryReportTest extends SalesTestCase
             'opened_at' => $this->moment('-2 minutes'),
             'next_followup_at' => $this->moment('+1 day'),
             'closed_at' => null,
-            'timeline' => [['at' => $this->moment('-2 hours'), 'text' => 'Asked for the price of an oven and a furnace', 'status' => 'new']],
+            'timeline' => [['at' => $this->moment('-2 hours'), 'text' => 'Asked for the price of an oven and a furnace', 'status' => 'qualification']],
             'updated_at' => $this->moment(),
         ], $over);
     }
@@ -69,7 +69,7 @@ class EnquiryReportTest extends SalesTestCase
 
         $back = $this->pull($headers)->json('enquiries.0');
         $this->assertSame($e['uuid'], $back['uuid']);
-        $this->assertSame('new', $back['status']);
+        $this->assertSame('qualification', $back['status']);
         $this->assertSame('Labtech, Remi', $back['items'][0]['brands']);
         $this->assertSame(2, $back['items'][1]['quantity']);
         $this->assertSame('Asked for the price of an oven and a furnace', $back['timeline'][0]['text']);
@@ -82,14 +82,14 @@ class EnquiryReportTest extends SalesTestCase
         $this->push($headers, ['enquiries' => [$e]])->assertOk();
 
         $this->travel(2)->seconds();
-        $e['status'] = 'price_sent';
+        $e['status'] = 'proposal';
         $e['next_followup_at'] = $this->moment('+3 days');
-        $e['timeline'][] = ['at' => $this->moment(), 'text' => 'Mailed the quote', 'status' => 'price_sent'];
+        $e['timeline'][] = ['at' => $this->moment(), 'text' => 'Mailed the quote', 'status' => 'proposal'];
         $e['updated_at'] = $this->moment();
         $this->push($headers, ['enquiries' => [$e]])->assertOk();
 
         $row = SalesEnquiry::first();
-        $this->assertSame('price_sent', $row->status);
+        $this->assertSame('proposal', $row->status);
         $this->assertTrue($row->isOpen());
         $this->assertCount(2, $row->timeline);
         $this->assertNotNull($row->next_followup_at);
@@ -175,7 +175,7 @@ class EnquiryReportTest extends SalesTestCase
         $this->assertSame(1, $s['enquiries_won']);
         $this->assertSame(3, $s['enquiries_new']);
         $this->assertSame(['hot air oven' => 3, 'muffle furnace' => 2], collect(SalesInsights::topProducts(30))->mapWithKeys(fn ($p) => [mb_strtolower($p['product']) => $p['count']])->all());
-        $this->assertSame(2, SalesInsights::enquiriesByStatus()['new']);
+        $this->assertSame(2, SalesInsights::enquiriesByStatus()['qualification']);
         $this->assertCount(1, SalesInsights::overdueEnquiries());
 
         $rep = SalesInsights::reps(30)->first();
@@ -264,15 +264,15 @@ class EnquiryReportTest extends SalesTestCase
         $this->push($headers, ['enquiries' => [$e], 'reports' => [$r]])->assertOk();
 
         $this->actingAs($this->manager());
-        $this->get('/admin/sales-enquiries')->assertOk();
-        $this->get('/admin/sales-reports')->assertOk();
-        $this->get('/admin/sales-management')->assertOk();
+        $this->get('/sales/sales-enquiries')->assertOk();
+        $this->get('/sales/sales-reports')->assertOk();
+        $this->get('/sales/sales-management')->assertOk();
 
         $enquiry = SalesEnquiry::first();
         Livewire::withQueryParams(["view" => "list"])->test(ListSalesEnquiries::class)
             ->assertCanSeeTableRecords([$enquiry])
             ->assertSee('Muffle Furnace')
-            ->filterTable('status', ['new'])->assertCanSeeTableRecords([$enquiry])
+            ->filterTable('status', ['qualification'])->assertCanSeeTableRecords([$enquiry])
             ->resetTableFilters()
             ->filterTable('status', ['won'])->assertCanNotSeeTableRecords([$enquiry])
             ->resetTableFilters()
@@ -295,7 +295,7 @@ class EnquiryReportTest extends SalesTestCase
         Livewire::test(ListSalesReports::class)->assertCanNotSeeTableRecords([$draft]);
 
         $this->actingAs(\App\Models\User::factory()->create(['role' => 'editor', 'is_active' => true]));
-        $this->get('/admin/sales-enquiries')->assertForbidden();
-        $this->get('/admin/sales-reports')->assertForbidden();
+        $this->get('/sales/sales-enquiries')->assertForbidden();
+        $this->get('/sales/sales-reports')->assertForbidden();
     }
 }

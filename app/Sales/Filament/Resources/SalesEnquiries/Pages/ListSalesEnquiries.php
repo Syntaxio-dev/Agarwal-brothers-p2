@@ -61,16 +61,19 @@ class ListSalesEnquiries extends ListRecords
         return $this->viewMode !== 'list';
     }
 
-    /** The old table keeps its own header (and gets a way back to the board); the board draws its own. */
+    /** The way back to the board from the list is a button of the table's own header (next to Export); the board draws its own header. */
     protected function getHeaderActions(): array
     {
-        return $this->isBoard() ? [] : [Action::make('showBoard')->label('Board view')->icon('heroicon-o-view-columns')->color('gray')->action(fn () => $this->viewMode = 'board')];
+        return [];
     }
 
     public function content(Schema $schema): Schema
     {
         if (! $this->isBoard()) {
-            return parent::content($schema);
+            // the old table, with the same Board | List switch as the board has (a plain button: one press is enough)
+            $table = parent::content($schema);
+
+            return $table->components([View::make('filament.sales.enquiries.list-toggle'), ...$table->getComponents()]);
         }
 
         return $schema->components([View::make('filament.sales.enquiries.board')->viewData(fn () => $this->boardData())]);
@@ -278,7 +281,7 @@ class ListSalesEnquiries extends ListRecords
             });
     }
 
-    private function panelData(SalesEnquiry $e): array
+    public function panelData(SalesEnquiry $e): array
     {
         $user = auth()->user();
         $can = fn (string $area) => (bool) $user?->canManage($area);

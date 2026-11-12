@@ -7,6 +7,7 @@ use App\Sales\Filament\Resources\SalesClients\Pages\CreateSalesClient;
 use App\Sales\Filament\Resources\SalesClients\Pages\EditSalesClient;
 use App\Sales\Filament\Resources\SalesClients\Pages\ListSalesClients;
 use App\Sales\Filament\Resources\SalesClients\RelationManagers\ContactsRelationManager;
+use App\Sales\Actions\SetClientAccess;
 use App\Sales\Support\MapLinkResolver;
 use App\Sales\Models\SalesClient;
 use App\Sales\Models\SalesProfile;
@@ -60,6 +61,17 @@ class SalesClientResource extends Resource
 
     protected static ?string $recordTitleAttribute = 'name';
 
+    /**
+     * The sidebar's "Clients" opens "Who sees this client" (the first client, with the whole list on its left). The plain table is the
+     * resource's index page and stays one click away ("Table view").
+     */
+    public static function getNavigationUrl(): string
+    {
+        $first = SalesClient::query()->orderBy('name')->first(['id']);
+
+        return $first ? static::getUrl('edit', ['record' => $first]) : static::getUrl('index');
+    }
+
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()->with(['assignee', 'owner'])->withCount(['contacts', 'viewers']);
@@ -88,15 +100,17 @@ class SalesClientResource extends Resource
             TextInput::make('lat')->label('Latitude')->numeric()->minValue(-90)->maxValue(90)->required()
                 ->helperText('The spot a rep\'s check-in is compared with (within 300 m = at the client).'),
             TextInput::make('lng')->label('Longitude')->numeric()->minValue(-180)->maxValue(180)->required(),
-            Select::make('assigned_to')->label('Works with (rep)')
+            // Who sees this client: only when ADDING one. Afterwards the client page's "Who sees this client" is the one place (SetClientAccess).
+            Select::make('assigned_to')->label('Main rep (optional)')
                 ->options(fn () => self::repOptions())
-                ->searchable()->native(false)
-                ->placeholder('Nobody yet')
-                ->helperText('The rep who calls and visits this client. Everybody can still see it.'),
-            Select::make('viewers')->label('Also open for these reps')
-                ->relationship('viewers', 'name', fn (Builder $query) => $query->where('role', SalesProfile::ROLE)->where('is_active', true))
-                ->multiple()->preload()->searchable()->native(false)
-                ->helperText('A rep sees the clients they added and the ones given to them. Pick more reps here to let them see this client and all the people at it (for example one college with all its teachers).')
+                ->searchable()->native(false)->placeholder('Nobody yet')
+                ->visible(fn ($livewire) => $livewire instanceof CreateSalesClient)
+                ->helperText('The rep who calls and visits this client. It also lets that rep see the client and its people.'),
+            Select::make('access_reps')->label('Also open for these reps')
+                ->options(fn () => self::repOptions())
+                ->multiple()->preload()->searchable()->native(false)->dehydrated(true)
+                ->visible(fn ($livewire) => $livewire instanceof CreateSalesClient)
+                ->helperText('A rep sees the clients they added and the ones given to them. Pick more reps to let them see this client and all the people at it. You can change this later on the client page.')
                 ->columnSpanFull(),
             Textarea::make('notes')->rows(3)->maxLength(1000)->columnSpanFull(),
         ])->columns(2);
@@ -168,16 +182,21 @@ class SalesClientResource extends Resource
     {
         abort_unless(auth()->user()?->canManage('sales-clients'), 403);
 
-        return SalesClient::create([
+        $client = SalesClient::create([
             'name' => trim($data['name']),
             'city' => trim($data['city']),
             'phone' => $data['phone'] ?? null,
             'lat' => $data['lat'],
             'lng' => $data['lng'],
             'location_at' => now(),
-            'assigned_to' => filled($data['assigned_to'] ?? null) ? (int) $data['assigned_to'] : null,
             'user_id' => auth()->id(),
         ]);
+
+        if (filled($data['assigned_to'] ?? null)) {
+            app(SetClientAccess::class)->give($client, (int) $data['assigned_to'], auth()->user());
+        }
+
+        return $client;
     }
 
     public static function repOptions(): array
@@ -199,8 +218,8 @@ class SalesClientResource extends Resource
                     ->url(fn (SalesClient $r) => $r->hasLocation() ? 'https://www.google.com/maps?q=' . $r->lat . ',' . $r->lng : null, shouldOpenInNewTab: true),
                 TextColumn::make('phone')->label('Main number')->placeholder('—')->searchable()->copyable(),
                 TextColumn::make('assignee.name')->label('Works with')->placeholder('Nobody')->searchable(),
-                TextColumn::make('viewers_count')->label('Opened for')->suffix(' reps')->placeholder('—')->alignCenter()->toggleable()
-                    ->formatStateUsing(fn ($state) => $state ?: null),
+                TextColumn::make('viewers_count')->label('Also sees')->placeholder('—')->alignCenter()->toggleable()
+                    ->formatStateUsing(fn ($state) => $state ? $state . ' ' . str('rep')->plural((int) $state) : null),
                 TextColumn::make('location_source')->label('Spot set by')->placeholder('No spot')->toggleable(isToggledHiddenByDefault: true)
                     ->formatStateUsing(fn (?string $state) => $state === 'office' ? 'Office' : ($state === 'rep' ? 'Rep (Google Maps)' : null)),
                 TextColumn::make('owner.name')->label('Added by')->toggleable(isToggledHiddenByDefault: true),
@@ -246,7 +265,7 @@ class SalesClientResource extends Resource
                         ])
                         ->action(function (Collection $records, array $data) {
                             abort_unless(auth()->user()?->canManage('sales-clients'), 403);
-                            $records->each(fn (SalesClient $c) => $c->update(['assigned_to' => (int) $data['rep']]));
+                            $records->each(fn (SalesClient $c) => app(SetClientAccess::class)->give($c, (int) $data['rep'], auth()->user()));
                             Notification::make()->title($records->count() . ' ' . str('client')->plural($records->count()) . ' given to the rep')->success()->send();
                         })
                         ->deselectRecordsAfterCompletion(),
@@ -259,7 +278,7 @@ class SalesClientResource extends Resource
                         ])
                         ->action(function (Collection $records, array $data) {
                             abort_unless(auth()->user()?->canManage('sales-clients'), 403);
-                            $records->each(fn (SalesClient $c) => $c->viewers()->syncWithoutDetaching(array_map('intval', $data['reps'])));
+                            $records->each(fn (SalesClient $c) => app(SetClientAccess::class)->open($c, array_map('intval', $data['reps']), auth()->user()));
                             Notification::make()->title($records->count() . ' ' . str('client')->plural($records->count()) . ' opened for ' . count($data['reps']) . ' ' . str('rep')->plural(count($data['reps'])))->success()->send();
                         })
                         ->deselectRecordsAfterCompletion(),
@@ -273,7 +292,7 @@ class SalesClientResource extends Resource
                         ])
                         ->action(function (Collection $records, array $data) {
                             abort_unless(auth()->user()?->canManage('sales-clients'), 403);
-                            $records->each(fn (SalesClient $c) => $c->viewers()->detach(array_map('intval', $data['reps'])));
+                            $records->each(fn (SalesClient $c) => app(SetClientAccess::class)->close($c, array_map('intval', $data['reps']), auth()->user()));
                             Notification::make()->title('Access closed')->success()->send();
                         })
                         ->deselectRecordsAfterCompletion(),
@@ -283,8 +302,26 @@ class SalesClientResource extends Resource
             ->emptyStateDescription('Add one, or import your list of clients and numbers (CSV). The reps can add more from the phone.');
     }
 
+    /** Export of the clients (the whole pool when no query is given: the "Who sees this client" screen has no table behind it). */
+    public static function exportAction(?\Closure $query = null): Action
+    {
+        return Action::make('export')
+            ->label('Export')
+            ->icon(Heroicon::OutlinedArrowDownTray)
+            ->color('gray')
+            ->modalHeading('Export clients')
+            ->modalSubmitActionLabel('Download')
+            ->fillForm(['format' => 'xlsx'])
+            ->schema([
+                Select::make('format')->label('File type')
+                    ->options(['xlsx' => 'Excel (.xlsx)', 'csv' => 'CSV (works everywhere)'])
+                    ->required()->native(false),
+            ])
+            ->action(fn (array $data, $livewire) => SalesExporter::clients($query ? $query($livewire) : SalesClient::query(), $data['format']));
+    }
+
     /** One CSV with the numbers the manager already has: client, place, contact, position, phone. */
-    private static function importAction(): Action
+    public static function importAction(): Action
     {
         return Action::make('import')
             ->label('Import from CSV')

@@ -5,6 +5,14 @@
 
     RewriteEngine On
 
+    # The application folder and hidden files (.env ...) can never be opened by address.
+    RewriteRule ^laravel_app(/|$) - [F,L]
+    RewriteRule (^|/)\.(?!well-known/) - [F,L]
+
+    # One address only: www.example.com goes to example.com (Google must not see two copies of the site).
+    RewriteCond %{HTTP_HOST} ^www\.(.+)$ [NC]
+    RewriteRule ^ https://%1%{REQUEST_URI} [L,R=301]
+
     # Always use https on the live site (cookies and the admin login must never travel in clear text).
     # Local addresses are left alone so XAMPP / artisan serve keep working.
     RewriteCond %{HTTPS} !=on

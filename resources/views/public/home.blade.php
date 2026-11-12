@@ -2,15 +2,25 @@
     $siteSeo = \App\Models\SiteSetting::current();
     $orgSchema = array_filter([
         '@context' => 'https://schema.org',
-        '@type' => 'Organization',
+        '@type' => ['Organization', 'LocalBusiness'],
+        '@id' => \App\Support\Seo::absolute('/') . '#organization',
         'name' => 'Agarwal Brothers',
         'url' => \App\Support\Seo::absolute('/'),
         'logo' => \App\Support\Seo::absolute('sidebar-logo.png'),
+        'image' => \App\Support\Seo::image(),
         'description' => $siteSeo?->seo_description ?: \App\Support\Seo::defaultDescription(),
         'foundingDate' => (string) \App\Support\Company::foundedYear(),
         'telephone' => config('contact.call'),
         'email' => config('contact.departments.0.email'),
         'taxID' => config('contact.gstin'),
+        'areaServed' => ['@type' => 'Country', 'name' => 'India'],
+        'knowsAbout' => ['Laboratory equipment', 'Analytical instruments', 'Laboratory chemicals', 'Weighing balances'],
+        'openingHoursSpecification' => [[
+            '@type' => 'OpeningHoursSpecification',
+            'dayOfWeek' => ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'],
+            'opens' => '10:00',
+            'closes' => '19:00',
+        ]],
         'address' => [
             '@type' => 'PostalAddress',
             'streetAddress' => config('contact.head_office.street'),

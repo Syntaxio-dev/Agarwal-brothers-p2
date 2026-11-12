@@ -74,7 +74,7 @@ class SyncController extends Controller
         $since = filled($data['since'] ?? null) ? CarbonImmutable::parse($data['since'])->utc() : null;
 
         $profile = $request->user()->salesProfile;
-        $payload = $this->sync->pull($request->user(), $since);
+        $payload = $this->sync->pull($request->user(), $since, $request->header('X-App-Version') ?: $request->user()->salesProfile?->app_version);
 
         $this->touchProfile($request, []);
 

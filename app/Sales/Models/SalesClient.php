@@ -66,6 +66,11 @@ class SalesClient extends Model
             $client->client_updated_at ??= now();
         });
 
+        // who-sees-what is cached for a minute (SalesInsights): any change of a client clears it
+        static::saved(fn () => \App\Sales\Support\SalesInsights::forgetClientSets());
+        static::deleted(fn () => \App\Sales\Support\SalesInsights::forgetClientSets());
+        static::restored(fn () => \App\Sales\Support\SalesInsights::forgetClientSets());
+
         // A deleted client takes its people with it (the phones hear about each one as a delete).
         static::deleted(function (SalesClient $client) {
             if (! $client->isForceDeleting()) {

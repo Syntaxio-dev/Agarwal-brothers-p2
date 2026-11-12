@@ -279,7 +279,7 @@ class PlannedMeetingsTest extends SalesTestCase
             'client_name' => 'JK Cement',
             'contact_uuid' => null,
             'contact_name' => '',
-            'status' => 'new',
+            'status' => 'qualification',
             'items' => [['product' => 'Muffle Furnace', 'brands' => 'Labtech', 'quantity' => 1, 'budget_paise' => null]],
             'opened_at' => $this->moment('-2 minutes'),
             'next_followup_at' => null,

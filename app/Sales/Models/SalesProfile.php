@@ -23,6 +23,13 @@ class SalesProfile extends Model
 
     protected $fillable = ['user_id', 'employee_code', 'phone', 'is_active', 'sort_order', 'last_sync_at', 'app_version', 'device_model'];
 
+    protected static function booted(): void
+    {
+        // the rep list of the Clients screen is cached (SalesInsights::activeReps)
+        static::saved(fn (SalesProfile $p) => ($p->wasRecentlyCreated || $p->wasChanged('is_active')) && \App\Sales\Support\SalesInsights::forgetClientSets());
+        static::deleted(fn () => \App\Sales\Support\SalesInsights::forgetClientSets());
+    }
+
     protected function casts(): array
     {
         return [
@@ -46,6 +53,24 @@ class SalesProfile extends Model
     public function getNameAttribute(): ?string
     {
         return $this->user?->name;
+    }
+
+    /** The rep behind an employee code or a phone number (the app's sign-in and the desktop sign-in find a rep the same way). */
+    public static function findByLogin(string $login): ?self
+    {
+        $login = trim($login);
+        $phone = \App\Sales\Support\PhoneNumber::normalize($login);
+
+        return static::query()
+            ->with('user')
+            ->where(function ($query) use ($login, $phone) {
+                $query->where('employee_code', \Illuminate\Support\Str::upper($login));
+
+                if ($phone) {
+                    $query->orWhere('phone', $phone);
+                }
+            })
+            ->first();
     }
 
     public function scopeActive(Builder $query): Builder

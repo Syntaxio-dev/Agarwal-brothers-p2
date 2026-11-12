@@ -4,6 +4,7 @@ namespace App\Sales\Filament\Resources\SalesMeetings;
 
 use App\Filament\Concerns\RestrictedByRole;
 use App\Sales\Filament\Resources\SalesMeetings\Pages\ListSalesMeetings;
+use App\Sales\Filament\Resources\SalesMeetings\Pages\ReviewSalesMeetings;
 use App\Sales\Models\SalesMeeting;
 use App\Sales\Models\SalesProfile;
 use App\Sales\Support\SalesExporter;
@@ -41,6 +42,12 @@ class SalesMeetingResource extends Resource
     protected static ?string $navigationLabel = 'Meetings';
 
     protected static ?string $modelLabel = 'meeting';
+
+    /** The sidebar's "Meetings" opens the visit review (design 7a); the table with every column is the index page ("List view"). */
+    public static function getNavigationUrl(): string
+    {
+        return static::getUrl('review');
+    }
 
     public static function canCreate(): bool
     {
@@ -189,6 +196,6 @@ class SalesMeetingResource extends Resource
 
     public static function getPages(): array
     {
-        return ['index' => ListSalesMeetings::route('/')];
+        return ['index' => ListSalesMeetings::route('/'), 'review' => ReviewSalesMeetings::route('/review')];
     }
 }

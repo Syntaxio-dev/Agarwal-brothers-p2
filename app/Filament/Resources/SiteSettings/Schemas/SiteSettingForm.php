@@ -201,7 +201,7 @@ class SiteSettingForm
                         TextInput::make('seo_title')
                             ->label('Home page title')
                             ->maxLength(70)
-                            ->placeholder('Laboratory Equipment Supplier in India')
+                            ->placeholder('Laboratory Equipment Supplier in Jaipur, India')
                             ->helperText('" | Agarwal Brothers" is added automatically.'),
                         Textarea::make('seo_description')
                             ->label('Home page description')

@@ -617,6 +617,14 @@ class SyncService
     {
         $statuses = array_keys(SalesEnquiry::STATUSES);
 
+        // a phone older than v1.15 still sends the eight old stage names: they are read as the six
+        if (isset($r['status']) && is_string($r['status'])) {
+            $r['status'] = SalesEnquiry::normalizeStatus($r['status']);
+        }
+        if (isset($r['timeline']) && is_array($r['timeline'])) {
+            $r['timeline'] = array_map(fn ($t) => is_array($t) && isset($t['status']) && is_string($t['status']) ? [...$t, 'status' => SalesEnquiry::normalizeStatus($t['status'])] : $t, $r['timeline']);
+        }
+
         $invalid = $this->check($r, [
             'uuid' => ['required', 'uuid'],
             'client_uuid' => ['nullable', 'uuid'],
@@ -625,6 +633,10 @@ class SyncService
             'contact_name' => ['nullable', 'string', 'max:150'],
             'status' => ['required', Rule::in($statuses)],
             'source' => ['sometimes', 'nullable', Rule::in(array_keys(SalesEnquiry::SOURCES))],
+            // lead follow-up (app v1.15): all three optional, an older phone sends none of them
+            'lead_status' => ['sometimes', 'nullable', Rule::in(array_keys(SalesEnquiry::LEAD_STATUSES))],
+            'lead_remark' => ['sometimes', 'nullable', 'string', 'max:' . SalesEnquiry::LEAD_REMARK_MAX],
+            'last_followup_at' => ['sometimes', 'nullable', 'date', 'after_or_equal:2020-01-01', 'before_or_equal:' . $this->latestMoment()->toIso8601String()],
             'items' => ['required', 'array', 'min:1', 'max:10'],
             'items.*.product' => ['required', 'string', 'min:2', 'max:150'],
             'items.*.brands' => ['nullable', 'string', 'max:150'],
@@ -660,6 +672,10 @@ class SyncService
             'status' => $r['status'],
             // "came through": a phone from before app v1.7 does not send it, and what is stored is kept then
             ...(array_key_exists('source', $r) ? ['source' => filled($r['source']) ? $r['source'] : null] : []),
+            // lead follow-up: a phone from before app v1.15 does not send these, and what is stored (maybe from the rep desk) is kept then
+            ...(array_key_exists('lead_status', $r) ? ['lead_status' => filled($r['lead_status']) ? $r['lead_status'] : null] : []),
+            ...(array_key_exists('lead_remark', $r) ? ['lead_remark' => $this->text($r['lead_remark'] ?? null)] : []),
+            ...(array_key_exists('last_followup_at', $r) ? ['last_followup_at' => filled($r['last_followup_at']) ? $this->time($r['last_followup_at']) : null] : []),
             // only the known keys, trimmed: nothing else the phone sends is stored
             'items' => collect($r['items'])->map(fn ($i) => [
                 'product' => trim($i['product']),
@@ -787,8 +803,11 @@ class SyncService
     // ---- pull -------------------------------------------------------------------
 
     /** What changed since `$since` (all of it when null): this rep's own records, the shared pool, and the position list. */
-    public function pull(User $user, ?CarbonImmutable $since): array
+    public function pull(User $user, ?CarbonImmutable $since, ?string $appVersion = null): array
     {
+        // a phone older than v1.15 only knows the eight old stage names
+        $this->oldStages = $appVersion !== null && $appVersion !== '' && version_compare($appVersion, '1.15', '<');
+
         $startedAt = CarbonImmutable::now('UTC');
         $limit = (int) config('sales.max_pull_records');
         $capped = [];
@@ -980,6 +999,14 @@ class SyncService
         ];
     }
 
+    /** True while a pull for a phone older than v1.15 is being built. */
+    private bool $oldStages = false;
+
+    private function oldStage(?string $status): ?string
+    {
+        return $this->oldStages ? (SalesEnquiry::LEGACY_FOR_OLD_APPS[$status] ?? $status) : $status;
+    }
+
     private function enquiryPayload(SalesEnquiry $e): array
     {
         return [
@@ -988,13 +1015,16 @@ class SyncService
             'client_name' => $e->client_name,
             'contact_uuid' => $e->contact_uuid,
             'contact_name' => $e->contact_name,
-            'status' => $e->status,
+            'status' => $this->oldStage($e->status),
             'source' => $e->source,
+            'lead_status' => $e->lead_status,
+            'lead_remark' => $e->lead_remark,
+            'last_followup_at' => $e->last_followup_at ? $this->iso($e->last_followup_at) : null,
             'items' => $e->items ?? [],
             'opened_at' => $this->iso($e->opened_at),
             'next_followup_at' => $e->next_followup_at ? $this->iso($e->next_followup_at) : null,
             'closed_at' => $e->closed_at ? $this->iso($e->closed_at) : null,
-            'timeline' => $e->timeline ?? [],
+            'timeline' => $this->oldStages ? array_map(fn ($t) => is_array($t) && isset($t['status']) ? [...$t, 'status' => $this->oldStage($t['status'])] : $t, $e->timeline ?? []) : ($e->timeline ?? []),
             'updated_at' => $this->iso($e->client_updated_at),
             'deleted' => $e->trashed(),
         ];

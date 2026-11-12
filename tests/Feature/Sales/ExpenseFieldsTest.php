@@ -98,7 +98,7 @@ class ExpenseFieldsTest extends SalesTestCase
         $this->assertSame(['local' => 10000, 'outstation' => 30000, 'unknown' => 5000], $split['work_area']);
         $this->assertSame(['with_bill' => 10000, 'without_bill' => 30000, 'unknown' => 5000], $split['bill']);
 
-        $this->get('/admin/sales-management')->assertOk()->assertSee('Local or outstation')->assertSee('With or without bill');
+        $this->get('/sales/sales-management')->assertOk()->assertSee('Local or outstation')->assertSee('With or without bill');
 
         ob_start();
         \App\Sales\Support\SalesExporter::expenses(SalesExpense::query(), 'csv')->sendContent();

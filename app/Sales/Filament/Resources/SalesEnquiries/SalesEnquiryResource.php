@@ -78,8 +78,8 @@ class SalesEnquiryResource extends Resource
         return match ($status) {
             'won' => 'success',
             'lost' => 'gray',
-            'new' => 'info',
-            'callback', 'meeting_planned' => 'warning',
+            'qualification' => 'info',
+            'need_analysis' => 'warning',
             default => 'primary',
         };
     }
@@ -181,8 +181,17 @@ class SalesEnquiryResource extends Resource
                     ])
                     ->action(fn (array $data, $livewire) => SalesExporter::enquiries($livewire->getFilteredTableQuery(), $data['format'])),
             ])
-            // "Open" is the side panel of the board (the same window from the List)
-            ->recordActions([Action::make('open')->label('Open')->icon(Heroicon::OutlinedEye)->action(fn (SalesEnquiry $record, $livewire) => $livewire->openEnquiry($record->uuid))])
+            // "Open" is the side panel of the board (the same window from the List). A page action cannot be mounted from inside a table action
+            // (Filament closes it again when the table action ends), so the panel is opened by the browser right after the action has finished.
+            ->recordAction('open')
+            ->recordActions([
+                Action::make('open')->label('Open')->icon(Heroicon::OutlinedEye)
+                    ->action(function (SalesEnquiry $record, $livewire) {
+                        abort_unless(auth()->user()?->canManage('sales-enquiries'), 403);
+
+                        $livewire->js('$wire.openEnquiry(' . json_encode($record->uuid) . ')');
+                    }),
+            ])
             ->emptyStateHeading('No enquiries yet')
             ->emptyStateDescription('They appear here when a rep writes one in the app and syncs.');
     }

@@ -141,8 +141,10 @@ class ClientImporter
                 'city' => $place ?: null,
                 'notes' => null,
                 'user_id' => $by->id,
-                'assigned_to' => $assignTo,
             ]);
+            if ($assignTo) {
+                (new \App\Sales\Actions\SetClientAccess())->give($client, (int) $assignTo, $by);   // the one write path for "who sees it"
+            }
             $summary['clients_created']++;
         }
 

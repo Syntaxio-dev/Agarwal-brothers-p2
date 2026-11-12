@@ -48,7 +48,7 @@ Body (every part optional; at most 300 records of each kind per push, 40 reports
   "meetings": [{ "uuid", "client_uuid", "client_name", "contact_uuids": ["uuid"], "meeting_at", "purpose", "discussion", "outcome", "next_followup_at", "updated_at",
                  /* from app v1.7, only for a meeting that was planned: */ "status": "planned|done|missed|moved", "scheduled_at", "ended_at", "route_uuid", "result": "price_asked|demo_booked|order|not_interested", "moved_from", "time_manual": false }],
   "routes":   [{ "uuid", "date": "2026-10-30", "title", "area", "start_time": "10:00", "overnight": false, "stops_order": ["meeting uuid"], "updated_at" }],
-  "enquiries": [{ "uuid", "client_uuid", "client_name", "contact_uuid", "contact_name", "status": "new|price_to_send|price_sent|callback|meeting_planned|negotiation|won|lost", "source": "call|walkin|whatsapp|reference|null",
+  "enquiries": [{ "uuid", "client_uuid", "client_name", "contact_uuid", "contact_name", "status": "qualification|need_analysis|proposal|negotiation|won|lost", "source": "call|walkin|whatsapp|reference|null",
                   "items": [{ "product", "brands", "quantity": 1, "budget_paise": 15000000 }], "opened_at", "next_followup_at", "closed_at",
                   "timeline": [{ "at", "text", "status" }], "updated_at" }],
   "reports":  [{ "uuid", "report_date": "2026-10-27", "notes", "tomorrow_plan", "issues", "figures": { "calls", "calls_missed", "talk_seconds", "meetings", "enquiries_new", "enquiries_worked", "expenses_paise" }, "submitted_at", "updated_at" }],
@@ -113,3 +113,19 @@ Everything here is additive: an app that does not know a field simply does not s
 
 ## `POST /tools/resolve-map-link` (app v1.12): a Google Maps link -> the exact place
 Body `{ "text": "<what the rep copied from Google Maps>" }` (5 to 1500 characters; the whole shared text with a link in it is fine, or just the two numbers). Answer `{ "lat": 26.9124, "lng": 75.7873, "name": "Agarwal Brothers" }`, or `404 NOT_FOUND` when no place can be read. The office reads numbers out of the text, or opens the link and follows its redirects to the address that carries the place (the exact place `!3d..!4d..` is preferred over the middle of the screen `@..`). **Safety:** only `https` addresses of Google Maps are ever opened (`maps.app.goo.gl`, `maps.google.com`, `google.com/maps...`, `goo.gl/maps...`), at most 5 redirects and the host of every step is checked again; nothing is stored. Signed-in reps only, 30 asks a minute. The admin client form uses the same code for its "Exact location" box.
+
+### Enquiry stages (app v1.15, 4 Nov 2026)
+
+Six stages: `qualification` (Qualification), `need_analysis` (Need Analysis), `proposal` (Proposal / Price Quote), `negotiation` (Negotiation / Review), `won` (Closed Won), `lost` (Closed Lost). The first four are open. The eight older names are still **accepted on push** (status and `timeline[].status`) and read as: `new`, `callback` -> `qualification`; `meeting_planned` -> `need_analysis`; `price_to_send`, `price_sent` -> `proposal`. A pull for a phone that reports an app version below 1.15 (header `X-App-Version`) gets the closest old name back (`qualification` -> `new`, `need_analysis` -> `meeting_planned`, `proposal` -> `price_to_send`), so those phones keep working. Anything else is `INVALID`.
+
+### Lead follow-up fields (app v1.15, 5 Nov 2026)
+
+A lead is an enquiry. Three optional fields on the `enquiries` record carry what the rep logs on each follow-up; the next reminder is the existing `next_followup_at`.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `lead_status` | string or null | `new`, `price_sent`, `better_option`, `call_not_picking`, `want_less_price`, `interested`, `waiting`, `not_interested`, `deal_done`, `deal_lost`. Null (an enquiry from before v1.15) reads as `new`. `deal_done` / `deal_lost` go with stage `won` / `lost`. Anything else is `INVALID`. |
+| `lead_remark` | string or null, at most 300 | What the client said last time (the newest remark; the history is the timeline, one line per follow-up). |
+| `last_followup_at` | ISO time or null | When the rep last logged a follow-up. |
+
+Push: a key that is **missing** keeps what is stored (a phone older than v1.15 never wipes these); a key sent as `null` clears it. Pull: always returned. The conflict rule is unchanged (the newest `updated_at` wins for the whole record), and the rep desk (`/rep`) writes through `RepEnquiryService::leadFollowup` with a strictly newer version, so the phone takes it on its next pull.

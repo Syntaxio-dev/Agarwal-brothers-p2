@@ -9,7 +9,7 @@ class Seo
 {
     public const SITE = 'Agarwal Brothers';
 
-    public const DEFAULT_TITLE = 'Laboratory Equipment Supplier in India';
+    public const DEFAULT_TITLE = 'Laboratory Equipment Supplier in Jaipur, India';
 
     /** Default meta description; the years come from the company facts so they never go stale. */
     public static function defaultDescription(): string

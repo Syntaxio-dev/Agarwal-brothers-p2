@@ -19,7 +19,7 @@ class SalesPanelTest extends SalesTestCase
     private function enquiryFor(int $userId, array $over = []): SalesEnquiry
     {
         return SalesEnquiry::create(array_merge([
-            'uuid' => (string) Str::uuid(), 'user_id' => $userId, 'client_name' => 'JK Cement', 'status' => 'new',
+            'uuid' => (string) Str::uuid(), 'user_id' => $userId, 'client_name' => 'JK Cement', 'status' => 'qualification',
             'items' => [['product' => 'Muffle Furnace', 'quantity' => 1]], 'opened_at' => now()->subDay(), 'client_updated_at' => now(),
         ], $over));
     }

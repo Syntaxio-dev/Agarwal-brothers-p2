@@ -25,7 +25,7 @@ use Livewire\Livewire;
 
 class AdminSalesTest extends SalesTestCase
 {
-    private const PAGES = ['/admin/sales-management', '/admin/sales-expenses', '/admin/sales-reps', '/admin/sales-meetings', '/admin/sales-clients', '/admin/sales-contacts', '/admin/sales-calls', '/admin/sales-positions', '/admin/sales-clients/create', '/admin/sales-reps/create', '/admin/sales-products', '/admin/sales-products/create', '/admin/sales-product-requests'];
+    private const PAGES = ['/sales/sales-management', '/sales/sales-expenses', '/sales/sales-reps', '/sales/sales-meetings', '/sales/sales-clients', '/sales/sales-contacts', '/sales/sales-calls', '/sales/sales-positions', '/sales/sales-clients/create', '/sales/sales-reps/create', '/sales/sales-products', '/sales/sales-products/create', '/sales/sales-product-requests'];
 
     public function test_managers_and_admins_open_every_sales_screen(): void
     {
@@ -49,11 +49,12 @@ class AdminSalesTest extends SalesTestCase
         }
 
         auth()->logout();
-        $this->get('/admin/sales-management')->assertRedirect('/admin/login');
+        $this->get('/sales/sales-management')->assertRedirect('/sales/login');
     }
 
     public function test_the_dashboard_lists_the_sales_screens_only_for_those_who_can_open_them(): void
     {
+        \Filament\Facades\Filament::setCurrentPanel('admin');   // this list is the website admin dashboard's
         $this->assertArrayHasKey('Sales team', AdminFeatures::forUser($this->manager()));
         $this->assertArrayNotHasKey('Sales team', AdminFeatures::forUser(User::factory()->create(['role' => 'editor', 'is_active' => true])));
     }
@@ -90,12 +91,12 @@ class AdminSalesTest extends SalesTestCase
         Livewire::test(ListSalesMeetings::class)->assertCanSeeTableRecords([$m]);
         Livewire::test(ListSalesClients::class)->assertCanSeeTableRecords([$c]);
 
-        $this->get('/admin/sales-expenses/create')->assertNotFound();
-        $this->get('/admin/sales-meetings/create')->assertNotFound();
-        $this->get('/admin/sales-clients/create')->assertOk();
-        $this->get('/admin/sales-clients/' . $c->id . '/edit')->assertOk();
-        $this->get('/admin/sales-calls')->assertOk();
-        $this->get('/admin/sales-positions')->assertOk();
+        $this->get('/sales/sales-expenses/create')->assertNotFound();
+        $this->get('/sales/sales-meetings/create')->assertNotFound();
+        $this->get('/sales/sales-clients/create')->assertOk();
+        $this->get('/sales/sales-clients/' . $c->id . '/edit')->assertOk();
+        $this->get('/sales/sales-calls')->assertOk();
+        $this->get('/sales/sales-positions')->assertOk();
     }
 
     public function test_a_manager_adds_a_client_with_people_and_gives_it_to_a_rep(): void
@@ -231,6 +232,7 @@ class AdminSalesTest extends SalesTestCase
         $this->storedExpense($a, ['amount_paise' => 70000]);
 
         Livewire::test(ListSalesReps::class)->assertSee('Ravi')->assertSee('₹700');
+        \Filament\Facades\Filament::setCurrentPanel('admin');   // the Users list belongs to the website's admin panel
         Livewire::test(ListUsers::class)->assertCanNotSeeTableRecords([$a->user]);
     }
 

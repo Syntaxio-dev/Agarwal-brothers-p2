@@ -67,7 +67,7 @@ class RepsScreensTest extends SalesTestCase
             'uuid' => (string) Str::uuid(),
             'user_id' => $rep->user_id,
             'client_name' => 'JK Cement',
-            'status' => 'new',
+            'status' => 'qualification',
             'items' => [['product' => 'Muffle Furnace', 'brands' => '', 'quantity' => 1, 'budget_paise' => null]],
             'opened_at' => now()->subDays(3),
             'client_updated_at' => now(),
@@ -311,7 +311,7 @@ class RepsScreensTest extends SalesTestCase
         $this->get(SalesRepResource::getUrl('create'))->assertForbidden();
 
         // a field rep never reaches the panel at all
-        $this->actingAs($a->user)->get('/admin/sales-reps')->assertForbidden();
+        $this->actingAs($a->user)->get('/sales/sales-reps')->assertForbidden();
     }
 
     public function test_the_chips_and_the_search_narrow_the_roster(): void

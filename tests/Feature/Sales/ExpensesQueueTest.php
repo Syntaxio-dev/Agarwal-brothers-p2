@@ -182,7 +182,7 @@ class ExpensesQueueTest extends SalesTestCase
         $this->actingAs($this->viewerOf(['sales-meetings']));
         $this->get(SalesExpenseResource::getUrl('index'))->assertForbidden();
 
-        $this->actingAs($rep->user)->get('/admin/sales-expenses')->assertForbidden();
+        $this->actingAs($rep->user)->get('/sales/sales-expenses')->assertForbidden();
 
         $this->actingAs($this->manager());
         $this->get(SalesExpenseResource::getUrl('index'))->assertOk();

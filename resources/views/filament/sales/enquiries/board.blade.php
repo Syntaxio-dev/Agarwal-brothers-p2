@@ -75,12 +75,13 @@
 
     <div class="en-board" x-bind:class="{ 'is-holding': held }">
         @foreach ($board['columns'] as $col)
-            <section class="en-col" x-bind:class="{ 'is-target': held && stageKeys[target] === '{{ $col['key'] }}' }" aria-labelledby="col-{{ $col['key'] }}">
+            <section class="en-col en-col-{{ $col['key'] }}" x-bind:class="{ 'is-target': held && stageKeys[target] === '{{ $col['key'] }}' }" aria-labelledby="col-{{ $col['key'] }}">
                 <header class="en-col-head">
                     <h2 id="col-{{ $col['key'] }}" class="en-col-title">{{ $col['label'] }}</h2>
                     <span class="sx-tab-count">{{ $col['count'] }}</span>
                     <span class="sx-small en-col-paise">{{ $short($col['paise']) }}</span>
                 </header>
+                @if ($col['note'])<p class="sx-small en-col-note">{{ $col['note'] }}</p>@endif
                 <div class="en-list" role="list" aria-label="{{ $col['label'] }}"
                      @if ($canMove) x-sort="$wire.dropEnquiry($item, '{{ $col['key'] }}', $position)" x-sort:group="pipeline" @endif>
                     @foreach ($col['cards'] as $c)
@@ -88,21 +89,23 @@
                         <article class="en-card u-{{ $c['urgency']['key'] }} {{ $c['dim'] ? 'is-dim' : '' }}" role="listitem" tabindex="0" wire:key="enq-{{ $c['uuid'] }}"
                                  data-item="{{ $key }}" data-uuid="{{ $c['uuid'] }}" data-name="{{ $c['client'] }}" data-stage="{{ $col['key'] }}"
                                  x-bind:class="{ 'is-held': held && held.item === $el.dataset.item }"
-                                 @if ($canMove) x-sort:item="'{{ $key }}'" @endif
+                                 @if ($canMove && ! $col['closed']) x-sort:item="'{{ $key }}'" @endif
                                  aria-label="{{ $c['client'] }}, {{ $col['label'] }}{{ $c['urgency']['label'] ? ', ' . $c['urgency']['label'] : '' }}">
                             <div class="en-card-top">
-                                @if ($canMove)<span class="en-grip" x-sort:handle aria-hidden="true" title="Drag to another stage">&#8942;&#8942;</span>@endif
-                                <button type="button" class="en-name" wire:click="openEnquiry('{{ $c['uuid'] }}')">{{ $c['client'] }}</button>
-                                @if ($c['paise'] > 0)<span class="en-budget">{{ $short($c['paise']) }}</span>@endif
+                                @if ($canMove && ! $col['closed'])<span class="en-grip" x-sort:handle aria-hidden="true" title="Drag to another stage">&#8942;&#8942;</span>@endif
+                                <button type="button" class="en-name {{ $canMove && ! $col['closed'] ? 'is-grab' : '' }}" @if ($canMove && ! $col['closed']) x-sort:handle title="Drag to another stage, or click to open" @endif wire:click="openEnquiry('{{ $c['uuid'] }}')">{{ $c['client'] }}</button>
                             </div>
-                            <p class="en-sum">{{ $c['summary'] }}</p>
+                            @if ($c['summary'])<p class="en-sum">{{ $c['summary'] }}</p>@endif
+                            @if ($c['paise'] > 0)<p class="en-budget">{{ $short($c['paise']) }}</p>@endif
+                            @if ($c['followup'])<p class="en-due {{ $c['urgency']['key'] === 'overdue' ? 'is-late' : '' }}">{{ $c['followup'] }}</p>@endif
                             <div class="en-card-foot">
                                 <span class="sx-avatar en-avatar" aria-hidden="true" title="{{ $c['rep'] }}">{{ $initials($c['rep']) }}</span>
+                                <span class="sx-small en-rep">{{ $c['rep'] }}</span>
                                 @if ($c['urgency']['label'])
                                     <span class="sx-chip {{ $c['urgency']['key'] === 'overdue' ? 'late' : ($c['urgency']['key'] === 'today' ? 'ok' : '') }}">{{ $c['urgency']['label'] }}</span>
                                 @endif
                                 @if ($c['source'])<span class="sx-small en-source">{{ $c['source'] }}</span>@endif
-                                @if ($canMove)
+                                @if ($canMove && ! $col['closed'])
                                     <span class="en-move" x-data="{ open: false }" x-on:keydown.escape.stop="open = false" x-on:click.outside="open = false">
                                         <button type="button" class="sx-btn en-movebtn" x-on:click="open = ! open" aria-haspopup="menu" x-bind:aria-expanded="open">Move to&hellip;</button>
                                         <ul class="en-menu" role="menu" x-show="open" x-cloak>
@@ -121,18 +124,6 @@
                     <button type="button" class="sx-link en-more" wire:click="showStage('{{ $col['key'] }}')">+{{ $col['hidden'] }} more in the List</button>
                 @endif
             </section>
-        @endforeach
-    </div>
-
-    {{-- the closed ones: while a card is dragged these become drop zones --}}
-    <div class="en-closed" aria-label="Closed this month">
-        @foreach (['won' => ['Order received', $closed['won'], $closed['rate'] !== null ? $closed['rate'] . '% of decided' : '—'], 'lost' => ['Lost', $closed['lost'], null]] as $key => [$label, $part, $extra])
-            <div class="sx-card en-zone" x-bind:class="{ 'is-target': held && stageKeys[target] === '{{ $key }}' }"
-                 @if ($canMove) x-sort="$wire.dropEnquiry($item, '{{ $key }}', $position)" x-sort:group="pipeline" @endif>
-                <p class="sx-eyebrow">{{ $label }} &middot; {{ $closed['label'] }}</p>
-                <p class="rp-big">{{ $part['count'] }} <span class="sx-small">&middot; {{ $short($part['paise']) }}@if ($extra) &middot; {{ $extra }}@endif</span></p>
-                @if ($canMove)<p class="sx-small en-zonehint">Drop here to close as {{ $label }}</p>@endif
-            </div>
         @endforeach
     </div>
 </div>

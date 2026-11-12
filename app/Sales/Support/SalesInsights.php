@@ -1541,7 +1541,7 @@ class SalesInsights
     }
 
     /**
-     * The board: the six open stages with their count, the rupees in play and the cards (most urgent first, at most `$perColumn`), plus the
+     * The board: the four open stages and Closed Won / Closed Lost (this month), each with its count, the rupees in play and the cards (most urgent first, at most `$perColumn`), plus the
      * numbers of the header and the chips. Cards that do not match the chosen chip are `dim` (the columns stay). One query for the open
      * enquiries (and one for their reps), whatever their number; sums and counts are made from that one list.
      *
@@ -1556,6 +1556,19 @@ class SalesInsights
         $count = fn (string $key) => $open->where('u.key', $key)->count();
         $counts = ['open' => $open->count(), 'overdue' => $count('overdue'), 'today' => $count('today'), 'idle' => $count('idle')];
 
+        $card = fn (SalesEnquiry $e, array $u) => [
+            'uuid' => $e->uuid,
+            'client' => $e->client_name,
+            'summary' => $e->itemsSummary(2),
+            'paise' => $e->budgetPaise(),
+            'rep' => $e->user?->name ?? 'Rep',
+            'source' => $e->sourceLabel(),
+            'followup' => $e->next_followup_at ? static::local($e->next_followup_at)->format('d/m/Y') : null,
+            'urgency' => $u,
+            'version' => $e->client_updated_at?->format('Y-m-d H:i:s.v'),
+            'dim' => $chip !== 'all' && $u['key'] !== $chip,
+        ];
+
         $columns = [];
         foreach (SalesEnquiry::OPEN as $stage) {
             $rows = $open->filter(fn (array $r) => $r['e']->status === $stage)
@@ -1564,20 +1577,33 @@ class SalesInsights
             $columns[$stage] = [
                 'key' => $stage,
                 'label' => SalesEnquiry::STATUSES[$stage],
+                'closed' => false,
+                'note' => null,
                 'count' => $rows->count(),
                 'paise' => (int) $rows->sum(fn (array $r) => $r['e']->budgetPaise()),
                 'hidden' => max(0, $rows->count() - $perColumn),
-                'cards' => $rows->take($perColumn)->map(fn (array $r) => [
-                    'uuid' => $r['e']->uuid,
-                    'client' => $r['e']->client_name,
-                    'summary' => $r['e']->itemsSummary(2),
-                    'paise' => $r['e']->budgetPaise(),
-                    'rep' => $r['e']->user?->name ?? 'Rep',
-                    'source' => $r['e']->sourceLabel(),
-                    'urgency' => $r['u'],
-                    'version' => $r['e']->client_updated_at?->format('Y-m-d H:i:s.v'),
-                    'dim' => $chip !== 'all' && $r['u']['key'] !== $chip,
-                ])->all(),
+                'cards' => $rows->take($perColumn)->map(fn (array $r) => $card($r['e'], $r['u']))->all(),
+            ];
+        }
+
+        // Closed Won and Closed Lost sit next to the open stages: what was closed this month (by `closed_at`, business time), newest first.
+        $summary = static::closedSummary($filters, $now, $now);
+        $start = $now->setTimezone(static::tz())->startOfMonth();
+        $closedRows = static::enquiryQuery($filters)->whereIn('status', SalesEnquiry::CLOSED)->with('user')
+            ->where('closed_at', '>=', $start->utc())->where('closed_at', '<', $start->addMonth()->utc())
+            ->orderByDesc('closed_at')->orderByDesc('id')->limit(5000)->get();
+        foreach (SalesEnquiry::CLOSED as $stage) {
+            $rows = $closedRows->where('status', $stage)->values();
+
+            $columns[$stage] = [
+                'key' => $stage,
+                'label' => SalesEnquiry::STATUSES[$stage],
+                'closed' => true,
+                'note' => $summary['label'] . ($stage === 'won' && $summary['rate'] !== null ? ' · ' . $summary['rate'] . '% of decided' : ''),
+                'count' => $rows->count(),
+                'paise' => (int) $rows->sum(fn (SalesEnquiry $e) => $e->budgetPaise()),
+                'hidden' => max(0, $rows->count() - $perColumn),
+                'cards' => $rows->take($perColumn)->map(fn (SalesEnquiry $e) => $card($e, static::enquiryUrgency($e, $now)))->all(),
             ];
         }
 
@@ -1598,7 +1624,7 @@ class SalesInsights
      *
      * @return array{won: array{count: int, paise: int}, lost: array{count: int, paise: int}, rate: ?int, label: string}
      */
-    public static function closedSummary(array $filters = [], ?CarbonImmutable $month = null): array
+    public static function closedSummary(array $filters = [], ?CarbonImmutable $month = null, ?CarbonImmutable $now = null): array
     {
         $start = ($month ?? static::today())->setTimezone(static::tz())->startOfMonth();
         $rows = static::enquiryQuery($filters)->whereIn('status', SalesEnquiry::CLOSED)
@@ -1622,4 +1648,444 @@ class SalesInsights
             'office' => str_contains((string) ($t['text'] ?? ''), '(office)'),
         ])->reverse()->values()->all();
     }
+
+    // ---- who sees which client (Clients screen, "Who sees this client") ---------------------------------------------------
+
+    /** @return Collection<int, array{id:int,name:string,code:string}> active reps (profile and account both on), by name */
+    public static function activeReps(): Collection
+    {
+        // cached for a minute: the Clients screen asks for this on every click; SalesClient / SalesProfile saves and SetClientAccess clear it
+        return collect(\Illuminate\Support\Facades\Cache::remember(self::REPS_CACHE, 60, fn () => static::loadActiveReps()->all()));
+    }
+
+    /** Forget the cached rep list and who-sees-what (called whenever a client, a rep or the access changes). */
+    public static function forgetClientSets(): void
+    {
+        \Illuminate\Support\Facades\Cache::forget(self::REPS_CACHE);
+        \Illuminate\Support\Facades\Cache::forget(self::SETS_CACHE);
+    }
+
+    private const REPS_CACHE = 'sales.active-reps';
+
+    private const SETS_CACHE = 'sales.client-rep-sets';
+
+    private static function loadActiveReps(): Collection
+    {
+        return SalesProfile::active()->whereHas('user', fn ($q) => $q->where('is_active', true)->where('role', SalesProfile::ROLE))
+            ->with('user:id,name')->get()
+            ->map(fn (SalesProfile $p) => ['id' => (int) $p->user_id, 'name' => (string) $p->user->name, 'code' => (string) $p->employee_code])
+            ->sortBy('name', SORT_NATURAL | SORT_FLAG_CASE)->values();
+    }
+
+    /**
+     * Who sees each client: the main rep, the "also sees" reps and the rep who added it. Fixed number of queries.
+     *
+     * @param  array<int,int>  $clientIds
+     * @return array<int, array{main: ?array, also: list<array>, added_by: ?array, ids: list<int>}>
+     */
+    public static function clientAccessList(array $clientIds): array
+    {
+        if ($clientIds === []) {
+            return [];
+        }
+
+        $reps = static::activeReps()->keyBy('id');
+        $clients = SalesClient::query()->whereIn('id', $clientIds)->get(['id', 'user_id', 'assigned_to']);
+        $access = \Illuminate\Support\Facades\DB::table('sales_client_access')->whereIn('client_id', $clientIds)->get(['client_id', 'user_id'])->groupBy('client_id');
+
+        $out = [];
+        foreach ($clients as $c) {
+            $main = $c->assigned_to ? $reps->get((int) $c->assigned_to) : null;
+            $addedBy = $c->user_id ? $reps->get((int) $c->user_id) : null;
+            $also = collect($access->get($c->id, []))->map(fn ($row) => $reps->get((int) $row->user_id))->filter()
+                ->reject(fn ($r) => $r['id'] === ($main['id'] ?? null) || $r['id'] === ($addedBy['id'] ?? null))->values()->all();
+
+            $ids = collect([$main, $addedBy])->merge($also)->filter()->pluck('id')->unique()->values()->all();
+            $out[(int) $c->id] = ['main' => $main, 'also' => $also, 'added_by' => $addedBy, 'ids' => $ids];
+        }
+
+        return $out;
+    }
+
+    /** @return array<int,int> rep user id => how many clients that rep sees today (own, given, opened) */
+    public static function repClientCounts(): array
+    {
+        $counts = static::activeReps()->mapWithKeys(fn ($r) => [$r['id'] => 0])->all();
+
+        foreach (static::clientRepSets() as $ids) {
+            foreach ($ids as $id) {
+                $counts[$id] = ($counts[$id] ?? 0) + 1;
+            }
+        }
+
+        return $counts;
+    }
+
+    /** @return array{all:int,nobody:int,one:int,several:int} the four chips of the client list ("one" = exactly one rep sees it) */
+    public static function clientListCounts(): array
+    {
+        $sets = static::clientRepSets();
+        $sizes = array_map('count', $sets);
+
+        return [
+            'all' => count($sets),
+            'nobody' => count(array_filter($sizes, fn ($n) => $n === 0)),
+            'one' => count(array_filter($sizes, fn ($n) => $n === 1)),
+            'several' => count(array_filter($sizes, fn ($n) => $n > 1)),
+        ];
+    }
+
+    /** The ids of the clients in each chip (for the list). */
+    public static function clientIdsByChip(string $chip): ?array
+    {
+        if ($chip === 'all') {
+            return null;
+        }
+
+        return array_keys(array_filter(static::clientRepSets(), fn (array $ids) => match ($chip) {
+            'nobody' => count($ids) === 0,
+            'one' => count($ids) === 1,
+            'several' => count($ids) > 1,
+            default => true,
+        }));
+    }
+
+    /** @return array<int, list<int>> client id => the active reps who see it (3 queries, whatever the number of clients) */
+    private static function clientRepSets(): array
+    {
+        return \Illuminate\Support\Facades\Cache::remember(self::SETS_CACHE, 60, fn () => static::loadClientRepSets());
+    }
+
+    private static function loadClientRepSets(): array
+    {
+        $active = static::activeReps()->pluck('id')->flip();
+        $sets = [];
+
+        foreach (\Illuminate\Support\Facades\DB::table('sales_clients')->whereNull('deleted_at')->get(['id', 'user_id', 'assigned_to']) as $c) {
+            $sets[(int) $c->id] = array_filter([(int) $c->user_id, (int) $c->assigned_to]);
+        }
+        foreach (\Illuminate\Support\Facades\DB::table('sales_client_access')->get(['client_id', 'user_id']) as $row) {
+            if (isset($sets[(int) $row->client_id])) {
+                $sets[(int) $row->client_id][] = (int) $row->user_id;
+            }
+        }
+
+        return array_map(fn (array $ids) => array_values(array_filter(array_unique($ids), fn ($id) => $active->has($id))), $sets);
+    }
+
+    // ---- Meetings: the visit review (list on the left, the proof of one visit on the right) ---------------------------------------
+
+    /** How far apart (minutes) the phone's check-in time and the office's receive time may be before the clock-gap alert shows. */
+    public const CLOCK_GAP_MINUTES = 10;
+
+    /** The scale of the proof: the green zone is the first 30 % (0 to 300 m), 300 m to 2 km is squeezed into the next 65 %, beyond that the marker sits at the end. */
+    public static function scalePosition(int $metres): float
+    {
+        $radius = SalesMeeting::CHECKIN_RADIUS_M;
+        $metres = max(0, $metres);
+
+        if ($metres <= $radius) {
+            return round($metres / $radius * 30, 2);
+        }
+        if ($metres >= 2000) {
+            return 98.0;
+        }
+
+        return round(30 + ($metres - $radius) / (2000 - $radius) * 65, 2);
+    }
+
+    /** "42 m" / "1.4 km" (km from 1,000 m). */
+    public static function distanceText(int $metres): string
+    {
+        return $metres >= 1000 ? round($metres / 1000, 1) . ' km' : $metres . ' m';
+    }
+
+    /**
+     * The visits that match the filters (the same rules as the Meetings table's filters, so the list view and the review show the same rows).
+     *
+     * @param  array{search?:string, rep?:int|string|null, statuses?:array, result?:?string, checkin?:?string, in_route?:bool, followup_due?:bool, from?:?string, until?:?string, chips?:array}  $f
+     */
+    public static function meetingQuery(array $f, bool $withChips = true): \Illuminate\Database\Eloquent\Builder
+    {
+        $tz = config('sales.timezone');
+        $search = trim((string) ($f['search'] ?? ''));
+        $chips = $withChips ? (array) ($f['chips'] ?? []) : [];
+
+        return SalesMeeting::query()
+            ->when($search !== '', function ($q) use ($search) {
+                $like = '%' . addcslashes($search, '%_\\') . '%';
+                $q->where(fn ($w) => $w->where('client_name', 'like', $like)->orWhere('purpose', 'like', $like)
+                    ->orWhereIn('user_id', \App\Models\User::query()->where('name', 'like', $like)->select('id')));
+            })
+            ->when(filled($f['rep'] ?? null), fn ($q) => $q->where('user_id', (int) $f['rep']))
+            ->when(! empty($f['statuses']), fn ($q) => $q->whereIn('status', (array) $f['statuses']))
+            ->when(filled($f['result'] ?? null), fn ($q) => $q->where('result', $f['result']))
+            ->when(filled($f['checkin'] ?? null), fn ($q) => match ($f['checkin']) {
+                'none' => $q->whereNull('checkin_at'),
+                'verified' => $q->whereNotNull('checkin_at')->where('checkin_distance_m', '<=', SalesMeeting::CHECKIN_RADIUS_M),
+                'away' => $q->whereNotNull('checkin_at')->where('checkin_distance_m', '>', SalesMeeting::CHECKIN_RADIUS_M),
+                default => $q,
+            })
+            ->when(! empty($f['in_route']), fn ($q) => $q->whereNotNull('route_uuid'))
+            ->when(! empty($f['followup_due']), fn ($q) => $q->whereNotNull('next_followup_at')->where('next_followup_at', '<=', now()->addDays(7)))
+            ->when(filled($f['from'] ?? null), fn ($q) => $q->where('meeting_at', '>=', CarbonImmutable::parse($f['from'], $tz)->startOfDay()->utc()))
+            ->when(filled($f['until'] ?? null), fn ($q) => $q->where('meeting_at', '<=', CarbonImmutable::parse($f['until'], $tz)->endOfDay()->utc()))
+            ->when(in_array('away', $chips, true), fn ($q) => $q->whereNotNull('checkin_at')->where('checkin_distance_m', '>', SalesMeeting::CHECKIN_RADIUS_M))
+            ->when(in_array('none', $chips, true), fn ($q) => $q->whereNull('checkin_at'))
+            ->when(in_array('not_logged', $chips, true), fn ($q) => $q->whereIn('status', SalesMeeting::OPEN)->where('meeting_at', '<', now()->subHour()));
+    }
+
+    /** @return array{all:int, away:int, none:int, not_logged:int} the chips' counts, with every filter applied except the chips themselves (one query) */
+    public static function meetingChipCounts(array $f): array
+    {
+        $radius = SalesMeeting::CHECKIN_RADIUS_M;
+        $open = "'" . implode("','", SalesMeeting::OPEN) . "'";
+        $row = static::meetingQuery($f, withChips: false)->toBase()->selectRaw(
+            "count(*) as total,
+             sum(case when checkin_at is not null and checkin_distance_m > ? then 1 else 0 end) as away,
+             sum(case when checkin_at is null then 1 else 0 end) as none_,
+             sum(case when status in ($open) and meeting_at < ? then 1 else 0 end) as not_logged",
+            [$radius, now()->subHour()->utc()->format('Y-m-d H:i:s')]
+        )->first();
+
+        return ['all' => (int) $row->total, 'away' => (int) $row->away, 'none' => (int) $row->none_, 'not_logged' => (int) $row->not_logged];
+    }
+
+    /**
+     * One page of the review list, newest first. Everything a row shows is loaded for the whole page in a fixed number of queries
+     * (the reps and routes with the visits, the clients' spots in one query): no query per row, and no selfie is requested here.
+     *
+     * @return array{rows: Collection<int, array>, total: int, pages: int, page: int}
+     */
+    public static function meetingReviewList(array $f, int $page = 1, int $perPage = 40): array
+    {
+        $query = static::meetingQuery($f)->with(['user:id,name', 'route']);
+        $total = (int) (clone $query)->toBase()->count();
+        $pages = max(1, (int) ceil($total / $perPage));
+        $page = min(max(1, $page), $pages);
+
+        $meetings = $query->orderByDesc('meeting_at')->orderByDesc('id')->forPage($page, $perPage)->get();
+
+        $spots = SalesClient::withTrashed()->whereIn('uuid', $meetings->pluck('client_uuid')->filter()->unique())->get(['uuid', 'lat'])->keyBy('uuid');
+        $tz = config('sales.timezone');
+
+        $rows = $meetings->map(function (SalesMeeting $m) use ($spots, $tz) {
+            $at = CarbonImmutable::instance($m->meeting_at)->timezone($tz);
+            $proof = static::meetingProof($m, $m->client_uuid ? $spots->get($m->client_uuid) : null);
+
+            return [
+                'uuid' => $m->uuid,
+                'client' => $m->client_name,
+                'rep' => $m->user?->name,
+                'at' => $at,
+                'day' => $at->toDateString(),
+                'status' => $proof['status'],
+                'status_label' => $proof['status_label'],
+                'proof_state' => $proof['state'],
+                'proof_chip' => $proof['chip'],
+                'has_selfie' => (bool) $m->selfie_path,
+            ];
+        });
+
+        return ['rows' => $rows, 'total' => $total, 'pages' => $pages, 'page' => $page];
+    }
+
+    /** The visit that is open in the panel: the meeting, its client, the people met, the route stop and the proof. Null when it does not exist. */
+    public static function meetingReviewDetail(string $uuid): ?array
+    {
+        $m = SalesMeeting::with(['user', 'route'])->where('uuid', $uuid)->first();
+        if (! $m) {
+            return null;
+        }
+
+        $tz = config('sales.timezone');
+        $client = $m->client_uuid ? SalesClient::withTrashed()->where('uuid', $m->client_uuid)->first() : null;
+        $people = $m->contact_uuids ? SalesContact::withTrashed()->whereIn('uuid', $m->contact_uuids)->pluck('name')->all() : [];
+        $route = $m->route && (int) $m->route->user_id === (int) $m->user_id ? $m->route : null;
+        $stops = $route ? array_values((array) $route->stops_order) : [];
+        $position = $route ? array_search($m->uuid, $stops, true) : false;
+        $local = fn ($t) => $t ? CarbonImmutable::instance($t)->timezone($tz) : null;
+
+        return [
+            'm' => $m,
+            'client' => $client,
+            'proof' => static::meetingProof($m, $client),
+            'people' => $people,
+            'route' => $route ? ['title' => $route->title, 'stop' => $position === false ? null : $position + 1, 'of' => count($stops)] : null,
+            'when' => $local($m->meeting_at),
+            'planned' => $local($m->scheduled_at),
+            'moved_from' => $local($m->moved_from),
+            'followup' => $local($m->next_followup_at),
+            'followup_past' => (bool) $m->next_followup_at?->isPast(),
+            'checkin_at' => $local($m->checkin_at),
+            'received_at' => $local($m->checkin_received_at),
+            'profile' => SalesProfile::where('user_id', $m->user_id)->first(['user_id', 'phone', 'employee_code']),
+        ];
+    }
+
+    /**
+     * The proof of one visit, worked out from what the office stored (the distance is the office's own: nothing the phone sent is trusted).
+     *
+     * @return array{state:string, status:string, status_label:string, chip:?array, line:string, distance_m:?int, scale:?float, zone:int, clock_gap:bool, gap_minutes:?int, spot_source:string, empty:?string}
+     */
+    public static function meetingProof(SalesMeeting $m, ?SalesClient $client = null): array
+    {
+        $state = $m->checkinState();
+        $status = $m->status ?: 'done';
+        $notLogged = in_array($status, SalesMeeting::OPEN, true) && $m->meeting_at->lt(now()->subHour());
+        $overDay = $notLogged && $m->meeting_at->lt(now()->subDay());
+        $d = $m->checkin_distance_m;
+
+        $chip = match ($state) {
+            'verified' => ['text' => 'At client', 'tone' => 'ok'],
+            'away' => ['text' => 'Away', 'tone' => 'alert'],
+            'no_client_location' => ['text' => 'No client spot', 'tone' => 'mute'],
+            default => $status === 'done' ? ['text' => 'No check-in', 'tone' => 'mute'] : null,
+        };
+
+        $line = match ($state) {
+            'verified' => 'At the client: ' . $d . ' m from the saved spot',
+            'away' => static::distanceText((int) $d) . ' from the client\'s saved spot',
+            'no_client_location' => 'This client has no saved location, so the distance cannot be worked out.',
+            default => '',
+        };
+
+        $empty = null;
+        if ($state === 'none') {
+            $empty = match (true) {
+                $notLogged => 'Planned, the time has passed and nothing was written' . ($overDay ? ': not logged for over a day.' : '.'),
+                $status === 'missed' => 'Marked missed by the rep, so there is no check-in.',
+                in_array($status, SalesMeeting::OPEN, true) => 'Not visited yet. The proof appears here when the rep checks in.',
+                default => 'The rep did not check in for this visit (an older app, or none was taken).',
+            };
+        }
+
+        $seconds = $m->checkin_at && $m->checkin_received_at ? (int) abs($m->checkin_at->diffInSeconds($m->checkin_received_at, false)) : null;
+        $gap = $seconds === null ? null : (int) round($seconds / 60);
+
+        return [
+            'state' => $state,
+            'status' => $notLogged ? 'not_logged' : $status,
+            'status_label' => $notLogged ? 'Not logged' : (SalesMeeting::STATUSES[$status] ?? ucfirst($status)),
+            'chip' => $chip,
+            'line' => $line,
+            'distance_m' => $d,
+            'scale' => $state === 'verified' || $state === 'away' ? static::scalePosition((int) $d) : null,
+            'zone' => 30,
+            'clock_gap' => $seconds !== null && $seconds > static::CLOCK_GAP_MINUTES * 60,
+            'gap_minutes' => $gap,
+            'spot_source' => ! $client || $client->lat === null ? 'No spot saved' : ($client->location_source === 'office' ? 'Office' : 'Rep (Google Maps)'),
+            'empty' => $empty,
+        ];
+    }
+
+    // ---- the rep's own desk (desktop) --------------------------------------------------------------------------------------------
+
+    /**
+     * What a rep sees first on his desk: how many open enquiries, how many are late / due today / idle, the money in play, the ones that
+     * need action (most urgent first) and the follow-ups of the next seven days. Only the rep's own enquiries; one query.
+     *
+     * @return array{open:int, overdue:int, today:int, idle:int, week:int, paise:int, won_month:int, needs: Collection, upcoming: Collection}
+     */
+    public static function repDesk(int $userId, ?CarbonImmutable $now = null): array
+    {
+        $now = static::now($now);
+        $open = SalesEnquiry::where('user_id', $userId)->whereIn('status', SalesEnquiry::OPEN)->get()
+            ->map(fn (SalesEnquiry $e) => ['e' => $e, 'u' => static::enquiryUrgency($e, $now)]);
+
+        $count = fn (string $key) => $open->where('u.key', $key)->count();
+        $start = $now->startOfMonth()->utc();
+
+        $needs = $open->filter(fn (array $r) => in_array($r['u']['key'], ['overdue', 'today', 'idle'], true))
+            ->sortBy(fn (array $r) => [self::URGENCY_RANK[$r['u']['key']], $r['e']->next_followup_at?->getTimestamp() ?? PHP_INT_MAX])->values();
+        $upcoming = $open->filter(fn (array $r) => $r['u']['key'] === 'planned' && $r['u']['days'] <= 7)
+            ->sortBy(fn (array $r) => $r['e']->next_followup_at->getTimestamp())->values();
+
+        return [
+            'open' => $open->count(),
+            'overdue' => $count('overdue'),
+            'today' => $count('today'),
+            'idle' => $count('idle'),
+            'week' => $upcoming->count(),
+            'paise' => (int) $open->sum(fn (array $r) => $r['e']->budgetPaise()),
+            'won_month' => SalesEnquiry::where('user_id', $userId)->where('status', 'won')->where('closed_at', '>=', $start)->count(),
+            'needs' => $needs->take(10),
+            'upcoming' => $upcoming->take(8),
+        ];
+    }
+
+    // =====================================================================================================================
+    // Leads (app v1.15): a lead is an enquiry; the manager sees every rep's, a rep only his own. One definition of the four views.
+    // =====================================================================================================================
+
+    /** range => label. today: what needs action now; week / month: leads opened in the last 7 / 30 days; all: everything. */
+    public const LEAD_RANGES = ['today' => 'Today', 'week' => 'Last 7 days', 'month' => 'Last month', 'all' => 'All'];
+
+    /**
+     * The leads behind the manager's Leads screen and the rep desk's My leads: filters `rep`, `status` (a lead status; 'new' also takes the
+     * enquiries from before v1.15), `q` (search) and `range`. "Today" is the same rule as the phone and the board: an open enquiry whose
+     * reminder has come (late or due today), or with no reminder and untouched for more than 3 days.
+     */
+    public static function leadQuery(array $filters = [], ?CarbonImmutable $now = null): \Illuminate\Database\Eloquent\Builder
+    {
+        $now = static::now($now);
+        $q = static::enquiryQuery($filters);
+
+        if (filled($status = $filters['status'] ?? null) && array_key_exists($status, SalesEnquiry::LEAD_STATUSES)) {
+            $status === 'new' ? $q->where(fn ($w) => $w->whereNull('lead_status')->orWhere('lead_status', 'new')) : $q->where('lead_status', $status);
+        }
+
+        return static::leadRange($q, (string) ($filters['range'] ?? 'all'), $now);
+    }
+
+    /** Narrows a query of enquiries to one of the four lead views (see LEAD_RANGES). */
+    public static function leadRange(\Illuminate\Database\Eloquent\Builder $q, string $range, ?CarbonImmutable $now = null): \Illuminate\Database\Eloquent\Builder
+    {
+        $now = static::now($now);
+        if ($range === 'today') {
+            $endOfToday = $now->startOfDay()->addDay()->utc();
+            $idleBefore = $now->subDays(self::ENQUIRY_IDLE_DAYS)->utc();
+            $q->whereIn('status', SalesEnquiry::OPEN)->where(fn ($w) => $w
+                ->where('next_followup_at', '<', $endOfToday)
+                ->orWhere(fn ($i) => $i->whereNull('next_followup_at')->where(fn ($t) => $t->where('client_updated_at', '<=', $idleBefore)->orWhere(fn ($o) => $o->whereNull('client_updated_at')->where('opened_at', '<=', $idleBefore)))));
+        } elseif ($range === 'week') {
+            $q->where('opened_at', '>=', $now->subDays(7)->utc());
+        } elseif ($range === 'month') {
+            $q->where('opened_at', '>=', $now->subDays(30)->utc());
+        }
+
+        return $q;
+    }
+
+    /** The newest activity first (the default of every lead list): the last follow-up or change, else when it was opened. */
+    public static function leadsByRecent(\Illuminate\Database\Eloquent\Builder $q): \Illuminate\Database\Eloquent\Builder
+    {
+        return $q->orderByRaw('COALESCE(last_followup_at, client_updated_at, opened_at) DESC')->orderByDesc('id');
+    }
+
+    /** @return array<string, int> the number behind each chip (today / week / month / all) for the same rep, status and search. */
+    public static function leadCounts(array $filters = [], ?CarbonImmutable $now = null): array
+    {
+        $out = [];
+        foreach (array_keys(self::LEAD_RANGES) as $range) {
+            $out[$range] = static::leadQuery([...$filters, 'range' => $range], $now)->count();
+        }
+
+        return $out;
+    }
+
+    /** How a lead row reads: its reminder in words and a colour key (overdue / today / planned / none / done). */
+    public static function leadReminder(SalesEnquiry $e, ?CarbonImmutable $now = null): array
+    {
+        if (! $e->isOpen()) {
+            return ['key' => 'done', 'label' => $e->status === 'won' ? 'Won' : 'Lost'];
+        }
+        if (! $e->next_followup_at) {
+            return ['key' => 'none', 'label' => 'No reminder'];
+        }
+        $u = static::enquiryUrgency($e, $now);
+
+        return ['key' => $u['key'], 'label' => $u['label'] . ' · ' . static::local($e->next_followup_at)->format('d M, g:i a')];
+    }
+
 }

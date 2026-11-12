@@ -56,7 +56,7 @@ class SalesManagementPageTest extends SalesTestCase
             'uuid' => (string) Str::uuid(),
             'user_id' => $rep->user_id,
             'client_name' => 'JK Cement',
-            'status' => 'new',
+            'status' => 'qualification',
             'items' => [['product' => 'Muffle Furnace', 'brands' => '', 'quantity' => 1, 'budget_paise' => null]],
             'opened_at' => now(),
             'client_updated_at' => now(),
@@ -125,7 +125,7 @@ class SalesManagementPageTest extends SalesTestCase
         $this->assertNull(SalesInsights::winRate(30)['rate'], 'nothing decided: no rate');
         $this->assertSame(0, SalesInsights::winRate(30)['decided']);
 
-        $this->enquiry_($rep, ['status' => 'new']);   // open: not decided
+        $this->enquiry_($rep, ['status' => 'qualification']);   // open: not decided
         $this->enquiry_($rep, ['status' => 'won', 'closed_at' => now()]);
         $this->enquiry_($rep, ['status' => 'won', 'closed_at' => now()]);
         $this->enquiry_($rep, ['status' => 'lost', 'closed_at' => now()]);

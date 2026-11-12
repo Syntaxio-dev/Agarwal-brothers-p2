@@ -37,11 +37,11 @@ class EnquiryBoardTest extends SalesTestCase
             'uuid' => (string) Str::uuid(),
             'user_id' => $rep->user_id,
             'client_name' => 'Sharma Scientific',
-            'status' => 'price_sent',
+            'status' => 'proposal',
             'items' => [['product' => 'Muffle Furnace', 'brands' => '', 'quantity' => 1, 'budget_paise' => 15000000]],
             'opened_at' => now()->subDays(10),
             'next_followup_at' => now()->addDays(2),
-            'timeline' => [['at' => now()->subDays(9)->format('Y-m-d\TH:i:s\Z'), 'text' => 'Enquiry opened', 'status' => 'new']],
+            'timeline' => [['at' => now()->subDays(9)->format('Y-m-d\TH:i:s\Z'), 'text' => 'Enquiry opened', 'status' => 'qualification']],
             'client_updated_at' => now()->subHour(),
         ], $over));
     }
@@ -97,13 +97,17 @@ class EnquiryBoardTest extends SalesTestCase
         $late = $this->enquiry($a, ['client_name' => 'Late Co', 'next_followup_at' => $this->at('2026-10-20 10:00')->utc(), 'items' => [['product' => 'Oven', 'quantity' => 2, 'budget_paise' => 5000000]]]);
         $today = $this->enquiry($a, ['client_name' => 'Today Co', 'next_followup_at' => $this->at('2026-10-26 18:00')->utc(), 'items' => [['product' => 'Oven', 'quantity' => 1, 'budget_paise' => 2500000]]]);
         $this->enquiry($b, ['client_name' => 'Later Co', 'next_followup_at' => $this->at('2026-10-30 10:00')->utc(), 'items' => [['product' => 'Balance', 'quantity' => 1, 'budget_paise' => 1000000]], 'source' => 'whatsapp']);
-        $this->enquiry($b, ['client_name' => 'New Co', 'status' => 'new', 'next_followup_at' => null, 'client_updated_at' => $this->at('2026-10-25 10:00')->utc()]);
+        $this->enquiry($b, ['client_name' => 'New Co', 'status' => 'qualification', 'next_followup_at' => null, 'client_updated_at' => $this->at('2026-10-25 10:00')->utc()]);
         $this->enquiry($b, ['client_name' => 'Won Co', 'status' => 'won', 'closed_at' => $this->at('2026-10-10 10:00')->utc(), 'next_followup_at' => null]);
 
         $board = SalesInsights::pipelineBoard([], 'all', 8, $now);
 
-        $this->assertSame(['new', 'price_to_send', 'price_sent', 'callback', 'meeting_planned', 'negotiation'], array_keys($board['columns']), 'the phone\'s order, the open stages only');
-        $col = $board['columns']['price_sent'];
+        $this->assertSame(['qualification', 'need_analysis', 'proposal', 'negotiation', 'won', 'lost'], array_keys($board['columns']), 'the four open stages, then Closed Won and Closed Lost');
+        $this->assertSame(['Won Co'], array_column($board['columns']['won']['cards'], 'client'), 'what was closed this month sits in its own column');
+        $this->assertTrue($board['columns']['won']['closed']);
+        $this->assertSame([], $board['columns']['lost']['cards']);
+        $this->assertStringStartsWith('October', $board['columns']['won']['note']);
+        $col = $board['columns']['proposal'];
         $this->assertSame(3, $col['count']);
         $this->assertSame(8500000, $col['paise']);
         $this->assertSame(['Late Co', 'Today Co', 'Later Co'], array_column($col['cards'], 'client'), 'overdue, then today, then the rest by follow-up date');
@@ -117,7 +121,7 @@ class EnquiryBoardTest extends SalesTestCase
         $this->assertSame(1, SalesInsights::pipelineBoard(['source' => 'whatsapp'], 'all', 8, $now)['summary']['open']);
         $this->assertSame(2, SalesInsights::pipelineBoard(['q' => 'oven'], 'all', 8, $now)['summary']['open'], 'search finds a product asked for');
         $this->assertSame(1, SalesInsights::pipelineBoard(['q' => 'sunita', 'source' => 'whatsapp'], 'all', 8, $now)['summary']['open'], 'and the rep name');
-        $dimmed = collect(SalesInsights::pipelineBoard([], 'overdue', 8, $now)['columns']['price_sent']['cards'])->pluck('dim', 'client');
+        $dimmed = collect(SalesInsights::pipelineBoard([], 'overdue', 8, $now)['columns']['proposal']['cards'])->pluck('dim', 'client');
         $this->assertSame(['Late Co' => false, 'Today Co' => true, 'Later Co' => true], $dimmed->all());
     }
 
@@ -125,10 +129,10 @@ class EnquiryBoardTest extends SalesTestCase
     {
         $rep = $this->rep();
         for ($i = 0; $i < 11; $i++) {
-            $this->enquiry($rep, ['client_name' => "Client $i", 'status' => 'callback']);
+            $this->enquiry($rep, ['client_name' => "Client $i", 'status' => 'need_analysis']);
         }
 
-        $col = SalesInsights::pipelineBoard()['columns']['callback'];
+        $col = SalesInsights::pipelineBoard()['columns']['need_analysis'];
 
         $this->assertCount(8, $col['cards']);
         $this->assertSame(11, $col['count']);
@@ -160,12 +164,12 @@ class EnquiryBoardTest extends SalesTestCase
     public function test_an_open_enquiry_can_go_to_any_open_stage_in_any_direction(): void
     {
         $manager = $this->manager();
-        $e = $this->enquiry($this->rep(), ['status' => 'price_sent']);
+        $e = $this->enquiry($this->rep(), ['status' => 'proposal']);
 
-        $r = $this->move($e, 'new', $manager, 'Client wants a fresh quote');
+        $r = $this->move($e, 'qualification', $manager, 'Client wants a fresh quote');
         $this->assertSame('moved', $r['result']);
         $e = $e->fresh();
-        $this->assertSame('new', $e->status);
+        $this->assertSame('qualification', $e->status);
         $this->assertNotNull($e->next_followup_at, 'the follow-up stays when the enquiry stays open');
         $this->assertNull($e->closed_at);
 
@@ -192,13 +196,13 @@ class EnquiryBoardTest extends SalesTestCase
     {
         $rep = $this->rep();
         $closed = $this->enquiry($rep, ['status' => 'won', 'closed_at' => now(), 'next_followup_at' => null]);
-        $open = $this->enquiry($rep, ['status' => 'callback']);
+        $open = $this->enquiry($rep, ['status' => 'need_analysis']);
 
-        $this->assertSame('closed', $this->move($closed, 'new')['result']);
+        $this->assertSame('closed', $this->move($closed, 'qualification')['result']);
         $this->assertSame('won', $closed->fresh()->status);
 
         $before = $open->client_updated_at->format('Y-m-d H:i:s.v');
-        $this->assertSame('same', $this->move($open, 'callback')['result']);
+        $this->assertSame('same', $this->move($open, 'need_analysis')['result']);
         $this->assertSame('invalid', $this->move($open, 'frozen')['result']);
         $this->assertSame($before, $open->fresh()->client_updated_at->format('Y-m-d H:i:s.v'), 'nothing was written');
     }
@@ -217,7 +221,7 @@ class EnquiryBoardTest extends SalesTestCase
         $this->assertCount(2, $e->timeline);
         $entry = $e->timeline[1];
         $this->assertSame('negotiation', $entry['status']);
-        $this->assertSame('Moved to Negotiation by ' . $manager->name . ' (office): Called the client', $entry['text']);
+        $this->assertSame('Moved to Negotiation / Review by ' . $manager->name . ' (office): Called the client', $entry['text']);
         $this->assertTrue($e->client_updated_at->gt($version), 'a newer version, so the phone takes it');
         $this->assertMatchesRegularExpression('/\.\d{3}$/', $e->client_updated_at->format('Y-m-d H:i:s.v'));
         $this->assertEquals($old, $e->only(array_keys($old)), 'items, source, client, person, opened_at, rep are untouched');
@@ -229,7 +233,7 @@ class EnquiryBoardTest extends SalesTestCase
         $entries = collect(range(1, 100))->map(fn ($i) => ['at' => now()->subDays(200 - $i)->format('Y-m-d\TH:i:s\Z'), 'text' => "note $i", 'status' => null])->all();
         $e = $this->enquiry($this->rep(), ['timeline' => $entries]);
 
-        $r = $this->move($e, 'new', null, str_repeat('x', 900));
+        $r = $this->move($e, 'qualification', null, str_repeat('x', 900));
 
         $t = $e->fresh()->timeline;
         $this->assertCount(100, $t);
@@ -246,36 +250,36 @@ class EnquiryBoardTest extends SalesTestCase
     public function test_a_move_is_refused_when_the_phone_has_a_newer_version_or_the_stage_changed(): void
     {
         $rep = $this->rep();
-        $e = $this->enquiry($rep, ['status' => 'price_sent']);
+        $e = $this->enquiry($rep, ['status' => 'proposal']);
         $loaded = CarbonImmutable::parse($e->client_updated_at->format('Y-m-d H:i:s.v'), 'UTC');
 
         // the rep synced a change after the board loaded the card
         $e->forceFill(['client_updated_at' => $loaded->addMinutes(3)])->save();
         $r = $this->move($e, 'negotiation', null, null, $loaded);
         $this->assertSame('conflict', $r['result']);
-        $this->assertSame('price_sent', $e->fresh()->status);
+        $this->assertSame('proposal', $e->fresh()->status);
         $this->assertCount(1, $e->fresh()->timeline, 'nothing half written');
 
         // the rep moved it to another stage meanwhile
-        $e->forceFill(['status' => 'callback'])->save();
-        $this->assertSame('conflict', $this->move($e->fresh(), 'negotiation', null, null, $e->fresh()->client_updated_at, 'price_sent')['result']);
+        $e->forceFill(['status' => 'need_analysis'])->save();
+        $this->assertSame('conflict', $this->move($e->fresh(), 'negotiation', null, null, $e->fresh()->client_updated_at, 'proposal')['result']);
 
         // a soft-deleted enquiry is gone
         $gone = $this->enquiry($rep);
         $copy = SalesEnquiry::find($gone->id);
         $gone->delete();
-        $this->assertSame('gone', $this->move($copy, 'new')['result']);
+        $this->assertSame('gone', $this->move($copy, 'qualification')['result']);
     }
 
     public function test_two_moves_racing_the_second_one_conflicts(): void
     {
-        $e = $this->enquiry($this->rep(), ['status' => 'price_sent']);
+        $e = $this->enquiry($this->rep(), ['status' => 'proposal']);
         $loaded = $e->client_updated_at;
         $a = SalesEnquiry::find($e->id);
         $b = SalesEnquiry::find($e->id);
 
-        $this->assertSame('moved', $this->move($a, 'negotiation', null, null, $loaded, 'price_sent')['result']);
-        $this->assertSame('conflict', $this->move($b, 'new', null, null, $loaded, 'price_sent')['result'], 'the second manager still holds the old card');
+        $this->assertSame('moved', $this->move($a, 'negotiation', null, null, $loaded, 'proposal')['result']);
+        $this->assertSame('conflict', $this->move($b, 'qualification', null, null, $loaded, 'proposal')['result'], 'the second manager still holds the old card');
         $this->assertSame('negotiation', $e->fresh()->status);
     }
 
@@ -296,10 +300,10 @@ class EnquiryBoardTest extends SalesTestCase
         $this->assertEquals($before['timeline'], $after->timeline, 'exactly the appended entry is removed');
 
         // the phone changed the enquiry after the move: nothing is undone
-        $r = $this->move($after, 'callback');
-        $e->fresh()->forceFill(['client_updated_at' => now()->addMinutes(2), 'status' => 'new'])->save();
+        $r = $this->move($after, 'need_analysis');
+        $e->fresh()->forceFill(['client_updated_at' => now()->addMinutes(2), 'status' => 'qualification'])->save();
         $this->assertSame('changed', app(MoveEnquiryStage::class)->undo($r['undo'], $this->manager()));
-        $this->assertSame('new', $e->fresh()->status);
+        $this->assertSame('qualification', $e->fresh()->status);
     }
 
     // ---- the contract with the phone ----------------------------------------------------------------------------------------
@@ -310,7 +314,7 @@ class EnquiryBoardTest extends SalesTestCase
         $headers = $this->headers($rep);
         $uuid = (string) Str::uuid();
         $payload = fn (array $over = []) => array_merge([
-            'uuid' => $uuid, 'client_name' => 'Sharma Scientific', 'status' => 'price_sent', 'source' => 'call',
+            'uuid' => $uuid, 'client_name' => 'Sharma Scientific', 'status' => 'proposal', 'source' => 'call',
             'items' => [['product' => 'Muffle Furnace', 'brands' => '', 'quantity' => 1, 'budget_paise' => 100000]],
             'opened_at' => $this->moment('-5 days'), 'next_followup_at' => $this->moment('+2 days'), 'timeline' => [], 'updated_at' => $this->moment('-1 hour'),
         ], $over);
@@ -342,21 +346,21 @@ class EnquiryBoardTest extends SalesTestCase
     public function test_the_board_renders_with_drag_handles_for_a_manager_who_may_move(): void
     {
         $rep = $this->rep('AB-0001', '9876543210', name: 'Ravi Sharma');
-        $this->enquiry($rep, ['client_name' => 'Kota Biotech', 'status' => 'price_sent', 'next_followup_at' => now()->subDays(6)]);
+        $this->enquiry($rep, ['client_name' => 'Kota Biotech', 'status' => 'proposal', 'next_followup_at' => now()->subDays(6)]);
         $this->actingAs($this->manager());
 
-        $html = Livewire::test(ListSalesEnquiries::class)->assertSee('Enquiries')->assertSee('Kota Biotech')->assertSee('Price sent')->assertSee('Move to')->assertSee('6 days late')->html();
+        $html = Livewire::test(ListSalesEnquiries::class)->assertSee('Enquiries')->assertSee('Kota Biotech')->assertSee('Proposal / Price Quote')->assertSee('Move to')->assertSee('6 days late')->html();
 
         $this->assertStringContainsString('x-sort:handle', $html);
         $this->assertStringContainsString('aria-live="polite"', $html);
-        $this->assertStringContainsString('Order received', $html);
+        $this->assertStringContainsString('Closed Won', $html);
         $this->assertStringContainsString('Drag a card to another stage', $html);
     }
 
     public function test_a_view_only_manager_sees_the_board_but_cannot_write(): void
     {
         $rep = $this->rep();
-        $e = $this->enquiry($rep, ['client_name' => 'Kota Biotech', 'status' => 'price_sent']);
+        $e = $this->enquiry($rep, ['client_name' => 'Kota Biotech', 'status' => 'proposal']);
         $viewer = $this->viewerOf(['sales-enquiries']);
         $this->actingAs($viewer);
 
@@ -366,9 +370,9 @@ class EnquiryBoardTest extends SalesTestCase
             $this->assertStringNotContainsString($writeHint, $html, "no hint of dragging: $writeHint");
         }
 
-        Livewire::test(ListSalesEnquiries::class)->call('moveEnquiry', $e->uuid, 'negotiation', 'price_sent', $e->client_updated_at->format('Y-m-d H:i:s.v'))->assertForbidden();
-        Livewire::test(ListSalesEnquiries::class)->call('dropEnquiry', $e->uuid . '|' . $e->client_updated_at->format('Y-m-d H:i:s.v') . '|price_sent', 'negotiation', 0)->assertForbidden();
-        $this->assertSame('price_sent', $e->fresh()->status);
+        Livewire::test(ListSalesEnquiries::class)->call('moveEnquiry', $e->uuid, 'negotiation', 'proposal', $e->client_updated_at->format('Y-m-d H:i:s.v'))->assertForbidden();
+        Livewire::test(ListSalesEnquiries::class)->call('dropEnquiry', $e->uuid . '|' . $e->client_updated_at->format('Y-m-d H:i:s.v') . '|proposal', 'negotiation', 0)->assertForbidden();
+        $this->assertSame('proposal', $e->fresh()->status);
     }
 
     public function test_nobody_without_the_enquiries_right_and_no_rep_opens_the_screen(): void
@@ -376,23 +380,23 @@ class EnquiryBoardTest extends SalesTestCase
         $rep = $this->rep();
 
         $this->actingAs($this->viewerOf(['sales-meetings']));
-        $this->get('/admin/sales-enquiries')->assertForbidden();
+        $this->get('/sales/sales-enquiries')->assertForbidden();
 
-        $this->actingAs($rep->user)->get('/admin/sales-enquiries')->assertForbidden();
+        $this->actingAs($rep->user)->get('/sales/sales-enquiries')->assertForbidden();
     }
 
     public function test_dropping_a_card_moves_it_closing_asks_first_and_the_toast_can_undo(): void
     {
         $rep = $this->rep();
-        $e = $this->enquiry($rep, ['status' => 'price_sent']);
-        $item = $e->uuid . '|' . $e->client_updated_at->format('Y-m-d H:i:s.v') . '|price_sent';
+        $e = $this->enquiry($rep, ['status' => 'proposal']);
+        $item = $e->uuid . '|' . $e->client_updated_at->format('Y-m-d H:i:s.v') . '|proposal';
         $this->actingAs($this->manager());
 
         $page = Livewire::test(ListSalesEnquiries::class)->call('dropEnquiry', $item, 'negotiation', 0);
         $this->assertSame('negotiation', $e->fresh()->status);
 
         // a stale card (dragged after the first move) conflicts and writes nothing
-        $page->call('dropEnquiry', $item, 'new', 0);
+        $page->call('dropEnquiry', $item, 'qualification', 0);
         $this->assertSame('negotiation', $e->fresh()->status);
 
         // closing asks first, then closes with the note
@@ -437,7 +441,7 @@ class EnquiryBoardTest extends SalesTestCase
     public function test_the_list_view_and_the_export_still_work(): void
     {
         $rep = $this->rep();
-        $a = $this->enquiry($rep, ['client_name' => 'Open Co', 'status' => 'callback']);
+        $a = $this->enquiry($rep, ['client_name' => 'Open Co', 'status' => 'need_analysis']);
         $b = $this->enquiry($rep, ['client_name' => 'Won Co', 'status' => 'won', 'closed_at' => now(), 'next_followup_at' => null]);
         $this->actingAs($this->manager());
 
@@ -446,7 +450,7 @@ class EnquiryBoardTest extends SalesTestCase
             ->filterTable('status', ['won'])->assertCanSeeTableRecords([$b])->assertCanNotSeeTableRecords([$a]);
 
         // "+N more" opens the List filtered to that stage
-        Livewire::test(ListSalesEnquiries::class)->call('showStage', 'callback')->assertSet('viewMode', 'list')->assertCanSeeTableRecords([$a])->assertCanNotSeeTableRecords([$b]);
+        Livewire::test(ListSalesEnquiries::class)->call('showStage', 'need_analysis')->assertSet('viewMode', 'list')->assertCanSeeTableRecords([$a])->assertCanNotSeeTableRecords([$b]);
 
         // the board's export uses the board's filters
         $this->assertSame([$a->id], SalesInsights::enquiryQuery(['q' => 'open co'])->pluck('id')->all());
@@ -460,7 +464,7 @@ class EnquiryBoardTest extends SalesTestCase
             $rows = [];
             for ($i = 0; $i < $n; $i++) {
                 $rows[] = [
-                    'uuid' => (string) Str::uuid(), 'user_id' => $reps[$i % 2]->user_id, 'client_name' => "Client $i", 'status' => SalesEnquiry::OPEN[$i % 6],
+                    'uuid' => (string) Str::uuid(), 'user_id' => $reps[$i % 2]->user_id, 'client_name' => "Client $i", 'status' => SalesEnquiry::OPEN[$i % count(SalesEnquiry::OPEN)],
                     'items' => json_encode([['product' => 'Oven', 'quantity' => 1, 'budget_paise' => 100000]]), 'opened_at' => now()->subDays($i % 20)->utc(),
                     'next_followup_at' => $i % 3 ? now()->addDays($i % 7 - 3)->utc() : null, 'client_updated_at' => now()->subDays($i % 9)->format('Y-m-d H:i:s.v'),
                     'created_at' => now(), 'updated_at' => now(),
@@ -487,5 +491,41 @@ class EnquiryBoardTest extends SalesTestCase
         $many = $count();
 
         $this->assertSame($few, $many, 'no query per enquiry');
+    }
+
+    public function test_the_list_has_a_way_back_to_the_board_and_a_card_shows_its_date_and_rep(): void
+    {
+        $rep = $this->rep('AB-0001', '9000000001', name: 'Ravi Sharma');
+        $this->enquiry($rep, ['client_name' => 'Kota Biotech', 'status' => 'proposal', 'next_followup_at' => now()->subDays(2)]);
+        $this->actingAs($this->manager());
+
+        $board = Livewire::test(ListSalesEnquiries::class)->assertSee('Kota Biotech')->assertSee('Ravi Sharma')->assertSee(now()->subDays(2)->format('d/m/Y'));
+        $this->assertStringContainsString('en-board', $board->html());
+
+        $list = Livewire::test(ListSalesEnquiries::class)->call('setMode', 'list')->assertSet('viewMode', 'list');
+        $this->assertStringNotContainsString('en-board', $list->html());
+
+        Livewire::test(ListSalesEnquiries::class)->call('setMode', 'list')->call('setMode', 'board')->assertSet('viewMode', 'board');
+    }
+
+    public function test_the_list_has_a_board_switch_and_its_open_button_shows_the_enquiry_panel(): void
+    {
+        $rep = $this->rep('AB-0001', '9000000001', name: 'Ravi Sharma');
+        $e = $this->enquiry($rep, ['client_name' => 'Kota Biotech', 'status' => 'proposal']);
+        $this->actingAs($this->manager());
+
+        $list = Livewire::test(ListSalesEnquiries::class)->call('setMode', 'list');
+        $this->assertStringContainsString("setMode('board')", $list->html(), 'the same Board | List switch as on the board');
+
+        // the row's Open hands over to the board's own panel (opened by the browser after the table action ends)
+        $opened = $list->callTableAction('open', $e);
+        $this->assertStringContainsString('openEnquiry', json_encode($opened->effects['xjs'] ?? []), 'the browser is told to open the panel');
+        $this->assertStringContainsString($e->uuid, json_encode($opened->effects['xjs'] ?? []));
+
+        // and that panel shows the enquiry
+        $panel = Livewire::test(ListSalesEnquiries::class)->call('setMode', 'list')->call('openEnquiry', $e->uuid)->assertActionMounted('openEnquiry');
+        $html = $panel->instance()->getMountedAction()->getModalContent()->render();
+        $this->assertStringContainsString('Move to another stage', $html);
+        $this->assertStringContainsString('Ravi Sharma', $html);
     }
 }

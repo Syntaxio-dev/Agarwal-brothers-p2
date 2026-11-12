@@ -11,6 +11,14 @@
 
 return [
 
+    // The sub-domain of the Sales panel and the phone API (no https://), for example sales.agarwalbrothers.in.
+    // Empty: the panel is at /sales on the same host (local development, tests).
+    'domain' => env('SALES_DOMAIN') ?: null,
+
+    // true: the phone API ALSO answers on the main site (/api/sales/v1) so phones with an older build keep working.
+    // Set it to false once every phone has the build that points at the sub-domain.
+    'legacy_api' => (bool) env('SALES_LEGACY_API', true),
+
     // All business rules are checked in this timezone; the database stores UTC.
     'timezone' => env('SALES_TIMEZONE', 'Asia/Kolkata'),
 

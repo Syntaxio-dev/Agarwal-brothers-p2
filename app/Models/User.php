@@ -119,6 +119,12 @@ class User extends Authenticatable implements FilamentUser
     /** Only active users with a known role may sign in to the panel. */
     public function canAccessPanel(Panel $panel): bool
     {
+        // The reps' own desk (sales sub-domain, /rep): only an active field rep whose sales profile is on. Every other panel: staff only,
+        // and a field rep is not staff (his role is not in config/roles.php).
+        if ($panel->getId() === 'rep') {
+            return $this->is_active && $this->role === \App\Sales\Models\SalesProfile::ROLE && (bool) $this->salesProfile?->is_active;
+        }
+
         return $this->isStaff();
     }
 
