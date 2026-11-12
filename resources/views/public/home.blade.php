@@ -32,11 +32,23 @@
             'addressCountry' => 'IN',
         ],
     ]);
+    // Tells Google the site's name (and that it is the laboratory-equipment company in Jaipur,
+    // not one of the other "Agarwal Brothers" shops), which helps its brand search and sitelinks.
+    $siteSchema = [
+        '@context' => 'https://schema.org',
+        '@type' => 'WebSite',
+        '@id' => \App\Support\Seo::absolute('/') . '#website',
+        'url' => \App\Support\Seo::absolute('/'),
+        'name' => 'Agarwal Brothers',
+        'alternateName' => ['Agarwal Brothers Jaipur', 'Agarwal Brothers Laboratory Equipment'],
+        'inLanguage' => 'en-IN',
+        'publisher' => ['@id' => \App\Support\Seo::absolute('/') . '#organization'],
+    ];
 @endphp
 <x-layouts.app :title="$siteSeo?->seo_title ?: \App\Support\Seo::DEFAULT_TITLE"
                :description="$siteSeo?->seo_description ?: \App\Support\Seo::defaultDescription()"
                :image="$siteSeo?->default_og_image ? \App\Support\Seo::storage($siteSeo->default_og_image) : null"
-               :schema="$orgSchema">
+               :schema="[$orgSchema, $siteSchema]">
 
     <h1 class="sr-only">Laboratory equipment, scientific instruments and chemicals supplier in Jaipur, India</h1>
 

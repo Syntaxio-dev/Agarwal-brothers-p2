@@ -65,6 +65,23 @@ class SeoTitlesTest extends TestCase
         $this->assertSame([1200, 1200], [$w, $h]);
     }
 
+    public function test_the_home_page_names_the_site_and_the_company_for_google(): void
+    {
+        $html = $this->get('/')->getContent();
+        preg_match('~<script type="application/ld\+json">(.*?)</script>~s', $html, $m);
+        $nodes = json_decode($m[1], true);
+
+        $this->assertIsArray($nodes);
+        $types = array_map(fn ($n) => $n['@type'], $nodes);
+        $this->assertContains('WebSite', $types);
+        $this->assertContains(['Organization', 'LocalBusiness'], $types);
+
+        $site = collect($nodes)->firstWhere('@type', 'WebSite');
+        $this->assertSame('Agarwal Brothers', $site['name']);
+        $this->assertContains('Agarwal Brothers Jaipur', $site['alternateName']);
+        $this->assertSame(\App\Support\Seo::absolute('/') . '#organization', $site['publisher']['@id']);
+    }
+
     public function test_static_pages_have_keyword_titles(): void
     {
         $this->assertStringContainsString('<title>About Agarwal Brothers: Jaipur Lab Equipment Supplier</title>', $this->get('/our-story')->getContent());
