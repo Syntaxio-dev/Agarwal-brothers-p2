@@ -15,6 +15,7 @@
         'telephone' => config('contact.call'),
         'email' => config('contact.departments.0.email'),
         'taxID' => config('contact.gstin'),
+        'sameAs' => array_values(\App\Support\Social::links()),
         'areaServed' => ['@type' => 'Country', 'name' => 'India'],
         'knowsAbout' => ['Laboratory equipment', 'Analytical instruments', 'Laboratory chemicals', 'Weighing balances'],
         'openingHoursSpecification' => [[

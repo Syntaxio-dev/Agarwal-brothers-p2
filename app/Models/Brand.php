@@ -47,7 +47,10 @@ class Brand extends Model
         $lead = "{$this->name} laboratory instruments supplied and supported in India by Agarwal Brothers, Jaipur.";
         $first = $this->description ? trim(strtok(strip_tags((string) $this->description), '.')) : '';
 
-        return $first !== '' ? "{$lead} {$first}." : $lead;
+        // A brand with no (or a very short) description still gets a full-length meta description (a one-line snippet is too short).
+        $text = $first !== '' ? "{$lead} {$first}." : $lead;
+
+        return mb_strlen($text) < 130 ? "{$text} Browse its product lines and specifications, and ask us for a quote." : $text;
     }
 
     protected function seoFallbackImage(): ?string

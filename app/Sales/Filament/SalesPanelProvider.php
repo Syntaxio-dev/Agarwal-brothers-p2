@@ -17,7 +17,7 @@ use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 /**
- * The Sales team's own admin panel. With SALES_DOMAIN set (sales.agarwalbrothers.in) it lives at the root of that
+ * The Sales team's own admin panel. With SALES_DOMAIN set (sales.agarwalbrothers.com) it lives at the root of that
  * sub-domain; without it (local development, tests) it lives at /sales on the same host. The website's /admin does
  * not show any Sales screen. Same users, same database, but a separate login session (host-only cookie).
  */

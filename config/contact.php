@@ -62,6 +62,15 @@ return [
     // The floating WhatsApp button opens a chat with this number (digits with country code) when Site Settings has none.
     'whatsapp' => '919829015024',
 
+    // The company's own profile pages (full https:// addresses). Empty = the icon is not shown in the footer and the
+    // page is not listed in Google's company data. Set them in .env (SOCIAL_LINKEDIN=https://www.linkedin.com/company/...).
+    'social' => [
+        'linkedin' => env('SOCIAL_LINKEDIN'),
+        'youtube' => env('SOCIAL_YOUTUBE'),
+        'facebook' => env('SOCIAL_FACEBOOK'),
+        'instagram' => env('SOCIAL_INSTAGRAM'),
+    ],
+
     // A soft line under the Contact Us form heading (not a guarantee). Set to '' to hide it.
     'reply_note' => 'We usually reply within one working day.',
 

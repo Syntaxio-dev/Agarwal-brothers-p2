@@ -82,6 +82,60 @@ class SeoTitlesTest extends TestCase
         $this->assertSame(\App\Support\Seo::absolute('/') . '#organization', $site['publisher']['@id']);
     }
 
+    public function test_long_article_titles_are_cut_at_a_whole_word_within_sixty_characters(): void
+    {
+        $long = 'How to choose an analytical or semi-micro balance: readability, capacity and calibration';
+        $title = \App\Support\Seo::title($long);
+
+        $this->assertLessThanOrEqual(60, mb_strlen($title));
+        $this->assertStringNotContainsString('…', $title);
+        $this->assertTrue(str_starts_with($long, $title), 'a clean prefix of the headline');
+        $this->assertContains(mb_substr($long, mb_strlen($title), 1), [' ', ':', ','], 'cut between words');
+
+        // short titles keep the site name, exactly as before
+        $this->assertSame('Contact Us | Agarwal Brothers', \App\Support\Seo::title('Contact Us'));
+        $this->assertSame('Home | Agarwal Brothers', \App\Support\Seo::title('Home'));
+        // a title that already names the site is left alone
+        $this->assertSame('About Agarwal Brothers: Jaipur', \App\Support\Seo::title('About Agarwal Brothers: Jaipur'));
+        // never ends on a linking word
+        $this->assertStringEndsNotWith(' and', \App\Support\Seo::title('Laser diffraction particle size analysis: how it works and what the numbers mean for you'));
+    }
+
+    public function test_a_brand_without_a_description_still_gets_a_full_meta_description(): void
+    {
+        $brand = \App\Models\Brand::create(['name' => 'Zeal', 'slug' => 'zeal', 'is_active' => true]);
+
+        $html = $this->get('/brands/zeal')->getContent();
+        preg_match('~<meta name="description" content="([^"]*)"~', $html, $m);
+
+        $this->assertGreaterThanOrEqual(130, mb_strlen(html_entity_decode($m[1])));
+        $this->assertLessThanOrEqual(160, mb_strlen(html_entity_decode($m[1])));
+
+        // a very short description is topped up too
+        $brand->update(['description' => 'Indian maker of lab ovens.']);
+        preg_match('~<meta name="description" content="([^"]*)"~', $this->get('/brands/zeal')->getContent(), $m);
+        $this->assertGreaterThanOrEqual(130, mb_strlen(html_entity_decode($m[1])));
+        $this->assertStringContainsString('Indian maker of lab ovens', html_entity_decode($m[1]));
+    }
+
+    public function test_social_icons_show_only_for_real_links_and_feed_the_company_data(): void
+    {
+        config(['contact.social' => ['linkedin' => null, 'youtube' => '#', 'facebook' => 'javascript:alert(1)', 'instagram' => 'http://insecure.example']]);
+        $html = $this->get('/')->getContent();
+        $this->assertStringNotContainsString('aria-label="LinkedIn"', $html);
+        $this->assertStringNotContainsString('aria-label="YouTube"', $html);
+        $this->assertStringContainsString('Chat with us', $html);
+        $this->assertStringNotContainsString('sameAs', $html);
+
+        config(['contact.social' => ['linkedin' => 'https://www.linkedin.com/company/agarwal-brothers', 'youtube' => '']]);
+        $html = $this->get('/')->getContent();
+        $this->assertStringContainsString('aria-label="LinkedIn"', $html);
+        $this->assertStringContainsString('href="https://www.linkedin.com/company/agarwal-brothers"', $html);
+        $this->assertStringNotContainsString('aria-label="YouTube"', $html);
+        $this->assertStringContainsString('Follow us', $html);
+        $this->assertStringContainsString('"sameAs":["https://www.linkedin.com/company/agarwal-brothers"]', $html);
+    }
+
     public function test_static_pages_have_keyword_titles(): void
     {
         $this->assertStringContainsString('<title>About Agarwal Brothers: Jaipur Lab Equipment Supplier</title>', $this->get('/our-story')->getContent());

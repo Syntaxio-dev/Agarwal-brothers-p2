@@ -11,7 +11,7 @@
 
 return [
 
-    // The sub-domain of the Sales panel and the phone API (no https://), for example sales.agarwalbrothers.in.
+    // The sub-domain of the Sales panel and the phone API (no https://), for example sales.agarwalbrothers.com.
     // Empty: the panel is at /sales on the same host (local development, tests).
     'domain' => env('SALES_DOMAIN') ?: null,
 

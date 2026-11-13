@@ -30,7 +30,26 @@ class Seo
             return $page;
         }
 
-        return Str::limit($page, 60, '…') . ' | ' . self::SITE;
+        $suffix = ' | ' . self::SITE;
+
+        // Short enough: the page name and the site name together stay within what Google shows.
+        if (mb_strlen($page) + mb_strlen($suffix) <= 62) {
+            return $page . $suffix;
+        }
+
+        // A long title (an article headline): Google shows about 60 characters and cuts the rest, so we
+        // cut it ourselves, at a whole word and without the site name, instead of "...ends mid-wor… | Agarwal Brothers".
+        if (mb_strlen($page) <= 60) {
+            return $page;
+        }
+
+        $cut = mb_substr($page, 0, 60);
+        $space = mb_strrpos($cut, ' ');
+        $cut = $space !== false && $space > 30 ? mb_substr($cut, 0, $space) : $cut;
+        // never end on a small linking word or a punctuation mark
+        $cut = preg_replace('/(\s+(and|or|the|a|an|of|to|for|in|on|at|by|with|vs|is|how))+$/iu', '', rtrim($cut, " ,:;–-"));
+
+        return rtrim($cut, " ,:;–-");
     }
 
     /** Plain text, whitespace collapsed, cut on a word boundary to 160 characters at most. */
