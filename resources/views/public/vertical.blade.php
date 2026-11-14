@@ -70,10 +70,18 @@
                                 <span class="rounded-md bg-cyan/10 px-2 py-1 font-mono text-[11px] text-link">
                                     {{ $group['categories']->count() }} {{ \Illuminate\Support\Str::plural('line', $group['categories']->count()) }}
                                 </span>
-                                <a href="{{ route('brand.show', $brand->slug) }}" class="group inline-flex items-center gap-1 text-[13.5px] font-semibold text-link hover:text-navy">
-                                    View {{ $brand->name }}
-                                    <svg class="arrow-nudge h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></svg>
-                                </a>
+                                <div class="flex flex-wrap items-center justify-end gap-x-4 gap-y-2 md:flex-col md:items-start md:gap-2">
+                                    @if (($accessoryBrands['general'] ?? false) || in_array($brand->id, $accessoryBrands['ids'] ?? [], true))
+                                        <a href="{{ route('brand.accessories', $brand->slug) }}" class="group inline-flex items-center gap-1.5 rounded-full border border-link/30 bg-white px-3 py-1 text-[12.5px] font-semibold text-link transition hover:border-navy hover:bg-navy hover:text-white">
+                                            <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085"/></svg>
+                                            Accessories
+                                        </a>
+                                    @endif
+                                    <a href="{{ route('brand.show', $brand->slug) }}" class="group inline-flex items-center gap-1 text-[13.5px] font-semibold text-link hover:text-navy">
+                                        View {{ $brand->name }}
+                                        <svg class="arrow-nudge h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-6-6 6 6-6 6"/></svg>
+                                    </a>
+                                </div>
                             </div>
                         </div>
 

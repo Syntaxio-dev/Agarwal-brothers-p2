@@ -74,6 +74,7 @@ class SiteSettingForm
                     ->columns(3)
                     ->schema([
                         FileUpload::make('blogs_hero')
+                            ->helperText('Best size: 1800 × 600 px (3:1, wide). On phones it is cropped to about 16:7 from the centre, so keep the subject in the middle.')
                             ->label('Blogs banner')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
@@ -83,6 +84,7 @@ class SiteSettingForm
                             ->visibility('public')
                             ->directory('banners'),
                         FileUpload::make('news_hero')
+                            ->helperText('Best size: 1800 × 600 px (3:1, wide). On phones it is cropped to about 16:7 from the centre, so keep the subject in the middle.')
                             ->label('News & Events banner')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
@@ -92,6 +94,7 @@ class SiteSettingForm
                             ->visibility('public')
                             ->directory('banners'),
                         FileUpload::make('webinars_hero')
+                            ->helperText('Best size: 1800 × 600 px (3:1, wide). On phones it is cropped to about 16:7 from the centre, so keep the subject in the middle.')
                             ->label('Webinars banner')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
@@ -111,7 +114,7 @@ class SiteSettingForm
                     ->schema([
                         FileUpload::make('story_banner')
                             ->label('Top banner')
-                            ->helperText('Wide image, about 1800x500 (your office / building photo). If empty, the default office photo is shown.')
+                            ->helperText('Best size: 1800 × 600 px (3:1, wide), your office / building photo. Phones crop more, so keep the main subject in the upper middle. If empty, the default office photo is shown.')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
                             ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))
@@ -121,7 +124,7 @@ class SiteSettingForm
                             ->directory('story'),
                         FileUpload::make('story_mission_image')
                             ->label('Mission / Vision image')
-                            ->helperText('About 4:3.')
+                            ->helperText('Best size: 1200 × 900 px (4:3). On phones it is cropped to 16:9 from the centre, so keep the subject in the middle.')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
                             ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))
@@ -131,7 +134,7 @@ class SiteSettingForm
                             ->directory('story'),
                         FileUpload::make('leadership_bg')
                             ->label('Leadership blocks background')
-                            ->helperText('Office / building photo shown (softly blurred) behind the leader blocks. Optional.')
+                            ->helperText('Best size: 1920 × 1080 px (16:9, landscape). An office / building photo shown softly blurred behind the leader blocks. Optional.')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
                             ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))
@@ -140,6 +143,7 @@ class SiteSettingForm
                             ->visibility('public')
                             ->directory('story'),
                         FileUpload::make('story_image_1')
+                            ->helperText('Best size: 1100 × 1000 px (about 1:1, almost square). It fills a large frame and is cropped from the centre.')
                             ->label('About photo 1 (large)')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
@@ -149,6 +153,7 @@ class SiteSettingForm
                             ->visibility('public')
                             ->directory('story'),
                         FileUpload::make('story_image_2')
+                            ->helperText('Best size: 1200 × 1000 px (6:5). It fills a smaller frame that overlaps photo 1 and is cropped from the centre.')
                             ->label('About photo 2 (small, overlapping)')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
@@ -210,7 +215,7 @@ class SiteSettingForm
                             ->helperText('Up to 160 characters. Also used as the default description.'),
                         FileUpload::make('default_og_image')
                             ->label('Default share image')
-                            ->helperText('Used when a page has no image of its own. 1200x630 works best.')
+                            ->helperText('Used when a page has no image of its own. Best size: 1200 × 630 px (about 1.9:1, landscape). Keep the main content in the centre.')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
                             ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))

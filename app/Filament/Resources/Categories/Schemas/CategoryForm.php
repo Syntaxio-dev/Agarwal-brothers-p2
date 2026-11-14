@@ -103,7 +103,7 @@ class CategoryForm
     {
         return FileUpload::make('image')
             ->label('Card image')
-            ->helperText('Shown when someone hovers the category on the vertical page. Landscape, about 600x260.')
+            ->helperText('Shown when someone hovers the category on the vertical page. Best size: 600 × 260 px (about 7:3, landscape) with the subject in the centre.')
             ->image()
             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
             ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))

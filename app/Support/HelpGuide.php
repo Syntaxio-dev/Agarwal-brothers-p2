@@ -77,6 +77,7 @@ class HelpGuide
                     'Key features and Key advantages: press "Add feature" or "Add advantage", then write a short title and one line of detail. You can drag to re-order.',
                     'Technical specifications: add one row per specification, for example "Flow rate" and "0.001 to 5 mL/min". This table appears near the top of the product page, so customers see it first.',
                     'Rows can be added and removed any time. Every product can have a different number of specifications.',
+                    'Generalized specifications: when one product is a whole model line (for example Cubis, with 25 to 30 models that differ only slightly), switch on "Generalized specifications" above the table and write each value as a range, like "0.1 mg to 0.001 mg". The product page then says these are ranges for the series and points visitors to the brochure. Leave it off when the values belong to one exact model.',
                     'Documents and research papers: add brochures, datasheets or papers. Upload a PDF or paste a link.',
                     'FAQs: add questions customers often ask, with short answers.',
                     'Visibility: keep Active on. Switch on "Show in Precision Picks" to feature it on the homepage (the first 6 by "Top pick order" are shown).',

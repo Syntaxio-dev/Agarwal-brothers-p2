@@ -111,7 +111,7 @@ Important values:
 - `SESSION_SECURE_COOKIE=true` and `LIVEWIRE_TEMPORARY_FILE_UPLOAD_DISK=local` (already in the example file). Switch on **free SSL** and **Force HTTPS** in hPanel; `public/.htaccess` also redirects http to https.
 - `APP_URL=https://demo.yourdomain.com` (exact address, with https).
 - `DB_*` = the database details from step 3 (`DB_HOST=localhost` on Hostinger).
-- Mail (`MAIL_*`) = a mailbox you create in hPanel → **Emails** (use its SMTP details) and `CONTACT_INBOX` = the office address that should receive enquiries.
+- Mail (`MAIL_*`) = Google Workspace SMTP (`smtp.gmail.com`, port 587) of the office mailbox with a Google **App Password**, because the domain's MX records point to Google (a Hostinger mailbox would clash with them). `CONTACT_INBOX` = the office address that should receive enquiries. Needs the `schedule:run` cron job, otherwise queued mail never leaves.
 
 ## 7. SSH: set the site up (one time)
 

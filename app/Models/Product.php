@@ -25,6 +25,7 @@ class Product extends Model
         'features',
         'advantages',
         'specs',
+        'specs_general',
         'image',
         'gallery',
         'video_url',
@@ -36,6 +37,7 @@ class Product extends Model
 
     protected $casts = [
         'specs' => 'array',
+        'specs_general' => 'boolean',
         'features' => 'array',
         'advantages' => 'array',
         'gallery' => 'array',

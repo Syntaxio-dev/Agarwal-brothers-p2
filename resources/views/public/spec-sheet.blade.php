@@ -15,7 +15,10 @@
         $plain->push('', $product->short_description);
     }
     if ($specs->count()) {
-        $plain->push('', 'Technical specifications');
+        $plain->push('', $product->specs_general ? 'Specifications across the series (ranges)' : 'Technical specifications');
+        if ($product->specs_general) {
+            $plain->push('Exact values depend on the model: please check the brochure or ask our team.');
+        }
         foreach ($specs as $label => $value) {
             $plain->push($label . ': ' . $value);
         }
@@ -111,7 +114,10 @@
 
             @if ($specs->count())
                 <section class="mt-8">
-                    <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-link">Technical specifications</h2>
+                    <h2 class="font-mono text-[11px] font-medium uppercase tracking-[0.2em] text-link">{{ $product->specs_general ? 'Specifications across the series' : 'Technical specifications' }}</h2>
+                    @if ($product->specs_general)
+                        <p class="mt-2 text-xs text-slate">These are ranges for the whole line. Exact values depend on the model: please check the brochure or ask our team.</p>
+                    @endif
                     <table class="mt-3 w-full border-collapse overflow-hidden rounded-xl border border-gray-200 text-left text-sm">
                         <tbody>
                             @foreach ($specs as $label => $value)

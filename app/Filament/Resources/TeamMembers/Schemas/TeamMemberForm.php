@@ -23,7 +23,7 @@ class TeamMemberForm
                         TextInput::make('name')->required(),
                         TextInput::make('designation')->placeholder('e.g. Managing Director'),
                         FileUpload::make('photo')
-                            ->helperText('A transparent PNG cut-out looks best in leadership blocks (about 4:5). Without a photo, a placeholder silhouette is shown.')
+                            ->helperText('Best size: 800 × 1000 px (4:5, portrait), person in the centre. Team cards crop to 4:5 from the centre; for the leadership blocks a transparent PNG cut-out looks best. Without a photo, a placeholder silhouette is shown.')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
                             ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))

@@ -44,7 +44,7 @@ class ApplicationResourceForm
                     ->schema([
                         FileUpload::make('cover_image')
                             ->label('Cover image')
-                            ->helperText('Shown on the card. Landscape (about 16:10) works best.')
+                            ->helperText('Shown on the card. Best size: 1600 × 1000 px (16:10, landscape).')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
                             ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))

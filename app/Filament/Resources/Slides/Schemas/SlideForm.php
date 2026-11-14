@@ -47,6 +47,7 @@ class SlideForm
                     ->columns(2)
                     ->schema([
                         FileUpload::make('image')
+                            ->helperText('Best size: 1920 × 1080 px (16:9, landscape). On phones the picture is cropped to 4:3 from the centre, so keep the main subject in the middle.')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
                             ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))

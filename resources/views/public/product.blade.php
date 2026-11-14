@@ -161,6 +161,56 @@
                     </a>
                     @include('public.partials.compare-toggle', ['product' => $product, 'large' => true])
                     @include('public.partials.enquiry-list-toggle', ['product' => $product, 'large' => true])
+                    @if (($accessories ?? collect())->count())
+                        <div x-data="{ accOpen: false }" class="contents" @keydown.escape.window="accOpen = false">
+                            <button type="button" @click="accOpen = true" class="btn-ghost" aria-haspopup="dialog">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M11.42 15.17 17.25 21A2.652 2.652 0 0 0 21 17.25l-5.877-5.877M11.42 15.17l2.496-3.03c.317-.384.74-.626 1.208-.766M11.42 15.17l-4.655 5.653a2.548 2.548 0 1 1-3.586-3.586l6.837-5.63m5.108-.233c.55-.164 1.163-.188 1.743-.14a4.5 4.5 0 0 0 4.486-6.336l-3.276 3.277a3.004 3.004 0 0 1-2.25-2.25l3.276-3.276a4.5 4.5 0 0 0-6.336 4.486c.091 1.076-.071 2.264-.904 2.95l-.102.085"/></svg>
+                                Add accessories
+                            </button>
+                            <template x-teleport="body">
+                                <div id="acc-modal" x-show="accOpen" x-cloak class="fixed inset-0 z-[80] flex items-end justify-center bg-navy/50 p-0 backdrop-blur-sm sm:items-center sm:p-6" @click.self="accOpen = false" role="dialog" aria-modal="true" aria-labelledby="acc-title">
+                                    <div class="flex max-h-[85vh] w-full max-w-xl flex-col overflow-hidden rounded-t-3xl border-t-4 border-cyan bg-white shadow-2xl sm:rounded-3xl" @click.stop>
+                                        <div class="flex items-start justify-between gap-4 border-b border-gray-100 px-5 py-4 sm:px-6">
+                                            <div>
+                                                <h2 id="acc-title" class="text-lg font-bold text-navy">Accessories for {{ $product->name }}</h2>
+                                                <p class="mt-0.5 text-[13px] text-slate">Add what you need to your enquiry list.</p>
+                                            </div>
+                                            <button type="button" @click="accOpen = false" aria-label="Close" class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-navy hover:bg-ice">
+                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M6 6l12 12M18 6 6 18"/></svg>
+                                            </button>
+                                        </div>
+                                        <ul class="divide-y divide-gray-100 overflow-y-auto px-5 sm:px-6">
+                                            @foreach ($accessories as $accessory)
+                                                <li class="flex items-center gap-3 py-3">
+                                                    <div class="flex h-14 w-14 shrink-0 items-center justify-center rounded-lg bg-ice p-1">
+                                                        @if ($accessory->image)
+                                                            <img src="{{ asset('storage/' . $accessory->image) }}" alt="" class="max-h-full max-w-full object-contain mix-blend-multiply" loading="lazy" decoding="async">
+                                                        @endif
+                                                    </div>
+                                                    <div class="min-w-0 flex-1">
+                                                        <p class="text-sm font-bold leading-snug text-navy">{{ $accessory->name }}</p>
+                                                        @if ($accessory->short_description)
+                                                            <p class="mt-0.5 line-clamp-2 text-[12.5px] text-slate">{{ $accessory->short_description }}</p>
+                                                        @endif
+                                                        @if (! $accessory->brand_id)
+                                                            <p class="mt-0.5 font-mono text-[10px] uppercase tracking-wider text-cyan-ink">Suits any brand</p>
+                                                        @endif
+                                                    </div>
+                                                    @include('public.partials.accessory-toggle', ['accessory' => $accessory])
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                        <div class="flex flex-wrap items-center justify-between gap-3 border-t border-gray-100 px-5 py-3 sm:px-6">
+                                            @if ($product->category?->brand)
+                                                <a href="{{ route('brand.accessories', $product->category->brand->slug) }}" class="text-[13px] font-semibold text-link hover:text-navy">See all accessories</a>
+                                            @endif
+                                            <a href="{{ route('enquiry-list') }}" class="btn-primary inline-flex items-center rounded-full px-5 py-2 text-[13px] font-semibold text-white">Go to my enquiry list</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+                        </div>
+                    @endif
                     @if ($images->count())
                         <button type="button" @click="lightbox = true" class="btn-ghost">
                             <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m2.25 15.75 5.159-5.159a2.25 2.25 0 0 1 3.182 0l5.159 5.159m-1.5-1.5 1.409-1.409a2.25 2.25 0 0 1 3.182 0l2.909 2.909M3.75 21h16.5a1.5 1.5 0 0 0 1.5-1.5V5.25a1.5 1.5 0 0 0-1.5-1.5H3.75a1.5 1.5 0 0 0-1.5 1.5v14.25c0 .828.672 1.5 1.5 1.5Z"/></svg>
@@ -186,7 +236,10 @@
             <section data-reveal class="mt-14 rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-10">
                 <div class="text-center">
                     <span class="section-badge">Specifications</span>
-                    <h2 class="mt-3 text-xl font-bold text-navy sm:text-2xl">Technical specifications</h2>
+                    <h2 class="mt-3 text-xl font-bold text-navy sm:text-2xl">{{ $product->specs_general ? 'Specifications across the series' : 'Technical specifications' }}</h2>
+                    @if ($product->specs_general)
+                        <p class="mx-auto mt-3 max-w-2xl text-sm text-slate">These are ranges for the whole {{ $product->heading ?: $product->name }} line. Each model has its own exact values: {{ $docs->count() ? 'see the brochure below or' : '' }} <a href="#enquiry-form" class="font-semibold text-link hover:underline">ask our team</a> and we will confirm the right model for you.</p>
+                    @endif
                 </div>
                 <dl class="mt-8 grid grid-cols-1 gap-x-8 md:grid-cols-2">
                     @foreach ($specs as $key => $value)

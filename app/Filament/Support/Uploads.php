@@ -24,9 +24,11 @@ class Uploads
      * Falls back to storing the original file under its normal name.
      * Use with ->saveUploadedFileUsing(fn ($component, $file) => Uploads::save($component, $file)).
      */
-    public static function save(BaseFileUpload $component, TemporaryUploadedFile $file): ?string
+    public static function save(BaseFileUpload $component, TemporaryUploadedFile $file, bool $trimLogo = false): ?string
     {
-        $bytes = ImageOptimizer::webp($file->getRealPath(), $file->getMimeType());
+        // logos: cut the empty border away first so every logo fills its box alike (falls back to the normal conversion)
+        $bytes = ($trimLogo ? ImageOptimizer::trimmedLogoWebp($file->getRealPath(), $file->getMimeType()) : null)
+            ?? ImageOptimizer::webp($file->getRealPath(), $file->getMimeType());
 
         if ($bytes !== null) {
             $path = trim($component->getDirectory() . '/' . Str::ulid() . '.webp', '/');

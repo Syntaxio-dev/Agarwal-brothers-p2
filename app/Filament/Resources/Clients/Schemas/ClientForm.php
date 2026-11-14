@@ -24,9 +24,10 @@ class ClientForm
                         TextInput::make('name')
                             ->required(),
                         FileUpload::make('logo')
+                            ->helperText('Best size: 400 × 200 px (2:1, landscape) on a transparent or white background. The whole logo is shown, not cropped, so leave a little empty space around it.')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
-                            ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))
+                            ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file, trimLogo: true))
                             ->maxSize(\App\Filament\Support\Uploads::IMAGE_MAX_KB)
                             ->disk('public')
                             ->visibility('public')

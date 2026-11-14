@@ -33,6 +33,103 @@ class ImageOptimizer
         return static::encode($path, $mime, 'webp');
     }
 
+    /**
+     * A logo with its empty border cut away (transparent or plain background), plus a small even margin, as lossless WebP.
+     * Logos come with very different empty borders inside the file, which made one brand look twice as big as another
+     * on the same screen. Returns null when nothing should change (no GD, not a picture, already tight, or no clear content).
+     */
+    public static function trimmedLogoWebp(string $path, ?string $mime = null): ?string
+    {
+        if (! static::available() || ! is_file($path)) {
+            return null;
+        }
+
+        $mime ??= (string) mime_content_type($path);
+        if (! in_array($mime, ['image/jpeg', 'image/png', 'image/webp'], true)) {
+            return null;
+        }
+
+        $raw = @file_get_contents($path);
+        $image = $raw === false ? false : @imagecreatefromstring($raw);
+        if (! $image) {
+            return null;
+        }
+
+        try {
+            if (! imageistruecolor($image)) {
+                imagepalettetotruecolor($image);
+            }
+
+            [$w, $h] = [imagesx($image), imagesy($image)];
+            $corner = imagecolorat($image, 0, 0);
+            $transparentBg = (($corner >> 24) & 0x7F) > 100;
+            [$br, $bg, $bb] = [($corner >> 16) & 0xFF, ($corner >> 8) & 0xFF, $corner & 0xFF];
+
+            // a pixel counts as part of the logo when it is opaque enough and clearly different from the background
+            $isContent = static function (int $x, int $y) use ($image, $transparentBg, $br, $bg, $bb): bool {
+                $c = imagecolorat($image, $x, $y);
+                if ((($c >> 24) & 0x7F) > 100) {
+                    return false;
+                }
+                if ($transparentBg) {
+                    return true;
+                }
+
+                return abs((($c >> 16) & 0xFF) - $br) + abs((($c >> 8) & 0xFF) - $bg) + abs(($c & 0xFF) - $bb) > 60;
+            };
+
+            $top = $bottom = $left = $right = null;
+            for ($y = 0; $y < $h && $top === null; $y++) {
+                for ($x = 0; $x < $w; $x++) {
+                    if ($isContent($x, $y)) { $top = $y; break; }
+                }
+            }
+            if ($top === null) {
+                return null;
+            }
+            for ($y = $h - 1; $y >= $top && $bottom === null; $y--) {
+                for ($x = 0; $x < $w; $x++) {
+                    if ($isContent($x, $y)) { $bottom = $y; break; }
+                }
+            }
+            for ($x = 0; $x < $w && $left === null; $x++) {
+                for ($y = $top; $y <= $bottom; $y++) {
+                    if ($isContent($x, $y)) { $left = $x; break; }
+                }
+            }
+            for ($x = $w - 1; $x >= $left && $right === null; $x--) {
+                for ($y = $top; $y <= $bottom; $y++) {
+                    if ($isContent($x, $y)) { $right = $x; break; }
+                }
+            }
+
+            $cw = $right - $left + 1;
+            $ch = $bottom - $top + 1;
+            $pad = max(3, (int) round(max($cw, $ch) * 0.05));
+            [$nw, $nh] = [$cw + 2 * $pad, $ch + 2 * $pad];
+
+            // already tight: leave the normal upload flow alone
+            if ($nw >= $w * 0.96 && $nh >= $h * 0.96) {
+                return null;
+            }
+
+            $out = imagecreatetruecolor($nw, $nh);
+            imagealphablending($out, false);
+            imagesavealpha($out, true);
+            imagefill($out, 0, 0, $transparentBg ? imagecolorallocatealpha($out, 0, 0, 0, 127) : imagecolorallocate($out, $br, $bg, $bb));
+            imagecopy($out, $image, $pad, $pad, $left, $top, $cw, $ch);
+
+            ob_start();
+            $ok = imagewebp($out, null, defined('IMG_WEBP_LOSSLESS') ? IMG_WEBP_LOSSLESS : self::JPEG_QUALITY);
+            $bytes = ob_get_clean();
+            imagedestroy($out);
+
+            return $ok && $bytes !== '' && $bytes !== false ? $bytes : null;
+        } finally {
+            imagedestroy($image);
+        }
+    }
+
     /** Same picture, same format (JPEG/PNG), re-saved lighter. For tidying up files that are already stored. */
     public static function sameFormat(string $path, ?string $mime = null): ?string
     {

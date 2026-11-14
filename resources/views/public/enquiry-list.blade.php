@@ -65,13 +65,13 @@
                             <div :style="'--i:' + Math.min(n, 6)"
                                  class="row-in group flex items-center gap-4 rounded-2xl border border-gray-200 bg-white p-3 shadow-sm transition-all duration-300 hover:border-cyan/40 hover:shadow-md sm:p-4">
                                 <span class="hidden w-6 shrink-0 text-center font-mono text-xs text-slate sm:block" x-text="n + 1"></span>
-                                <a :href="'/products/' + p.slug" class="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-ice p-2">
+                                <a :href="p.type === 'accessory' ? null : '/products/' + p.slug" class="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-ice p-2">
                                     <img x-show="p.image" :src="p.image" :alt="p.name" class="max-h-full max-w-full mix-blend-multiply object-contain transition-transform duration-500 group-hover:scale-105">
                                     <span x-show="! p.image" class="font-mono text-xs text-slate">No image</span>
                                 </a>
                                 <div class="min-w-0 flex-1">
                                     <p x-show="p.brand" x-text="p.brand" class="font-mono text-[11px] font-medium uppercase tracking-[0.16em] text-link"></p>
-                                    <a :href="'/products/' + p.slug" class="block text-sm font-bold leading-snug text-navy transition-colors hover:text-link group-hover:text-link sm:text-base" x-text="p.name"></a>
+                                    <a :href="p.type === 'accessory' ? null : '/products/' + p.slug" class="block text-sm font-bold leading-snug text-navy transition-colors hover:text-link group-hover:text-link sm:text-base" x-text="p.name"></a>
                                     <p x-show="p.category" x-text="p.category" class="mt-0.5 text-xs text-slate"></p>
                                 </div>
 

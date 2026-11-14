@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreEnquiryListRequest;
 use App\Http\Requests\StoreEnquiryRequest;
 use App\Mail\NewEnquiry;
+use App\Models\Accessory;
 use App\Models\Brand;
 use App\Models\Category;
 use App\Models\Client;
@@ -176,10 +177,16 @@ class PublicController extends Controller
         // Brand cards, each listing that brand's categories inside this vertical.
         $brandGroups = $categories->groupBy('brand_id')
             ->map(fn ($items) => ['brand' => $items->first()->brand, 'categories' => $items])
-            ->sortBy(fn ($g) => $g['brand']->name)
+            // the owner's order (Admin > Brands, drag rows); brands that were never placed (0) come last, then A to Z
+            ->sortBy([
+                fn ($a, $b) => ($a['brand']->sort_order ?: PHP_INT_MAX) <=> ($b['brand']->sort_order ?: PHP_INT_MAX),
+                fn ($a, $b) => strcasecmp($a['brand']->name, $b['brand']->name),
+            ])
             ->values();
 
-        return view('public.vertical', compact('vertical', 'brandGroups'));
+        $accessoryBrands = $this->accessoryBrands();
+
+        return view('public.vertical', compact('vertical', 'brandGroups', 'accessoryBrands'));
     }
 
     public function brand(Brand $brand)
@@ -195,7 +202,30 @@ class PublicController extends Controller
             ->with('category.brand')
             ->get();
 
-        return view('public.brand', compact('brand', 'products'));
+        $hasAccessories = Accessory::forBrand($brand)->isNotEmpty();
+
+        return view('public.brand', compact('brand', 'products', 'hasAccessories'));
+    }
+
+    /** Accessories of a brand (its own first, then the general ones) with an add-to-enquiry-list button. */
+    public function brandAccessories(Brand $brand)
+    {
+        abort_unless(Preview::active() || $brand->is_active, 404);
+
+        $all = Accessory::forBrand($brand);
+        $own = $all->where('brand_id', $brand->id)->values();
+        $general = $all->whereNull('brand_id')->values();
+
+        return view('public.accessories', compact('brand', 'own', 'general'));
+    }
+
+    /** Brand ids that have accessories of their own, and whether general accessories exist (they suit every brand). */
+    private function accessoryBrands(): array
+    {
+        return [
+            'general' => Accessory::visible()->whereNull('brand_id')->exists(),
+            'ids' => Accessory::visible()->whereNotNull('brand_id')->pluck('brand_id')->unique()->all(),
+        ];
     }
 
     public function category(Request $request, Brand $brand, Category $category)
@@ -240,7 +270,9 @@ class PublicController extends Controller
 
         $questions = \App\Models\EnquiryQuestion::forProduct($product);
 
-        return view('public.product', compact('product', 'similar', 'alsoCompared', 'vertical', 'questions'));
+        $accessories = Accessory::forBrand($product->category?->brand);
+
+        return view('public.product', compact('product', 'similar', 'alsoCompared', 'vertical', 'questions', 'accessories'));
     }
 
     /** Print-ready specification sheet of one product (browser "Save as PDF" gives a real text PDF). */
@@ -637,17 +669,27 @@ class PublicController extends Controller
 
         $quantities = collect($data['items'])->mapWithKeys(fn ($i) => [$i['slug'] => (int) $i['qty']]);
 
+        // Accessories travel in the same list under a prefixed key (so they never clash with a product slug).
+        $prefix = Accessory::LIST_PREFIX;
+        $accessoryQuantities = $quantities->filter(fn ($q, $key) => str_starts_with($key, $prefix))
+            ->mapWithKeys(fn ($q, $key) => [substr($key, strlen($prefix)) => $q]);
+        $quantities = $quantities->reject(fn ($q, $key) => str_starts_with($key, $prefix));
+
+        $accessories = $accessoryQuantities->isEmpty()
+            ? collect()
+            : Accessory::visible()->with('brand')->whereIn('slug', $accessoryQuantities->keys())->get();
+
         $products = Product::whereIn('slug', $quantities->keys())
             ->where('is_active', true)
             ->whereHas('category.brand', fn ($q) => $q->where('brands.is_active', true))
             ->with('category.brand')
             ->get();
 
-        if ($products->isEmpty()) {
+        if ($products->isEmpty() && $accessories->isEmpty()) {
             return back()->withInput()->withErrors(['items' => 'These products are no longer available. Please add them again.']);
         }
 
-        $enquiry = DB::transaction(function () use ($data, $products, $quantities) {
+        $enquiry = DB::transaction(function () use ($data, $products, $quantities, $accessories, $accessoryQuantities) {
             $enquiry = Enquiry::create([
                 'name' => $data['name'],
                 'email' => $data['email'],
@@ -667,6 +709,16 @@ class PublicController extends Controller
                 ]);
             }
 
+            foreach ($accessories as $accessory) {
+                $enquiry->items()->create([
+                    'product_id' => null,
+                    'product_name' => $accessory->name,
+                    'brand_name' => $accessory->brand?->name,
+                    'category_name' => 'Accessory',
+                    'quantity' => $accessoryQuantities[$accessory->slug] ?? 1,
+                ]);
+            }
+
             return $enquiry;
         });
 
@@ -679,7 +731,7 @@ class PublicController extends Controller
 
         AutoReply::send('auto_enquiry', $enquiry);
 
-        return redirect()->route('enquiry-list')->with('enquiry_sent', $products->count());
+        return redirect()->route('enquiry-list')->with('enquiry_sent', $products->count() + $accessories->count());
     }
 
     public function storeEnquiry(StoreEnquiryRequest $request)

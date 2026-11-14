@@ -34,24 +34,21 @@
 
         @include('public.partials.breadcrumb', ['items' => $crumbs])
 
-        {{-- Title banner: category (with a short, foldable intro) on the left, brand on the right --}}
-        <div data-reveal x-data="{ introOpen: false }" class="flex flex-col items-start justify-between gap-5 rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-ice px-9 py-7 shadow-sm sm:flex-row sm:items-center max-sm:gap-3 max-sm:px-5 max-sm:py-5">
+        {{-- Title banner: category (with its full intro, always shown) on the left, brand on the right --}}
+        <div data-reveal class="flex flex-col items-start justify-between gap-5 rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-ice px-9 py-7 shadow-sm sm:flex-row sm:items-center max-sm:gap-3 max-sm:px-5 max-sm:py-5">
             <div class="min-w-0 max-w-3xl">
                 <p class="font-mono text-xs font-medium uppercase tracking-[0.2em] text-link">{{ $brand->name }}</p>
                 <h1 class="mt-2 text-[1.65rem] sm:text-4xl font-bold text-navy leading-tight">{{ $category->name }}</h1>
                 @if ($hasIntro)
-                    {{-- the heading stays in the page for search engines; it is only shown when the intro is open --}}
                     @if ($category->heading)
-                        <h2 x-show="introOpen" x-cloak class="mt-3 text-[17px] font-semibold leading-snug text-link">{{ $category->heading }}</h2>
+                        <h2 class="mt-3 text-[17px] font-semibold leading-snug text-link">{{ $category->heading }}</h2>
                     @endif
                     @if ($category->description)
-                        <p class="mt-3 text-[14.5px] leading-[1.65] text-slate" :class="introOpen ? '' : 'line-clamp-2'">{{ $category->description }}</p>
+                        <p class="mt-3 text-[14.5px] leading-[1.65] text-navy/80">{{ $category->description }}</p>
                     @endif
-                    <button type="button" @click="introOpen = !introOpen" :aria-expanded="introOpen" class="mt-2 text-[13px] font-semibold text-link hover:text-navy"
-                            x-text="introOpen ? 'Show less' : 'Read more'">Read more</button>
                 @endif
             </div>
-            <a href="{{ route('brand.show', $brand->slug) }}" class="flex h-16 w-44 shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-white p-3 max-sm:h-12 max-sm:w-32 max-sm:p-2" title="{{ $brand->name }}">
+            <a href="{{ route('brand.show', $brand->slug) }}" class="flex shrink-0 items-center justify-center rounded-xl border border-gray-100 bg-white" style="width: clamp(9rem, 9vw + 6.5rem, 16rem); aspect-ratio: 5 / 2; padding: clamp(0.5rem, 1.2vw, 1rem);" title="{{ $brand->name }}">
                 @if ($brand->logo)
                     <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}" class="img-load max-h-full max-w-full object-contain" decoding="async" {!! \App\Support\Img::attrs($brand->logo) !!} onload="this.classList.add('is-loaded')">
                 @else

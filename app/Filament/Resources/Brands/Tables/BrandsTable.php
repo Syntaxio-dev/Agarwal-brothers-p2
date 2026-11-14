@@ -45,7 +45,8 @@ class BrandsTable
                 ToggleColumn::make('is_active')
                     ->label('Active'),
             ])
-            ->defaultSort('name')
+            ->reorderable('sort_order')
+            ->defaultSort(fn ($query) => $query->orderByRaw('sort_order = 0')->orderBy('sort_order')->orderBy('name'))
             ->filters([
                 SelectFilter::make('country_id')
                     ->label('Country')

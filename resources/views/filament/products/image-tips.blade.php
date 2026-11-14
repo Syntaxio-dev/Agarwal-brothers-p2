@@ -1,5 +1,6 @@
 {{-- A tiny do / don't picture next to the main-image upload: a clean photo on a plain light background versus a busy, dark, small one. --}}
 <div class="grid grid-cols-2 gap-3 sm:max-w-md" aria-label="Photo examples">
+    <p class="col-span-2 m-0 text-xs font-medium text-gray-600 dark:text-gray-300">Best size: 1200 × 1200 px, square (1:1).</p>
     <figure class="m-0">
         <svg viewBox="0 0 160 110" class="w-full rounded-lg ring-1 ring-success-600/40" role="img" aria-label="Good photo: plain light background, product in the middle and large">
             <rect width="160" height="110" fill="#ffffff"/>

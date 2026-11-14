@@ -25,6 +25,7 @@ class ProductDuplicator
             'short_description' => $source->short_description,
             'overview' => $source->overview,
             'specs' => $source->specs,
+            'specs_general' => $source->specs_general,
             'features' => $source->features,
             'advantages' => $source->advantages,
             'faqs' => $source->faqs,

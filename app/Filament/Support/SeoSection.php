@@ -29,7 +29,7 @@ class SeoSection
                     ->helperText('Up to 160 characters.'),
                 FileUpload::make('og_image')
                     ->label('Share image (Open Graph)')
-                    ->helperText('Shown when the page is shared on WhatsApp, LinkedIn, etc. 1200x630 works best.')
+                    ->helperText('Shown when the page is shared on WhatsApp, LinkedIn, etc. Best size: 1200 × 630 px (about 1.9:1, landscape). Keep the main content in the centre.')
                     ->image()
                     ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
                     ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))

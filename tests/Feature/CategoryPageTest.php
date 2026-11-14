@@ -112,16 +112,27 @@ class CategoryPageTest extends TestCase
         $this->assertStringContainsString('sm:bottom-[18px]', $html);
     }
 
-    public function test_the_intro_is_folded_in_the_banner_with_read_more(): void
+    public function test_the_intro_is_always_shown_in_full_in_the_banner(): void
     {
         [$brand, $cat] = $this->line();
         $cat->update(['heading' => 'Best Analytical Balance', 'description' => 'A long intro paragraph.']);
         $html = $this->page($brand, $cat);
 
-        $this->assertStringContainsString('Read more', $html);
-        $this->assertStringContainsString('line-clamp-2', $html);
-        $this->assertStringContainsString('<h2 x-show="introOpen"', $html);
+        $this->assertStringNotContainsString('Read more', $html);
+        $this->assertStringNotContainsString('Show less', $html);
+        $this->assertStringNotContainsString('introOpen', $html);
         $this->assertStringContainsString('Best Analytical Balance', $html);
+        $this->assertStringContainsString('A long intro paragraph.', $html);
+        $this->assertStringContainsString('text-navy/80', $html);
+    }
+
+    public function test_the_brand_logo_box_in_the_banner_scales_with_the_screen(): void
+    {
+        [$brand, $cat] = $this->line();
+        $html = $this->page($brand, $cat);
+
+        $this->assertStringContainsString('width: clamp(9rem, 9vw + 6.5rem, 16rem)', $html);
+        $this->assertStringContainsString('aspect-ratio: 5 / 2', $html);
     }
 
     public function test_the_empty_state_has_the_new_copy_phone_and_hours_from_config(): void

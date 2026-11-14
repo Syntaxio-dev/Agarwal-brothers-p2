@@ -117,7 +117,7 @@ class ProductForm
                             ->helperText('The web address part. It is made from the name for you.'),
                         FileUpload::make('image')
                             ->label('Main image')
-                            ->helperText('The first photo: shown on product cards and first on the product page. A clean shot on a white or transparent background.')
+                            ->helperText('The first photo: shown on product cards and first on the product page. Best size: 1200 × 1200 px (1:1, square) on a white or transparent background. It is shown whole, never cropped, so leave a small empty border.')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
                             ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))
@@ -161,7 +161,7 @@ class ProductForm
                     ->schema([
                         FileUpload::make('gallery')
                             ->label('More photos (optional, up to 10)')
-                            ->helperText('Add as many extra photos as you need: front, side, back, accessories. On the product page visitors move through them with arrows and small pictures. Drag to change the order.')
+                            ->helperText('Add as many extra photos as you need: front, side, back, accessories. Best size: 1200 × 1200 px (1:1, square) like the main image, on the same plain background. Visitors move through them with arrows and small pictures. Drag to change the order.')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
                             ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))
@@ -236,12 +236,19 @@ class ProductForm
                     ->collapsible()
                     ->collapsed(fn ($operation) => $operation === 'create')
                     ->schema([
+                        Toggle::make('specs_general')
+                            ->label('Generalized specifications (this product is a whole model line)')
+                            ->helperText('Switch ON when one product covers many models of a series (for example Cubis) and the values below are ranges, like "0.1 mg to 0.001 mg". The product page then tells visitors these are series ranges and to check the brochure for their exact model. Leave OFF when the values belong to one exact model.')
+                            ->default(false)
+                            ->live(),
                         KeyValue::make('specs')
                             ->keyLabel('Specification')
-                            ->valueLabel('Value')
+                            ->valueLabel(fn (callable $get) => $get('specs_general') ? 'Range (lowest to highest in the series)' : 'Value')
                             ->addActionLabel('Add specification')
                             ->reorderable()
-                            ->helperText('Add or remove rows freely: every product can have its own number of specifications. Use the same wording (for example "Capacity") on products you want to compare, so they line up on the compare page.'),
+                            ->helperText(fn (callable $get) => $get('specs_general')
+                                ? 'Write a range for each row, for example "Readability" = "0.1 mg to 0.001 mg" or "Capacity" = "120 g to 6,200 g". Where every model has the same value, write that single value.'
+                                : 'Add or remove rows freely: every product can have its own number of specifications. Use the same wording (for example "Capacity") on products you want to compare, so they line up on the compare page.'),
                     ]),
 
                 Section::make('Documents & research papers')

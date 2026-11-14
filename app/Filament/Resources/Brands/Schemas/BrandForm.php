@@ -54,9 +54,12 @@ class BrandForm
                     ->columnSpanFull()
                     ->schema([
                         FileUpload::make('logo')
+                            ->helperText('Best size: 600 × 240 px (5:2, wide) on a transparent or white background. The whole logo is shown, not cropped, so leave a little empty space around it. After choosing the file press the small pencil icon on it to crop away extra empty space or to cut it to the right shape (5:2 suits most logos).')
                             ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatioOptions([null, '5:2', '2:1', '3:1', '1:1'])
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
-                            ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))
+                            ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file, trimLogo: true))
                             ->maxSize(\App\Filament\Support\Uploads::IMAGE_MAX_KB)
                             ->disk('public')
                             ->visibility('public')

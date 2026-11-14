@@ -33,7 +33,7 @@ class VerticalForm
                             ->columnSpanFull(),
                         FileUpload::make('image')
                             ->label('Icon / image')
-                            ->helperText('Shown as a small square on the homepage card; a square image works best.')
+                            ->helperText('Best size: 1200 × 800 px (3:2, landscape) with the subject in the centre. It is cropped from the centre to a small square on the homepage and to a wide strip on the Verticals page.')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
                             ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))

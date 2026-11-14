@@ -26,7 +26,9 @@ Route::get('/verticals', [PublicController::class, 'verticalsIndex'])->name('ver
 
 Route::get('/verticals/{vertical:slug}', [PublicController::class, 'vertical'])->name('vertical.show');
 Route::get('/brands/{brand:slug}', [PublicController::class, 'brand'])->name('brand.show');
-Route::get('/brands/{brand:slug}/{category:slug}', [PublicController::class, 'category'])->name('category.show');
+// Must stay above the category route, otherwise "accessories" would be read as a product line.
+Route::get('/brands/{brand:slug}/accessories', [PublicController::class, 'brandAccessories'])->name('brand.accessories');
+Route::get('/brands/{brand:slug}/{category:slug}',[PublicController::class, 'category'])->name('category.show');
 Route::get('/products/{product:slug}', [PublicController::class, 'product'])->name('product.show');
 Route::get('/products/{product:slug}/spec-sheet', [PublicController::class, 'specSheet'])->name('product.spec-sheet');
 Route::post('/enquiries', [PublicController::class, 'storeEnquiry'])->name('enquiry.store')->middleware('throttle:enquiry');

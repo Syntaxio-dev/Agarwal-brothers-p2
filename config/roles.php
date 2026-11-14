@@ -22,14 +22,14 @@ return [
         'description' => 'Manages website content: catalogue, blogs, news, webinars, slides, team and reviews.',
         'access' => [
             'slides', 'clients', 'reviews', 'team-members', 'insights', 'application-resources',
-            'verticals', 'brands', 'countries', 'categories', 'products',
+            'verticals', 'brands', 'countries', 'categories', 'products', 'accessories',
         ],
     ],
 
     'sales' => [
         'label' => 'Sales',
         'description' => 'Handles product enquiries and contact messages, and can update products.',
-        'access' => ['enquiries', 'contact-messages', 'products'],
+        'access' => ['enquiries', 'contact-messages', 'products', 'accessories'],
     ],
 
     'hr' => [

@@ -111,6 +111,9 @@
                 @else
                     These products share the same values for every listed specification.
                 @endif
+                @if ($products->contains(fn ($p) => $p->specs_general))
+                    For a whole model line ({{ $products->filter(fn ($p) => $p->specs_general)->map(fn ($p) => $p->heading ?: $p->name)->implode(', ') }}) the values are ranges across the series, not one model.
+                @endif
                 Specifications are indicative; please confirm with our team before ordering.
             </p>
 

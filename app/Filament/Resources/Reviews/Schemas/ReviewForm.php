@@ -24,7 +24,7 @@ class ReviewForm
                         TextInput::make('organization')->placeholder('e.g. Sun Pharmaceuticals'),
                         FileUpload::make('avatar')
                             ->label('Photo (optional)')
-                            ->helperText('Small square photo for the quote card. Without it the first letter of the name is shown.')
+                            ->helperText('Best size: 400 × 400 px (1:1, square) with the face in the centre. Shown as a small round photo on the quote card. Without it the first letter of the name is shown.')
                             ->image()
                             ->avatar()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)

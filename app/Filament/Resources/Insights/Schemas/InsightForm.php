@@ -95,7 +95,7 @@ class InsightForm
                     ->schema([
                         FileUpload::make('image')
                             ->label('Cover image')
-                            ->helperText('Blogs and webinars: wide (about 16:9). News posters: portrait (about 4:5).')
+                            ->helperText('Blogs and webinars: 1600 × 900 px (16:9, landscape). News posters: 1200 × 1500 px (4:5, portrait).')
                             ->image()
                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
                             ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))
@@ -139,6 +139,7 @@ class InsightForm
                                     ->schema([
                                         FileUpload::make('image')
                                             ->label('Picture')
+                                            ->helperText('Best size: landscape, about 1600 × 900 px (16:9). It is shown in its own shape and not cropped, so any ratio works.')
                                             ->image()
                                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
                                             ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))
@@ -165,6 +166,7 @@ class InsightForm
                                     ->schema([
                                         FileUpload::make('images')
                                             ->label('Pictures (2 to 12, drag to change the order)')
+                                            ->helperText('Best size: 1600 × 900 px (16:9, landscape). Use the same shape for every picture in one gallery. A slider shows each picture whole; a grid crops them to 4:3 from the centre.')
                                             ->image()
                                             ->acceptedFileTypes(\App\Filament\Support\Uploads::IMAGES)
                                             ->saveUploadedFileUsing(fn ($component, $file) => \App\Filament\Support\Uploads::save($component, $file))

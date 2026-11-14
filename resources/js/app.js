@@ -320,7 +320,7 @@ Alpine.store('enquiryList', {
             return;
         }
         if (this.items.length >= this.max) {
-            this.say('Your list is full (' + this.max + ' products). Please send this enquiry first.');
+            this.say('Your list is full (' + this.max + ' items). Please send this enquiry first.');
             return;
         }
         this.items.push({
@@ -329,6 +329,7 @@ Alpine.store('enquiryList', {
             image: product.image || '',
             brand: product.brand || '',
             category: product.category || '',
+            type: product.type === 'accessory' ? 'accessory' : '',
             qty: 1,
         });
         this.save();

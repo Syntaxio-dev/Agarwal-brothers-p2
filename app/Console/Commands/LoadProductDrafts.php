@@ -12,6 +12,7 @@ use Illuminate\Support\Str;
  * Adds products from the series files in database/data/products/*.php (one file per brand series, built from the brochure).
  * Every model becomes a HIDDEN draft (is_active = false); photos and video are added by hand in the admin.
  * Adds only missing models (matched by slug or by the "Model" spec in the same category); never changes or deletes a product.
+ * A model entry may carry its own 'heading'; a series file may set 'specs_general' => true (specs are ranges for a whole model line).
  * Rules: CLAUDE.md section 12.
  */
 class LoadProductDrafts extends Command
@@ -64,13 +65,14 @@ class LoadProductDrafts extends Command
                         'category_id' => $category->id,
                         'name' => $m['model'],
                         'slug' => $slug,
-                        'heading' => $m['model'] . ' ' . $series['product_type'],
+                        'heading' => $m['heading'] ?? ($m['model'] . ' ' . $series['product_type']),
                         'model_group' => $series['model_group'],
                         'short_description' => $series['short_description'],
                         'overview' => $series['overview'],
                         'features' => $series['features'],
                         'advantages' => $series['advantages'],
                         'specs' => $m['specs'],
+                        'specs_general' => (bool) ($series['specs_general'] ?? false),
                         'faqs' => $series['faqs'],
                         'documents' => array_map(fn ($d) => $d + ['url' => null], $series['documents']),
                         'is_active' => false,

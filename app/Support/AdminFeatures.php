@@ -43,6 +43,7 @@ class AdminFeatures
             'Catalogue' => [
                 ['products', 'Products', 'Add and edit products: photos and more photos, video, overview, key features and advantages, technical specifications, documents and FAQs. Save as a hidden draft, duplicate a product, activate / deactivate / move many at once, and preview on the site before it is live.', ProductResource::class],
                 ['products', 'Import products', 'Upload a CSV or Excel file with many products. The file is checked first and nothing is saved until you confirm.', ImportProducts::class],
+                ['accessories', 'Accessories', 'Calibration test kits and other things that go with the instruments: name, picture, short text and the brand (or General for any brand). They show on the brand page and as an Add accessories button on the products, and visitors add them to their enquiry list.', \App\Filament\Resources\Accessories\AccessoryResource::class],
                 ['brands', 'Brands', 'Brand name, logo, country and description. Brands show on the home page, the Brands pages and the search.', BrandResource::class],
                 ['categories', 'Product lines', 'A brand\'s product series (for example BSA Series) with its own heading, description and FAQs. Link each one to the verticals it belongs to.', CategoryResource::class],
                 ['verticals', 'Verticals', 'The main product areas of the site (for example Weighing Balances) with picture and order. Visitors browse vertical, brand, product line, product.', VerticalResource::class],
