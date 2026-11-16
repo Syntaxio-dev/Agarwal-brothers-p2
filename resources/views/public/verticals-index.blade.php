@@ -1,4 +1,12 @@
-<x-layouts.app title="Lab Equipment & Instruments by Category" description="Browse laboratory equipment and scientific instruments by category, from weighing to analytical, from leading global brands. Supplied by Agarwal Brothers, Jaipur.">
+@php
+    $isConsumables = ($kind ?? 'equipment') === 'consumables';
+@endphp
+<x-layouts.app
+    :title="$isConsumables ? 'Lab Consumables & Supplies' : 'Lab Equipment & Instruments by Category'"
+    :description="$isConsumables
+        ? 'Laboratory consumables and supplies from leading global brands, supplied by Agarwal Brothers, Jaipur.'
+        : 'Browse laboratory equipment and scientific instruments by category, from weighing to analytical, from leading global brands. Supplied by Agarwal Brothers, Jaipur.'"
+    :noindex="$isConsumables && $verticals->isEmpty()">
   <div class="relative overflow-hidden">
     {{-- Soft blue tint fading into white --}}
     <div class="pointer-events-none absolute inset-x-0 top-0 h-[620px]
@@ -6,15 +14,19 @@
 
     <div class="relative w-[98%] mx-auto px-4 md:px-10 lg:px-20 py-8 sm:py-14">
 
-        @include('public.partials.breadcrumb', ['items' => [['Home', '/'], ['Verticals', null]]])
+        @include('public.partials.breadcrumb', ['items' => [['Home', '/'], [$isConsumables ? 'Consumables' : 'Equipments', null]]])
 
         {{-- Header --}}
         <div data-reveal class="text-center flex flex-col items-center gap-3 mb-6 sm:mb-10">
             <span class="section-badge">
-                Verticals
+                {{ $isConsumables ? 'Consumables' : 'Equipments' }}
             </span>
             <h1 class="text-[1.65rem] sm:text-3xl lg:text-4xl font-bold text-navy leading-tight">
-                Explore Our <span class="text-cyan-ink">Scientific Verticals</span>
+                @if ($isConsumables)
+                    Explore Our <span class="text-cyan-ink">Lab Consumables</span>
+                @else
+                    Explore Our <span class="text-cyan-ink">Scientific Verticals</span>
+                @endif
             </h1>
 
             <form action="{{ route('search') }}" method="GET" role="search"
@@ -32,7 +44,11 @@
 </form>
 
             <p class="max-w-2xl text-sm sm:text-base text-slate leading-relaxed">
-                From research to production, discover how our solutions support every lab need.
+                @if ($isConsumables)
+                    Everyday supplies that keep your lab running, from brands you already trust.
+                @else
+                    From research to production, discover how our solutions support every lab need.
+                @endif
             </p>
         </div>
 
@@ -104,7 +120,13 @@
 
         @if ($verticals->isEmpty())
             <div data-reveal="fade" class="mt-6 text-center py-16 text-slate">
-                <p class="text-lg">No scientific verticals available yet.</p>
+                @if ($isConsumables)
+                    <p class="text-lg font-semibold text-navy">Our consumables range is coming soon.</p>
+                    <p class="mx-auto mt-2 max-w-md text-sm">Need something now? Tell us what you use and our team will arrange it for you.</p>
+                    <a href="{{ route('contact') }}#contact-form" class="btn-primary mt-5 inline-flex items-center rounded-full px-6 py-2.5 text-sm font-semibold text-white">Ask our team</a>
+                @else
+                    <p class="text-lg">No scientific verticals available yet.</p>
+                @endif
             </div>
         @endif
 
@@ -116,8 +138,7 @@
                 <p class="mt-1 text-sm text-slate">Tell us about your application and our team will recommend the right instruments.</p>
             </div>
             <a href="/contact-us"
-               class="shrink-0 inline-flex items-center gap-2 rounded-full bg-navy px-6 py-2.5 text-sm font-semibold text-white shadow-md
-                      hover:bg-link hover:scale-105 transition-all duration-300 btn-primary">
+               class="shrink-0 inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold text-white btn-primary">
                 Talk to an Expert
                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>

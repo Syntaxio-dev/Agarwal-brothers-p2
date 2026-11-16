@@ -13,11 +13,34 @@ class Vertical extends Model
     use HasSeo;
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'description', 'image', 'sort_order', 'is_active', 'seo_title', 'seo_description', 'og_image',];
+    public const EQUIPMENT = 'equipment';
+    public const CONSUMABLES = 'consumables';
+
+    public const KINDS = [
+        self::EQUIPMENT => 'Equipments',
+        self::CONSUMABLES => 'Consumables',
+    ];
+
+    protected $fillable = ['name', 'slug', 'kind', 'description', 'image', 'sort_order', 'is_active', 'seo_title', 'seo_description', 'og_image',];
 
     protected $casts = [
         'is_active' => 'boolean',
     ];
+
+    public function scopeEquipment($query)
+    {
+        return $query->where('kind', self::EQUIPMENT);
+    }
+
+    public function scopeConsumables($query)
+    {
+        return $query->where('kind', self::CONSUMABLES);
+    }
+
+    public function isConsumables(): bool
+    {
+        return $this->kind === self::CONSUMABLES;
+    }
 
     public function categories()
     {

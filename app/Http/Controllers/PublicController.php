@@ -33,6 +33,7 @@ class PublicController extends Controller
     public function home()
     {
         $verticals = Vertical::where('is_active', true)
+            ->equipment()
             ->orderBy('sort_order')
             ->get();
 
@@ -96,14 +97,23 @@ class PublicController extends Controller
             ->orderBy('id')
             ->get();
 
-        // the rotating category list under the client number: active categories that have active clients
+        // the rotating category list under the client number: active industries that have active clients or products
         $categoryWheel = ClientCategory::where('is_active', true)
-            ->withCount(['clients' => fn ($q) => $q->where('is_active', true)])
+            ->withCount([
+                'clients' => fn ($q) => $q->where('is_active', true),
+                'products' => fn ($q) => $q->where('is_active', true)->whereHas('category.brand', fn ($b) => $b->where('is_active', true)),
+            ])
             ->orderBy('sort_order')
             ->orderBy('name')
             ->get()
-            ->filter(fn ($c) => $c->clients_count > 0)
-            ->map(fn ($c) => ['label' => $c->name, 'count' => $c->clients_count])
+            ->filter(fn ($c) => $c->clients_count > 0 || $c->products_count > 0)
+            ->map(fn ($c) => [
+                'label' => $c->name,
+                // the number is the clients we serve there; an industry that only has products shows no number
+                'count' => $c->clients_count,
+                // a click opens the products used in that industry
+                'url' => route('industry.show', $c->slug),
+            ])
             ->values();
 
         $reviews = Review::where('is_active', true)->orderBy('sort_order')->orderBy('id')->get();
@@ -147,6 +157,21 @@ class PublicController extends Controller
         ));
     }
 
+    /** The products used in one industry (the industry list is the same as the client categories). */
+    public function industry(ClientCategory $industry)
+    {
+        abort_unless($industry->is_active, 404);
+
+        $products = $industry->products()
+            ->where('products.is_active', true)
+            ->whereHas('category.brand', fn ($b) => $b->where('is_active', true))
+            ->with('category.brand')
+            ->orderBy('products.id')
+            ->get();
+
+        return view('public.industry', compact('industry', 'products'));
+    }
+
     public function privacy()
     {
         return view('public.privacy');
@@ -154,12 +179,24 @@ class PublicController extends Controller
 
     public function verticalsIndex()
     {
+        return $this->verticalsOfKind(Vertical::EQUIPMENT);
+    }
+
+    /** The Consumables page (second item of the Verticals menu). Empty until consumable verticals are added. */
+    public function consumablesIndex()
+    {
+        return $this->verticalsOfKind(Vertical::CONSUMABLES);
+    }
+
+    private function verticalsOfKind(string $kind)
+    {
         $verticals = Vertical::where('is_active', true)
+            ->where('kind', $kind)
             ->withCount(['categories' => fn ($q) => $q->whereHas('brand', fn ($b) => $b->where('is_active', true))])
             ->orderBy('sort_order')
             ->get();
 
-        return view('public.verticals-index', compact('verticals'));
+        return view('public.verticals-index', compact('verticals', 'kind'));
     }
 
     public function vertical(Vertical $vertical)

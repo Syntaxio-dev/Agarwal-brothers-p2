@@ -63,6 +63,11 @@ class SeoController extends Controller
             $add($path, null, $priority);
         }
 
+        // The Consumables page is listed only once a consumable vertical exists (an empty page should not be indexed).
+        if (Vertical::where('is_active', true)->consumables()->exists()) {
+            $add('/consumables', null, '0.9');
+        }
+
         Vertical::where('is_active', true)->orderBy('sort_order')->get()
             ->each(fn ($v) => $add(route('vertical.show', $v->slug, false), $v->updated_at, '0.8'));
 

@@ -23,6 +23,8 @@ Route::get('/insights/news-events', [PublicController::class, 'insights'])->defa
 Route::get('/insights/webinars', [PublicController::class, 'insights'])->defaults('type', 'webinar')->name('insights.webinars');
 Route::get('/insights/{insight:slug}', [PublicController::class, 'insightShow'])->name('insights.show');
 Route::get('/verticals', [PublicController::class, 'verticalsIndex'])->name('verticals.index');
+Route::get('/consumables', [PublicController::class, 'consumablesIndex'])->name('consumables.index');
+Route::get('/industries/{industry:slug}', [PublicController::class, 'industry'])->name('industry.show');
 
 Route::get('/verticals/{vertical:slug}', [PublicController::class, 'vertical'])->name('vertical.show');
 Route::get('/brands/{brand:slug}', [PublicController::class, 'brand'])->name('brand.show');

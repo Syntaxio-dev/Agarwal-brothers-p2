@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\Verticals\Schemas;
 
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -27,6 +28,13 @@ class VerticalForm
                         TextInput::make('slug')
                             ->required()
                             ->unique(ignoreRecord: true),
+                        Select::make('kind')
+                            ->label('Shown under')
+                            ->options(\App\Models\Vertical::KINDS)
+                            ->default(\App\Models\Vertical::EQUIPMENT)
+                            ->required()
+                            ->native(false)
+                            ->helperText('Equipments appear on the Verticals page, Consumables on the Consumables page (both are in the Verticals menu).'),
                         Textarea::make('description')
                             ->rows(3)
                             ->helperText('Shown on the homepage card (about two lines).')

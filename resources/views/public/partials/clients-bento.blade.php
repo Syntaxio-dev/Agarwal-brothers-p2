@@ -46,7 +46,7 @@
                  page: 0, pages: {{ $pageCount }},
                  rev: 0, revs: {{ $reviewCount }}, reviews: @js($reviewData), open: false,
                  cats: @js($categoryWheel), ci: {{ $wheelCount }}, snap: false,
-                 quotePaused: false, pageTimer: null, quoteTimer: null, wheelTimer: null,
+                 quotePaused: false, wheelHover: false, pageTimer: null, quoteTimer: null, wheelTimer: null,
                  get track() { return [...this.cats, ...this.cats, ...this.cats]; },
                  get busy() { return this.quotePaused || this.open; },
                  init() {
@@ -58,7 +58,7 @@
                          this.quoteTimer = setInterval(() => { if (!this.busy && !document.hidden) this.rev = (this.rev + 1) % this.revs; }, 5000);
                      }
                      if (this.cats.length > 1) {
-                         this.wheelTimer = setInterval(() => { if (!document.hidden) this.nextCat(); }, 1000);
+                         this.wheelTimer = setInterval(() => { if (!document.hidden && !this.wheelHover) this.nextCat(); }, 1000);
                      }
                  },
                  nextCat() {
@@ -147,16 +147,22 @@
                         @if ($wheelCount === 1)
                             <p class="text-[15px] font-semibold text-navy">{{ $categoryWheel[0]['label'] }} <span class="font-mono text-[11px] font-normal text-cyan-ink">· {{ $categoryWheel[0]['count'] }}</span></p>
                         @else
-                            <div class="relative h-[5.25rem] overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,#000_28%,#000_72%,transparent)]" role="status" aria-live="off">
+                            <div class="group/wheel relative h-[5.25rem] overflow-hidden [mask-image:linear-gradient(to_bottom,transparent,#000_28%,#000_72%,transparent)]" role="status" aria-live="off"
+                                 @mouseenter="wheelHover = true" @mouseleave="wheelHover = false" @focusin="wheelHover = true" @focusout="wheelHover = false">
                                 <span class="pointer-events-none absolute inset-x-0 top-[1.75rem] z-10 h-[1.75rem] border-y border-cyan/40" aria-hidden="true"></span>
                                 <ul class="m-0 list-none p-0" :class="snap ? '' : 'transition-transform duration-500 ease-in-out'"
                                     :style="`transform: translateY(-${(ci - 1) * 1.75}rem)`">
                                     <template x-for="(c, i) in track" :key="i">
-                                        <li class="flex h-[1.75rem] origin-left items-center gap-2 truncate text-sm sm:text-[15px] transition-all duration-500 ease-in-out"
-                                            :class="i === ci ? 'scale-100 font-semibold text-navy' : (Math.abs(i - ci) === 1 ? 'scale-[0.8] text-slate/70' : 'scale-[0.8] opacity-0')"
+                                        <li class="h-[1.75rem] origin-left text-sm sm:text-[15px] transition-all duration-500 ease-in-out"
+                                            :class="i === ci ? 'scale-100 font-semibold text-navy' : (Math.abs(i - ci) === 1 ? 'pointer-events-none scale-[0.8] text-slate/70' : 'pointer-events-none scale-[0.8] opacity-0')"
                                             :aria-hidden="i !== ci">
-                                            <span class="truncate" x-text="c.label"></span>
-                                            <span x-show="i === ci" class="shrink-0 font-mono text-[11px] font-normal text-cyan-ink" x-text="'· ' + c.count"></span>
+                                            {{-- the sector in the middle is a link to its instruments; the wheel rests while the mouse or keyboard is on it --}}
+                                            <a :href="c.url" :tabindex="i === ci ? 0 : -1" :title="'Instruments used in ' + c.label"
+                                               class="flex h-full items-center gap-2 truncate rounded-sm no-underline transition-colors hover:text-link focus-visible:text-link focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-cyan">
+                                                <span class="truncate" x-text="c.label"></span>
+                                                <span x-show="i === ci && c.count > 0" class="shrink-0 font-mono text-[11px] font-normal text-cyan-ink" x-text="'· ' + c.count"></span>
+                                                <span x-show="i === ci && wheelHover" x-cloak class="ml-auto shrink-0 pr-1 font-mono text-[10px] font-normal uppercase tracking-wider text-link">Instruments <span class="arrow-nudge inline-block">&rarr;</span></span>
+                                            </a>
                                         </li>
                                     </template>
                                 </ul>

@@ -23,6 +23,11 @@ class VerticalsTable
                     ->searchable()
                     ->weight('medium')
                     ->description(fn ($record) => str($record->description)->limit(70)),
+                TextColumn::make('kind')
+                    ->label('Shown under')
+                    ->badge()
+                    ->formatStateUsing(fn ($state) => \App\Models\Vertical::KINDS[$state] ?? $state)
+                    ->color(fn ($state) => $state === \App\Models\Vertical::CONSUMABLES ? 'info' : 'primary'),
                 ToggleColumn::make('is_active')
                     ->label('Active'),
             ])

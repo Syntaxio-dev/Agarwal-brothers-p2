@@ -25,67 +25,43 @@ const show = (el, delay = 0) => {
 
 const reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-if (reduce) {
+if (reduce || !('IntersectionObserver' in window)) {
     pending.forEach((el) => show(el));
 } else if (pending.length) {
-    let queued = false;
+    // The browser tells us when an item moves into view (IntersectionObserver), so nothing is measured while the
+    // visitor scrolls. (The old version measured every waiting item on every scroll frame, which made scrolling
+    // stutter on long pages.) The numbers come ready-made with each report, so no layout is forced.
+    const thresholds = Array.from({ length: 51 }, (_, n) => n / 50);
 
-    const check = () => {
-        queued = false;
-        const vh = window.innerHeight;
+    const io = new IntersectionObserver((entries) => {
         let step = 0;
 
-        for (let i = 0; i < pending.length; ) {
-            const el = pending[i];
+        // top-most first, so a row of cards that arrives together is staggered left to right / top to bottom
+        entries.sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top || a.boundingClientRect.left - b.boundingClientRect.left);
 
-            // not on the page right now (e.g. a desktop-only part on a phone): wait until it is
-            if (!el.getClientRects().length) {
-                i++;
-                continue;
-            }
+        entries.forEach((entry) => {
+            const el = entry.target;
+            if (el.classList.contains('is-revealed')) return;
 
-            const r = el.getBoundingClientRect();
-            const visible = Math.min(r.bottom, vh) - Math.max(r.top, 0);
-            const passedAbove = r.bottom <= 0;          // already scrolled past (page opened part-way down)
+            const r = entry.boundingClientRect;
+            if (!r.width && !r.height) return;            // not on the page right now (display:none): wait until it is
+
+            const vh = entry.rootBounds ? entry.rootBounds.height : window.innerHeight;
+            const visible = entry.intersectionRect.height;
+            const passedAbove = r.bottom <= 0;            // already scrolled past (page opened part-way down)
             const startedAbove = r.top < 0 && visible > 0; // its start is already above the screen (jumped down with End / a link): show it at once
             const enough = visible >= Math.min(MIN_VISIBLE_PX, r.height * 0.6) && r.top < vh;
 
-            if (passedAbove || startedAbove || enough) {
-                const extra = parseInt(el.dataset.revealDelay || '0', 10) || 0;
-                const plainSlideUp = el.dataset.reveal === '' || el.dataset.reveal === 'up';
-                if (plainSlideUp && r.height > TALL_PX) el.classList.add('reveal-lg');
+            if (!(passedAbove || startedAbove || enough)) return;
 
-                show(el, passedAbove || startedAbove ? 0 : Math.min(step++, 5) * 70 + extra);
-                pending.splice(i, 1);
-            } else {
-                i++;
-            }
-        }
+            const extra = parseInt(el.dataset.revealDelay || '0', 10) || 0;
+            const plainSlideUp = el.dataset.reveal === '' || el.dataset.reveal === 'up';
+            if (plainSlideUp && r.height > TALL_PX) el.classList.add('reveal-lg');
 
-        if (!pending.length) detach();
-    };
+            show(el, passedAbove || startedAbove ? 0 : Math.min(step++, 5) * 70 + extra);
+            io.unobserve(el);
+        });
+    }, { threshold: thresholds });
 
-    const request = () => {
-        if (!queued) {
-            queued = true;
-            requestAnimationFrame(check);
-        }
-    };
-
-    // things that show up without any scrolling (a filter hides/shows cards, a tab opens) get their turn too
-    const watcher = new MutationObserver(request);
-    watcher.observe(document.body, { subtree: true, attributes: true, attributeFilter: ['style', 'class', 'hidden'] });
-
-    const detach = () => {
-        watcher.disconnect();
-        window.removeEventListener('scroll', request);
-        window.removeEventListener('resize', request);
-        window.removeEventListener('load', request);
-    };
-
-    window.addEventListener('scroll', request, { passive: true });
-    window.addEventListener('resize', request);
-    window.addEventListener('load', request);      // pictures change heights once they arrive
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(request);
-    check();
+    pending.forEach((el) => io.observe(el));
 }

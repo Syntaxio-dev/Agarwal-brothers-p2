@@ -65,7 +65,7 @@
                         @php $nextReg = \App\Rules\SafeLink::passes($next->registration_url) ? $next->registration_url : null; @endphp
                         <a href="{{ $nextReg ?: route('insights.show', $next->slug) }}"
                            @if ($nextReg) target="_blank" rel="noopener" @endif
-                           class="btn-primary inline-flex w-full items-center justify-center gap-2 rounded-full bg-navy px-7 py-3 text-sm font-semibold text-white hover:bg-link sm:w-auto">
+                           class="btn-primary inline-flex w-full items-center justify-center gap-2 rounded-full px-7 py-3 text-sm font-semibold text-white sm:w-auto">
                             {{ $nextReg ? 'Register now' : 'View details' }}
                             <svg class="arrow-nudge h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                 <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>

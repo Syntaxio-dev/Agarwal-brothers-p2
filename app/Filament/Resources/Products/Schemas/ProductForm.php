@@ -107,6 +107,29 @@ class ProductForm
                             ->createOptionModalHeading('Add a new category')
                             ->createOptionAction(fn ($action) => $action->visible(fn () => (bool) auth()->user()?->canManage('categories')))
                             ->columnSpanFull(),
+                        Select::make('industries')
+                            ->label('Industries that use this product')
+                            ->relationship('industries', 'name')
+                            ->multiple()
+                            ->searchable()
+                            ->preload()
+                            ->helperText('Pick every industry that uses this product. Visitors who click that industry on the home page see this product. Not in the list? Use the + button to add the industry.')
+                            // the + button only for people who may manage clients (the industry list is the client categories)
+                            ->createOptionForm(fn () => ! auth()->user()?->canManage('clients') ? null : [
+                                TextInput::make('name')->label('Industry name')->required()->maxLength(80)->unique('client_categories', 'name'),
+                            ])
+                            ->createOptionUsing(function (array $data) {
+                                abort_unless(auth()->user()?->canManage('clients'), 403);
+
+                                return \App\Models\ClientCategory::create([
+                                    'name' => $data['name'],
+                                    'is_active' => true,
+                                    'sort_order' => ((int) \App\Models\ClientCategory::max('sort_order')) + 1,
+                                ])->getKey();
+                            })
+                            ->createOptionModalHeading('Add a new industry')
+                            ->createOptionAction(fn ($action) => $action->visible(fn () => (bool) auth()->user()?->canManage('clients')))
+                            ->columnSpanFull(),
                         TextInput::make('name')
                             ->required()
                             ->live(onBlur: true)

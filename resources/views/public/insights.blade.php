@@ -206,7 +206,7 @@
                             @endif
 
                             <span class="mt-auto pt-4 max-sm:pt-2.5">
-                                <span class="inline-flex items-center gap-1.5 rounded-full bg-navy px-5 py-2 text-xs font-semibold text-white group-hover:bg-link transition-colors btn-primary max-sm:px-3.5 max-sm:py-1.5 max-sm:text-[11px]">
+                                <span class="inline-flex items-center gap-1.5 rounded-full px-5 py-2 text-xs font-semibold text-white group-hover:bg-link btn-primary max-sm:px-3.5 max-sm:py-1.5 max-sm:text-[11px]">
                                     {{ $insight->pdf ? 'View Details' : 'Read More' }}
                                     <svg class="h-3.5 w-3.5 transition-transform group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                         <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
@@ -224,7 +224,7 @@
                     {{ $hasFilters ? 'Try a different month or year, or reset the filters.' : 'Check back later for updates.' }}
                 </p>
                 @if ($hasFilters)
-                    <a href="{{ url()->current() }}" class="mt-5 inline-block rounded-full bg-navy px-6 py-2 text-sm font-semibold text-white hover:bg-link transition-colors btn-primary">
+                    <a href="{{ url()->current() }}" class="mt-5 inline-block rounded-full px-6 py-2 text-sm font-semibold text-white btn-primary">
                         Reset Filters
                     </a>
                 @endif

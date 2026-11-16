@@ -61,7 +61,7 @@
         TOP NAVBAR — fixed, full width (replaces the old left sidebar)
     ========================================================== --}}
     @php $catalogue = \App\Models\SiteSetting::latest()->first(); $catList = $catalogue?->catalogueList() ?? []; @endphp
-    <header class="site-nav fixed top-0 inset-x-0 z-40 border-b border-gray-200 bg-white/95 shadow-sm backdrop-blur">
+    <header class="site-nav fixed top-0 inset-x-0 z-40 border-b border-gray-200 bg-white/95 shadow-sm">
         <div class="site-nav-row mx-auto flex w-[98%] items-center gap-3 px-2 sm:px-4 lg:px-8">
 
             {{-- Logo --}}
@@ -75,7 +75,22 @@
             <nav class="ml-4 hidden shrink-0 items-center gap-1 xl:ml-8 xl:flex">
                 <a href="/" class="{{ $navTop }} {{ request()->is('/') ? 'is-active' : '' }}">Home</a>
                 <a href="/our-story" class="{{ $navTop }} {{ request()->is('our-story') ? 'is-active' : '' }}">Our Story</a>
-                <a href="/verticals" class="{{ $navTop }} {{ request()->is('verticals*') ? 'is-active' : '' }}">Verticals</a>
+                {{-- Verticals dropdown (hover or click): Equipments on top, Consumables below --}}
+                <div x-data="{ open: false, t: null, show() { clearTimeout(this.t); this.open = true }, hide() { clearTimeout(this.t); this.t = setTimeout(() => this.open = false, 180) } }"
+                     @mouseenter="show()" @mouseleave="hide()" @keydown.escape="open = false" class="relative">
+                    <button type="button" @click="open = !open" :aria-expanded="open ? 'true' : 'false'"
+                        class="{{ $navTop }} flex items-center gap-1 {{ request()->is('verticals*', 'consumables*') ? 'is-active' : '' }}">
+                        Verticals
+                        <svg class="h-4 w-4 transition-transform duration-200" :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div x-cloak x-show="open"
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0"
+                         class="absolute left-0 top-full z-50 mt-1.5 w-52 space-y-0.5 rounded-xl border border-gray-100 bg-white p-1.5 shadow-lg">
+                        <a href="{{ route('verticals.index') }}" class="block rounded-md px-3 py-2 text-sm transition-colors {{ request()->is('verticals*') ? 'text-link font-semibold' : 'text-navy hover:text-link' }}">Equipments</a>
+                        <a href="{{ route('consumables.index') }}" class="block rounded-md px-3 py-2 text-sm transition-colors {{ request()->is('consumables*') ? 'text-link font-semibold' : 'text-navy hover:text-link' }}">Consumables</a>
+                    </div>
+                </div>
 
                 {{-- Insights dropdown (hover or click) --}}
                 <div x-data="{ open: false, t: null, show() { clearTimeout(this.t); this.open = true }, hide() { clearTimeout(this.t); this.t = setTimeout(() => this.open = false, 180) } }"
@@ -215,7 +230,20 @@
             <nav class="space-y-1 font-medium">
                 <a href="/" class="nav-link block px-3 py-2.5 rounded-md transition-all duration-200 {{ request()->is('/') ? 'is-active text-link font-semibold' : 'text-navy hover:text-link' }}">Home</a>
                 <a href="/our-story" class="nav-link block px-3 py-2.5 rounded-md transition-all duration-200 {{ request()->is('our-story') ? 'is-active text-link font-semibold' : 'text-navy hover:text-link' }}">Our Story</a>
-                <a href="/verticals" class="nav-link block px-3 py-2.5 rounded-md transition-all duration-200 {{ request()->is('verticals*') ? 'is-active text-link font-semibold' : 'text-navy hover:text-link' }}">Verticals</a>
+                <div x-data="{ open: {{ request()->is('verticals*', 'consumables*') ? 'true' : 'false' }} }">
+                    <button type="button" @click="open = !open" :aria-expanded="open ? 'true' : 'false'"
+                        class="nav-link flex items-center justify-between w-full px-3 py-2.5 rounded-md transition-all duration-200 {{ request()->is('verticals*', 'consumables*') ? 'is-active text-link font-semibold' : 'text-navy hover:text-link' }}">
+                        <span>Verticals</span>
+                        <svg class="h-4 w-4 transition-transform duration-200" :class="open && 'rotate-180'" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                    <div x-show="open" x-cloak
+                         x-transition:enter="transition ease-out duration-150"
+                         x-transition:enter-start="opacity-0 -translate-y-1" x-transition:enter-end="opacity-100 translate-y-0"
+                         class="mt-0.5 space-y-0.5 pl-3">
+                        <a href="{{ route('verticals.index') }}" class="block rounded-md px-3 py-2 text-sm transition-colors {{ request()->is('verticals*') ? 'text-link font-semibold' : 'text-navy hover:text-link' }}">Equipments</a>
+                        <a href="{{ route('consumables.index') }}" class="block rounded-md px-3 py-2 text-sm transition-colors {{ request()->is('consumables*') ? 'text-link font-semibold' : 'text-navy hover:text-link' }}">Consumables</a>
+                    </div>
+                </div>
 
                 <div x-data="{ open: {{ request()->is('insights*') ? 'true' : 'false' }} }">
                     <button type="button" @click="open = !open" :aria-expanded="open ? 'true' : 'false'"
@@ -352,7 +380,8 @@
                                     <ul :class="open ? '' : 'max-lg:hidden'" class="space-y-3 max-lg:pt-4">
                                         <li><a href="/" class="{{ $fLink }}">Home</a></li>
                                         <li><a href="/our-story" class="{{ $fLink }}">Our Story</a></li>
-                                        <li><a href="/verticals" class="{{ $fLink }}">Verticals</a></li>
+                                        <li><a href="/verticals" class="{{ $fLink }}">Equipments</a></li>
+                                        <li><a href="/consumables" class="{{ $fLink }}">Consumables</a></li>
                                         <li><a href="{{ route('insights.blogs') }}" class="{{ $fLink }}">Blogs</a></li>
                                         <li><a href="{{ route('insights.news') }}" class="{{ $fLink }}">News & Events</a></li>
                                         <li><a href="/application-resources" class="{{ $fLink }}">Application Resources</a></li>
@@ -367,7 +396,7 @@
                                         <svg class="h-4 w-4 text-cyan lg:hidden" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.2" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" :d="open ? 'M19.5 12h-15' : 'M12 4.5v15m7.5-7.5h-15'"/></svg>
                                     </button></h4>
                                     <ul :class="open ? '' : 'max-lg:hidden'" class="space-y-3 max-lg:pt-4">
-                                        @php $footerVerticals = \App\Models\Vertical::where('is_active', true)->orderBy('sort_order')->limit(6)->get(); @endphp
+                                        @php $footerVerticals = \App\Models\Vertical::where('is_active', true)->equipment()->orderBy('sort_order')->limit(6)->get(); @endphp
                                         @foreach ($footerVerticals as $v)
                                             <li><a href="{{ route('vertical.show', $v->slug) }}" class="{{ $fLink }}">{{ $v->name }}</a></li>
                                         @endforeach

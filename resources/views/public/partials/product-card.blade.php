@@ -37,7 +37,7 @@
                 <p class="mt-2 line-clamp-2 text-[13px] leading-relaxed text-slate max-sm:hidden">{{ $product->short_description }}</p>
             @endif
             @if ($specs->count() >= 2)
-                <div class="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-[10px] bg-[#E5EEF3] max-sm:hidden">
+                <div class="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-[10px] bg-navy/10 max-sm:hidden">
                     @foreach ($specs as $label => $value)
                         <div class="min-w-0 bg-ice px-2.5 py-2">
                             <p class="truncate text-[10.5px] text-slate">{{ $label }}</p>

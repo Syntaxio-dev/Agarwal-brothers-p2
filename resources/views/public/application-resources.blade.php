@@ -101,7 +101,7 @@
                         <div class="mt-auto pt-4 flex items-center justify-between gap-3 border-t border-gray-100 max-sm:mt-3 max-sm:pt-3">
                             <span class="text-xs text-slate line-clamp-1">{{ $res->source }}</span>
                             <a href="{{ $href }}" @if ($pdfUrl || $link) target="_blank" rel="noopener" @endif
-                               class="shrink-0 inline-flex items-center gap-1.5 rounded-full bg-navy px-4 py-2 text-xs font-semibold text-white hover:bg-link group-hover:bg-link transition-colors btn-primary">
+                               class="shrink-0 inline-flex items-center gap-1.5 rounded-full px-4 py-2 text-xs font-semibold text-white group-hover:bg-link btn-primary">
                                 {{ $cta }}
                                 <svg class="{{ $pdfUrl ? 'arrow-nudge-down' : 'arrow-nudge' }} h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     @if ($pdfUrl)
@@ -132,7 +132,7 @@
                 <p class="mt-1 text-sm text-slate">Our technical team can share application-specific guides, SOPs and instrument selection advice.</p>
             </div>
             <a href="{{ route('contact') }}"
-               class="shrink-0 inline-flex items-center justify-center gap-2 rounded-full bg-navy px-6 py-2.5 text-sm font-semibold text-white shadow-md hover:bg-link hover:scale-105 transition-all duration-300 btn-primary max-sm:w-full">
+               class="shrink-0 inline-flex items-center justify-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold text-white btn-primary max-sm:w-full">
                 Ask Our Team
             </a>
         </div>

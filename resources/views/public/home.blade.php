@@ -294,9 +294,7 @@
                 </p>
 
                 <a href="/our-story"
-                    class="mt-5 px-7 py-2.5 rounded-full font-semibold shadow-md text-white text-sm
-                           bg-navy hover:bg-link transition-all duration-300 inline-flex items-center gap-2
-                           hover:scale-105 hover:shadow-lg btn-primary">
+                    class="mt-5 px-7 py-2.5 rounded-full font-semibold text-white text-sm inline-flex items-center gap-2 btn-primary">
                     Know More
                     <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3"/>
@@ -316,7 +314,7 @@
             <div class="flex w-full flex-col gap-3 md:w-[42%] md:gap-4">
                 @foreach ($capsules as [$key, $target, $label, $text, $icon])
                     <div data-reveal="right" class="group relative flex items-center rounded-full border border-gray-100 bg-white/90 p-1.5 pr-5 shadow-sm
-                                transition-all duration-300 hover:scale-[1.02] hover:shadow-md min-h-[5.5rem] md:h-[5.5rem]">
+                                transition-[translate,box-shadow] duration-300 hover:-translate-y-0.5 hover:shadow-md min-h-[5.5rem] md:h-[5.5rem]">
                         <div class="mr-3 flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-gradient-to-br from-navy to-link text-white shadow-md
                                     transition-all group-hover:from-link group-hover:to-cyan md:mr-4 md:h-[4.5rem] md:w-[4.5rem]">
                             <svg class="h-5 w-5 md:h-7 md:w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
@@ -389,8 +387,8 @@
                                     @if ($copy) aria-hidden="true" tabindex="-1" @endif
                                     class="shrink-0 flex items-center justify-center h-24 w-36 sm:h-28 sm:w-48 rounded-xl
                                            bg-white border border-gray-100 p-2.5 shadow-sm
-                                           hover:-translate-y-2 hover:scale-110 hover:shadow-2xl hover:border-cyan/50 hover:z-20
-                                           transition-all duration-300 group relative">
+                                           hover:-translate-y-2 hover:shadow-xl hover:border-cyan/50 hover:z-20
+                                           transition-[translate,box-shadow,border-color] duration-300 group relative">
                                     @if ($brand->logo)
                                         <img src="{{ asset('storage/' . $brand->logo) }}" alt="{{ $brand->name }}"
                                             class="img-load max-h-full max-w-full object-contain transition-transform duration-300 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($brand->logo) !!} onload="this.classList.add('is-loaded')">
@@ -477,9 +475,7 @@
             @if ($verticals->count() > 8)
                 <div data-reveal class="mt-8 text-center">
                     <a href="{{ route('verticals.index') }}"
-                        class="inline-flex items-center gap-2 rounded-full bg-navy px-7 py-2.5
-                               text-sm font-semibold text-white shadow-md
-                               hover:bg-link hover:scale-105 transition-all duration-300 btn-primary">
+                        class="inline-flex items-center gap-2 rounded-full px-7 py-2.5 text-sm font-semibold text-white btn-primary">
                         Explore All Verticals
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
@@ -578,9 +574,7 @@
                                 <p class="mt-3 text-sm text-slate leading-relaxed line-clamp-4">{{ $product->short_description }}</p>
                             @endif
                             <a href="{{ route('product.show', $product->slug) }}"
-                               class="mt-5 inline-flex items-center gap-2 rounded-full bg-navy px-6 py-2.5
-                                      text-sm font-semibold text-white shadow-md
-                                      hover:bg-link hover:scale-105 transition-all duration-300 btn-primary">
+                               class="mt-5 inline-flex items-center gap-2 rounded-full px-6 py-2.5 text-sm font-semibold text-white btn-primary">
                                 Explore
                                 <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
@@ -733,9 +727,7 @@
                     </div>
 
                     <a :href="urls[active]"
-                       class="inline-flex items-center gap-2 rounded-full bg-navy px-7 py-2.5
-                              text-sm font-semibold text-white shadow-md
-                              hover:bg-link hover:scale-105 transition-all duration-300 btn-primary">
+                       class="inline-flex items-center gap-2 rounded-full px-7 py-2.5 text-sm font-semibold text-white btn-primary">
                         Read More
                         <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>
@@ -799,9 +791,7 @@
                                 {{ ($item->event_date ?? $item->created_at)->format('F d, Y') }}
                             </p>
                             <a href="{{ route('insights.show', $item->slug) }}"
-                               class="mt-3 inline-flex items-center gap-1.5 rounded-full bg-navy px-5 py-2
-                                      text-xs font-semibold text-white shadow
-                                      hover:bg-link hover:scale-105 transition-all duration-300 btn-primary">
+                               class="mt-3 inline-flex items-center gap-1.5 rounded-full px-5 py-2 text-xs font-semibold text-white btn-primary">
                                 Know More
                                 <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
                                     <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14m-5-5 5 5-5 5"/>

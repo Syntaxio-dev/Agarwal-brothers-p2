@@ -111,7 +111,7 @@ Important values:
 - `SESSION_SECURE_COOKIE=true` and `LIVEWIRE_TEMPORARY_FILE_UPLOAD_DISK=local` (already in the example file). Switch on **free SSL** and **Force HTTPS** in hPanel; `public/.htaccess` also redirects http to https.
 - `APP_URL=https://demo.yourdomain.com` (exact address, with https).
 - `DB_*` = the database details from step 3 (`DB_HOST=localhost` on Hostinger).
-- Mail (`MAIL_*`) = Google Workspace SMTP (`smtp.gmail.com`, port 587) of the office mailbox with a Google **App Password**, because the domain's MX records point to Google (a Hostinger mailbox would clash with them). `CONTACT_INBOX` = the office address that should receive enquiries. Needs the `schedule:run` cron job, otherwise queued mail never leaves.
+- Mail (`MAIL_*`) = a send-only Hostinger mailbox (`web@agarwalbrothers.com`, `smtp.hostinger.com`, port 465). The domain's MX records stay on Google Workspace (office@ is used by all staff), so never let Hostinger change DNS automatically; add its SPF include and DKIM CNAMEs by hand. `CONTACT_INBOX` = the office address that should receive enquiries. Needs the `schedule:run` cron job, otherwise queued mail never leaves. **Hostinger disables exec/proc_open, so scheduled jobs in `routes/console.php` must use `Schedule::call()`, never `Schedule::command()`.**
 
 ## 7. SSH: set the site up (one time)
 

@@ -66,6 +66,12 @@ class Product extends Model
             ->where(fn ($q) => $q->whereNull('seo_description')->orWhere('seo_description', ''));
     }
 
+    /** Industries that use this product (the same list as the client categories). */
+    public function industries()
+    {
+        return $this->belongsToMany(ClientCategory::class, 'client_category_product');
+    }
+
     public function category()
     {
         return $this->belongsTo(Category::class);

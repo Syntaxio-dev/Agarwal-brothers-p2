@@ -274,7 +274,7 @@ class ScrollRevealTest extends TestCase
     {
         $html = $this->get('/')->assertOk()->getContent();
 
-        $this->assertSame(6, substr_count($html, 'nav-link block px-3'));              // six plain links in the mobile drawer
+        $this->assertSame(5, substr_count($html, 'nav-link block px-3'));              // five plain links in the mobile drawer (Verticals and Insights are drop-downs)
         $this->assertStringContainsString('nav-link flex items-center', $html);         // the Insights button in the drawer
         $footer = strstr($html, '<footer');
         $this->assertSame(5, substr_count($footer, 'data-reveal'));                     // four footer columns + the sales strip
