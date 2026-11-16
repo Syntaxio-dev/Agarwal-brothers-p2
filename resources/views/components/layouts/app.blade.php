@@ -282,8 +282,8 @@
                 </a>
                 @foreach ($catList as $cat)
                     <a href="{{ $cat['url'] }}" download="{{ $cat['filename'] }}"
-                       class="btn-primary flex h-11 w-full items-center justify-between gap-2 rounded-lg px-4 py-2.5 font-medium text-white">
-                        <span class="overflow-hidden text-ellipsis whitespace-nowrap text-sm">{{ count($catList) > 1 ? $cat['title'] : 'Product Catalogue' }}</span>
+                       class="btn-primary flex min-h-11 w-full items-center justify-between gap-2 rounded-lg px-4 py-2.5 font-medium text-white">
+                        <span class="min-w-0 text-left text-sm leading-snug">{{ count($catList) > 1 ? $cat['title'] : 'Product Catalogue' }}</span>
                         <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 17V3m0 14-6-6m6 6 6-6M5 21h14"/></svg>
                     </a>
                 @endforeach
@@ -426,7 +426,7 @@
                                             <svg class="mt-0.5 h-5 w-5 shrink-0 text-cyan" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
                                                 <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0-8.4 5.25a1.5 1.5 0 0 1-1.6 0L2.25 6.75"/>
                                             </svg>
-                                            <a href="mailto:{{ $fc['mail_24x7'] }}" class="break-all text-sm text-white/70 transition hover:text-cyan">{{ $fc['mail_24x7'] }}</a>
+                                            <a href="mailto:{{ $fc['mail_24x7'] }}" class="min-w-0 break-words text-sm text-white/70 transition hover:text-cyan">{{ $fc['mail_24x7'] }}</a>
                                         </li>
                                     </ul>
                                 </div>
@@ -439,12 +439,12 @@
                                     <p class="text-sm font-semibold text-white">Enquiries &amp; Sales</p>
                                     <div class="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center">
                                         @foreach ($fPhones as $ph)
-                                            <a href="tel:{{ preg_replace('/\s+/', '', $ph['phone']) }}" class="inline-flex items-center gap-2 break-all rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan hover:text-navy">
-                                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
+                                            <a href="tel:{{ preg_replace('/\s+/', '', $ph['phone']) }}" class="inline-flex items-center gap-2 whitespace-nowrap rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan hover:text-navy">
+                                                <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z"/></svg>
                                                 {{ $ph['phone'] }}
                                             </a>
                                         @endforeach
-                                        <a href="mailto:{{ $fc['mail_24x7'] }}" class="inline-flex items-center gap-2 break-all rounded-full bg-white/10 px-4 py-2 text-sm font-semibold text-white transition hover:bg-cyan hover:text-navy">
+                                        <a href="mailto:{{ $fc['mail_24x7'] }}" class="inline-flex max-w-full items-center gap-2 whitespace-nowrap rounded-full bg-white/10 px-4 py-2 text-sm max-[380px]:px-3 max-[380px]:text-[13px] font-semibold text-white transition hover:bg-cyan hover:text-navy">
                                             <svg class="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0-8.4 5.25a1.5 1.5 0 0 1-1.6 0L2.25 6.75"/></svg>
                                             {{ $fc['mail_24x7'] }}
                                         </a>

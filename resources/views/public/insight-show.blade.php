@@ -117,7 +117,7 @@
                 {{-- Cover (blog / webinar) --}}
                 @if (! $poster && $insight->image)
                     <img src="{{ asset('storage/' . $insight->image) }}" alt="{{ $insight->title }}"
-                         data-reveal="zoom" class="img-load mt-8 aspect-[16/9] w-full rounded-2xl object-cover shadow-md ring-1 ring-black/5" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($insight->image) !!} onload="this.classList.add('is-loaded')">
+                         data-reveal="zoom" class="img-load mt-8 h-auto max-h-[75svh] w-full rounded-2xl bg-ice object-contain shadow-md ring-1 ring-black/5" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($insight->image) !!} onload="this.classList.add('is-loaded')">
                 @endif
 
                 {{-- Webinar details --}}

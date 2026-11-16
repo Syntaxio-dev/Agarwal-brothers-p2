@@ -175,7 +175,7 @@
                         class="edge-top group relative flex flex-col overflow-hidden rounded-2xl bg-white border border-gray-200 shadow-sm {{ $phoneRow ? 'max-sm:flex-row' : '' }}
                                hover:shadow-xl hover:border-cyan/50 hover:-translate-y-1 transition-all duration-300">
 
-                        <div class="relative {{ $meta['ratio'] }} w-full overflow-hidden bg-gradient-to-br from-ice to-cyan/10 flex items-center justify-center {{ $phoneRow ? 'max-sm:aspect-auto max-sm:w-[7.5rem] max-sm:shrink-0' : '' }}">
+                        <div class="relative {{ $meta['ratio'] }} w-full overflow-hidden bg-gradient-to-br from-ice to-cyan/10 flex items-center justify-center {{ $phoneRow ? 'max-sm:my-3 max-sm:ml-3 ' . ($type === 'news' ? 'max-sm:w-24' : 'max-sm:w-[8.5rem]') . ' max-sm:shrink-0 max-sm:self-center max-sm:rounded-lg' : '' }}">
                             @if ($insight->image)
                                 <img src="{{ asset('storage/' . $insight->image) }}" alt="{{ $insight->title }}"
                                     class="img-load h-full w-full {{ $meta['fit'] }} transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($insight->image) !!} onload="this.classList.add('is-loaded')">

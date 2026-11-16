@@ -15,13 +15,13 @@ class ContactDetailsTest extends TestCase
     {
         $this->assertSame('office@agarwalbrothers.com', config('contact.mail_24x7'));
         $this->assertSame('office@agarwalbrothers.com', config('contact.inbox'));
-        // primary = Mukesh Kumar Agarwal, secondary = Rupa Maheshwari
+        // primary = Mukesh Kumar Agarwal, secondary = Naman Agarwal
         $this->assertSame('+91 98290 15024', config('contact.call'));
-        $this->assertSame('+91 93529 35901', config('contact.call_secondary'));
+        $this->assertSame('+91 63781 85962', config('contact.call_secondary'));
         $this->assertSame('Mukesh Kumar Agarwal', config('contact.departments.0.person'));
         $this->assertSame('+91 98290 15024', config('contact.departments.0.phone'));
-        $this->assertSame('Rupa Maheshwari', config('contact.departments.1.person'));
-        $this->assertSame('+91 93529 35901', config('contact.departments.1.phone'));
+        $this->assertSame('Naman Agarwal', config('contact.departments.1.person'));
+        $this->assertSame('+91 63781 85962', config('contact.departments.1.phone'));
         // WhatsApp chats go to the primary number
         $this->assertSame('919829015024', config('contact.whatsapp'));
         $this->assertSame('08ABYPA8087G1Z2', config('contact.gstin'));
@@ -32,14 +32,12 @@ class ContactDetailsTest extends TestCase
     {
         $html = $this->get('/contact-us')->assertOk()->getContent();
 
-        foreach (['office@agarwalbrothers.com', 'Mukesh Kumar Agarwal', '+91 98290 15024', 'Rupa Maheshwari', '+91 93529 35901',
+        foreach (['office@agarwalbrothers.com', 'Mukesh Kumar Agarwal', '+91 98290 15024', 'Naman Agarwal', '+91 63781 85962',
                   'Vishwakarma Industrial Area', '302013', '08ABYPA8087G1Z2'] as $text) {
             $this->assertStringContainsString($text, $html, $text);
         }
-        $body = substr($html, (int) strpos($html, '</head>'));   // the FAQ data in <head> names the sales contact first
-        $this->assertLessThan(strpos($body, 'Rupa Maheshwari'), strpos($body, 'Mukesh Kumar Agarwal'));   // primary first
         $this->assertStringContainsString('href="tel:+919829015024"', $html);
-        $this->assertStringContainsString('href="tel:+919352935901"', $html);
+        $this->assertStringContainsString('href="tel:+916378185962"', $html);
         $this->assertStringContainsString('href="mailto:office@agarwalbrothers.com"', $html);
         foreach (['00000', 'sales@agarwalbrothers.com', 'service@agarwalbrothers.com', 'info@agarwalbrothers.com'] as $old) {
             $this->assertStringNotContainsString($old, $html, $old);
@@ -52,10 +50,10 @@ class ContactDetailsTest extends TestCase
         $footer = substr($html, (int) strpos($html, '<footer'));
 
         $this->assertStringContainsString('+91 98290 15024', $footer);
-        $this->assertStringContainsString('+91 93529 35901', $footer);
-        $this->assertLessThan(strpos($footer, '+91 93529 35901'), strpos($footer, '+91 98290 15024'));
+        $this->assertStringContainsString('+91 63781 85962', $footer);
+        $this->assertLessThan(strpos($footer, '+91 63781 85962'), strpos($footer, '+91 98290 15024'));
         $this->assertStringContainsString('Mukesh Kumar Agarwal', $footer);
-        $this->assertStringContainsString('Rupa Maheshwari', $footer);
+        $this->assertStringContainsString('Naman Agarwal', $footer);
         $this->assertStringContainsString('office@agarwalbrothers.com', $footer);
         $this->assertStringContainsString('GSTIN: 08ABYPA8087G1Z2', $footer);
         $this->assertStringContainsString('Vishwakarma Industrial Area', $footer);
@@ -67,7 +65,7 @@ class ContactDetailsTest extends TestCase
 
         $this->assertStringContainsString('https://wa.me/919829015024?text=', $html);          // floating button
         $this->assertStringContainsString('href="https://wa.me/919829015024"', $html);          // footer icon
-        $this->assertStringNotContainsString('wa.me/919352935901', $html);
+        $this->assertStringNotContainsString('wa.me/916378185962', $html);
 
         // a number saved in Site Settings still wins (the owner can change it in the admin)
         SiteSetting::create(['whatsapp_number' => '911234567890']);
@@ -88,16 +86,17 @@ class ContactDetailsTest extends TestCase
     {
         $phones = array_column(HelpLinks::contacts(), 'phone');
 
-        $this->assertSame(['+91 98290 15024', '+91 93529 35901'], $phones);
+        $this->assertSame(['+91 98290 15024', '+91 63781 85962'], $phones);
     }
 
-    public function test_the_contact_page_has_two_people_cards_no_branch_and_the_office_timings_beside_the_map(): void
+    public function test_the_contact_page_has_one_sales_card_no_branch_and_the_office_timings_beside_the_map(): void
     {
         $html = $this->get('/contact-us')->assertOk()->getContent();
 
-        // two people cards (the head office and the timings now sit beside the map)
-        preg_match_all('/<h3 class="mt-4 text-base font-bold text-navy max-sm:mt-0">([^<]+)<\/h3>/', $html, $m);
-        $this->assertSame(['Founder', 'Enquiries & Sales'], array_map('html_entity_decode', $m[1]));
+        // ONE wide sales & enquiries card for Naman Agarwal (the head office and the timings sit beside the map)
+        $this->assertSame(1, substr_count($html, 'Sales &amp; enquiries</p>'));
+        $this->assertStringContainsString('<h3 class="mt-1 text-xl font-bold text-navy sm:text-2xl">Naman Agarwal</h3>', $html);
+        $this->assertStringContainsString('Managing Director', $html);
 
         // Jodhpur is only a pin on the map (no branch card, no address, no 'Branch Office' label)
         $this->assertSame(2, substr_count($html, 'class="map-pin absolute"'));
@@ -113,11 +112,6 @@ class ContactDetailsTest extends TestCase
         $this->assertStringContainsString('Closed on festive holidays', $html);
         $this->assertStringNotContainsString('09:30 am', $html);
         $this->assertStringNotContainsString('Holiday</p>', $html);
-
-        // three across on desktop, two on tablets, one on phones
-        $this->assertStringContainsString('lg:w-[calc(33.333%-0.84rem)]', $html);
-        $this->assertStringContainsString('lg:px-3 xl:px-6', $html);                // a bit tighter between 1024 and 1279px so the email fits
-        $this->assertStringContainsString('sm:w-[calc(50%-0.625rem)]', $html);
     }
 
     public function test_the_hours_in_emails_and_on_error_pages_use_the_new_office_timings(): void

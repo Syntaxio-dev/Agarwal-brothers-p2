@@ -129,7 +129,7 @@ class ScrollRevealTest extends TestCase
         $this->assertStringContainsString('class="crumbs"', $html);
         $this->assertSame(2, substr_count($html, 'class="map-pin'));              // the head office pin + the Jodhpur pin drop onto the map
         $this->assertStringContainsString('href="#contact-form"', $html);         // header button jumps to the form
-        $this->assertStringContainsString('edge-top', $html);
+        $this->assertStringContainsString('Sales &amp; enquiries', $html);        // one wide sales card (Naman Agarwal)
         $this->assertStringContainsString('pop-icon', $html);
 
         $css = file_get_contents(resource_path('css/app.css'));

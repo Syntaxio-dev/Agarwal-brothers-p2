@@ -75,7 +75,7 @@ class CataloguesTest extends TestCase
             $this->assertStringContainsString($title, $home);
         }
         // phone menu: one button each, named after the catalogue
-        $this->assertSame(2, preg_match_all('#class="btn-primary flex h-11 w-full items-center justify-between#', $home));
+        $this->assertSame(2, preg_match_all('#class="btn-primary flex min-h-11 w-full items-center justify-between#', $home));
         $this->assertStringNotContainsString('Product Catalogue', $home);
     }
 

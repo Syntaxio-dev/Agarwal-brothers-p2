@@ -52,9 +52,13 @@
     <div class="relative w-[98%] mx-auto px-4 md:px-10 lg:px-20 py-6 sm:py-10">
 
         {{-- ===== 1. Banner ===== --}}
-        <div class="relative flex h-[250px] items-end overflow-hidden rounded-3xl shadow-lg ring-1 ring-black/5 sm:h-[430px]">
+        {{-- The box keeps the photo's own 3:2 shape until it would be taller than about two thirds of the screen; after that
+             the whole photo is shown in the middle over a blurred copy of itself, so it is never cut at the top or bottom. --}}
+        <div class="relative flex aspect-[3/2] max-h-[min(70svh,600px)] w-full items-end overflow-hidden rounded-3xl bg-navy shadow-lg ring-1 ring-black/5">
+            <img src="{{ $banner ?: asset('building-image.webp') }}" alt="" aria-hidden="true"
+                 class="absolute inset-0 h-full w-full scale-110 object-cover opacity-70 blur-xl" decoding="async">
             <img src="{{ $banner ?: asset('building-image.webp') }}" alt="Agarwal Brothers office, Jaipur"
-                 class="img-load story-hero-img absolute inset-0 h-full w-full object-cover object-[50%_22%]" decoding="async" onload="this.classList.add('is-loaded')">
+                 class="img-load story-hero-img absolute inset-0 h-full w-full object-contain" decoding="async" onload="this.classList.add('is-loaded')">
             <div class="absolute inset-0 bg-gradient-to-t from-navy/90 via-navy/25 to-transparent"></div>
             <div class="relative px-6 pb-6 text-left sm:px-10 sm:pb-9">
                 <h1 class="story-hero-title text-3xl sm:text-5xl font-bold text-white leading-tight">Our Story</h1>
@@ -189,7 +193,7 @@
                 </div>
             </div>
 
-            <div data-reveal="right" class="relative aspect-[16/9] sm:aspect-[4/3] w-full overflow-hidden rounded-3xl shadow-xl ring-4 ring-white bg-gradient-to-br from-navy to-link flex items-center justify-center">
+            <div data-reveal="right" class="relative aspect-[4/3] w-full overflow-hidden rounded-3xl shadow-xl ring-4 ring-white bg-gradient-to-br from-navy to-link flex items-center justify-center">
                 @if ($img('story_mission_image'))
                     <img src="{{ $img('story_mission_image') }}" alt="" class="img-load absolute inset-0 h-full w-full object-cover" loading="lazy" decoding="async" onload="this.classList.add('is-loaded')">
                 @else
@@ -199,7 +203,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" d="M9.75 3.104v5.714a2.25 2.25 0 0 1-.659 1.591L5 14.5M9.75 3.104c-.251.023-.501.05-.75.082m.75-.082a24.301 24.301 0 0 1 4.5 0m0 0v5.714c0 .597.237 1.17.659 1.591L19.8 15.3M14.25 3.104c.251.023.501.05.75.082M19.8 15.3l-1.57.393A9.065 9.065 0 0 1 12 15a9.065 9.065 0 0 0-6.23.693L5 14.5m14.8.8 1.402 1.402c1.232 1.232.65 3.318-1.067 3.611A48.309 48.309 0 0 1 12 21c-2.773 0-5.491-.235-8.135-.687-1.718-.293-2.3-2.379-1.067-3.61L5 14.5"/>
                         </svg>
                         <p class="mt-3 text-sm font-semibold uppercase tracking-[0.25em] text-cyan">Serving science since</p>
-                        <p class="text-5xl font-extrabold">{{ $founded }}</p>
+                        <p class="text-4xl font-extrabold sm:text-5xl">{{ $founded }}</p>
                     </div>
                 @endif
             </div>

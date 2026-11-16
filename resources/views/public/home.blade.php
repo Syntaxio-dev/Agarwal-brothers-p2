@@ -65,9 +65,11 @@
         reset() { clearInterval(this.timer); this.start() },
         start() { if (this.total > 1) this.timer = setInterval(() => this.next(), 6000) }
     }" x-init="start()"
-        class="relative w-[98%] max-w-[98vw] mx-auto mt-2 rounded-xl overflow-hidden">
+        class="relative w-[98%] max-w-[98vw] 2xl:w-[min(98%,calc((100svh-6rem)*16/9))] mx-auto mt-2 rounded-xl overflow-hidden">
 
-        <div class="relative w-full max-sm:aspect-[4/3] sm:aspect-video 2xl:h-[600px] rounded-xl overflow-hidden bg-navy">
+        {{-- The box keeps the slide's own 16:9 shape at every width, so pictures and videos are never cut at the top and bottom.
+             On very wide screens (2xl) the carousel gets narrower instead of flatter, so it still fits on one screen. --}}
+        <div class="relative w-full max-sm:aspect-[4/3] sm:aspect-video rounded-xl overflow-hidden bg-navy">
 
             @forelse ($slides as $i => $slide)
                 @php $slideLink = $slide->linkTarget(); $slideProd = $slide->resolvedProduct(); @endphp

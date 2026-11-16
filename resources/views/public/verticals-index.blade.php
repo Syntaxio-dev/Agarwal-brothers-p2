@@ -73,7 +73,8 @@
                            hover:shadow-xl hover:border-cyan/40 hover:-translate-y-1
                            transition-all duration-300">
 
-                    <div class="relative h-36 overflow-hidden bg-gradient-to-br from-ice to-cyan/10 max-sm:h-auto max-sm:w-24 max-sm:shrink-0">
+                    {{-- The picture keeps the 3:2 shape the admin asks for, so it is never cut, whatever the card width --}}
+                    <div class="relative aspect-[3/2] overflow-hidden bg-gradient-to-br from-ice to-cyan/10 max-sm:my-3 max-sm:ml-3 max-sm:w-28 max-sm:shrink-0 max-sm:self-center max-sm:rounded-lg">
                         @if ($vertical->image)
                             <img src="{{ asset('storage/' . $vertical->image) }}" alt="{{ $vertical->name }}"
                                 class="img-load h-full w-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($vertical->image) !!} onload="this.classList.add('is-loaded')">

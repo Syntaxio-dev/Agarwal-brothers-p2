@@ -81,9 +81,9 @@
     <main class="mx-auto max-w-4xl px-4 py-8 sm:px-6 print:max-w-none print:p-0">
         <article class="rounded-3xl border border-gray-200 bg-white p-6 shadow-sm sm:p-10 print:rounded-none print:border-0 print:p-0 print:shadow-none">
 
-            <header class="flex items-center justify-between gap-4 border-b-2 border-cyan pb-5">
-                <img src="{{ asset('images/new-logo.png') }}" alt="Agarwal Brothers" class="h-11 w-auto object-contain" {!! \App\Support\Img::publicAttrs('images/new-logo.png') !!}>
-                <p class="text-right font-mono text-[11px] font-medium uppercase leading-relaxed tracking-[0.2em] text-link">
+            <header class="flex flex-wrap items-center justify-between gap-x-4 gap-y-2 border-b-2 border-cyan pb-5">
+                <img src="{{ asset('images/new-logo.png') }}" alt="Agarwal Brothers" class="h-9 w-auto max-w-full object-contain sm:h-11" {!! \App\Support\Img::publicAttrs('images/new-logo.png') !!}>
+                <p class="text-right font-mono text-[11px] font-medium uppercase leading-relaxed tracking-[0.12em] text-link sm:tracking-[0.2em]">
                     Specification sheet<br><span class="text-slate">{{ now()->format('d M Y') }}</span>
                 </p>
             </header>
