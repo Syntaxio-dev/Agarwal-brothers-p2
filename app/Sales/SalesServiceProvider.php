@@ -61,11 +61,12 @@ class SalesServiceProvider extends ServiceProvider
         Gate::policy(SalesEnquiry::class, EnquiryPolicy::class);
         Gate::policy(SalesDailyReport::class, ReportPolicy::class);
         Gate::policy(SalesProduct::class, ProductPolicy::class);
+        Gate::policy(\App\Sales\Models\SalesBrand::class, ProductPolicy::class); // the brand guide belongs to the product guide's managers
         Gate::policy(SalesProductRequest::class, ProductRequestPolicy::class);
         Gate::policy(SalesScript::class, ScriptPolicy::class);
 
         if ($this->app->runningInConsole()) {
-            $this->commands([\App\Sales\Console\ImportProducts::class]);
+            $this->commands([\App\Sales\Console\ImportProducts::class, \App\Sales\Console\ImportBrands::class]);
         }
 
         // A guest of the phone API is told "401 sign in" (JSON), never redirected to a login page.

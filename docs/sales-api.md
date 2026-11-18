@@ -129,3 +129,15 @@ A lead is an enquiry. Three optional fields on the `enquiries` record carry what
 | `last_followup_at` | ISO time or null | When the rep last logged a follow-up. |
 
 Push: a key that is **missing** keeps what is stored (a phone older than v1.15 never wipes these); a key sent as `null` clears it. Pull: always returned. The conflict rule is unchanged (the newest `updated_at` wins for the whole record), and the rep desk (`/rep`) writes through `RepEnquiryService::leadFollowup` with a strictly newer version, so the phone takes it on its next pull.
+
+## Brand guide (18 Nov 2026, app v1.18)
+
+`GET /products` also returns `brands`: the active brands of the brand guide (admin Sales team > Brand guide), ordered by `sort` then `name`:
+
+```json
+{ "uuid": "…", "name": "Ika", "origin": "Germany · IKA-Werke", "channel": "Bishop", "about": "…",
+  "known_for": ["…"], "known_lines": ["…"], "best_for": ["…"], "pitch": ["…"],
+  "objections": [{ "if": "…", "then": "…" }], "watch_out": ["…"], "competitors": [{ "name": "…", "note": "…" }], "sort": 1 }
+```
+
+Limits: name 100, origin / channel 160, about 1000, list lines 300 (known_for, best_for, pitch max 6; known_lines max 8; watch_out max 4), objections max 6 (if 200, then 400), competitors max 8 (name 100, note 400). Empty lists are sent as `[]`, empty texts as `""`. The `version` stamp now covers products AND brands (prefix `v3`), so any brand edit makes the phones fetch again. Which products carry a brand is NOT sent: the phone works it out from the products' `premium_brands / economy_brands / lite_brands` (the brand `name` must be written the same way). Apps older than 1.18 ignore the key. Loaded from `database/data/sales-brands.json` with `php artisan sales:import-brands [--update] [--dry-run]` (never overwrites a manager's edit without `--update`).

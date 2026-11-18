@@ -1,0 +1,825 @@
+[
+ {
+  "name": "Sartorius",
+  "origin": "Germany · Sartorius AG (Göttingen), since 1870",
+  "channel": "Direct",
+  "about": "German maker of lab balances, liquid handling, lab water and filtration, and one of the big names in bioprocess (cell culture, bioreactors, single-use systems). In our guide it is the premium choice for weighing and for biopharma equipment.",
+  "known_for": ["Precision weighing: analytical, micro and ultra-micro balances", "Built-in GLP / 21 CFR Part 11 features for pharma audits", "Bioprocess and cell culture equipment (bioreactors, single-use mixing)", "Lab water (arium) and filtration (Minisart, sterility testing)"],
+  "known_lines": ["Cubis II (high-end balances, micro and ultra-micro)", "Quintix and Secura (analytical and precision balances)", "Entris II (everyday balances)", "MA moisture analyzers", "arium lab water systems", "Picus / Tacta pipettes", "Sterisart sterility testing pump", "Incucyte live-cell imaging"],
+  "best_for": ["Pharma QC and R&D labs that face audits (USFDA, WHO-GMP)", "Biotech, vaccines and biosimilars", "Calibration labs and mass comparison", "Universities and research institutes with funded projects"],
+  "pitch": ["Audit-ready: user management, audit trail and electronic signatures on the higher models", "Automatic internal calibration (isoCAL) keeps results right when the room temperature changes", "One brand for balance, pipette, water and filtration: one service partner", "Resale value and life: a Sartorius balance often runs 10+ years"],
+  "objections": [
+   {"if": "It is too expensive", "then": "Compare cost over 8-10 years: fewer breakdowns, no failed audits and no repeat tests. For a basic need offer Entris II or a lite brand from our guide instead of losing the client."},
+   {"if": "Mettler Toledo is the market leader", "then": "Both are top tier. Sartorius gives the same audit features, strong internal calibration and usually a better price for the same class. Ask for a side-by-side demo."},
+   {"if": "We only need a simple balance", "then": "Then do not oversell: offer Entris II or the economy brand of the guide, and keep Sartorius for the analytical / micro balance."}
+  ],
+  "watch_out": ["Spares and service cost more than Indian brands", "High-end models need a stable bench and room: tell the client before installation"],
+  "competitors": [
+   {"name": "Mettler Toledo", "note": "The other premium name in weighing; usually priced above Sartorius."},
+   {"name": "Shimadzu", "note": "Japanese, strong in analytical balances, often cheaper; fewer pharma software features."},
+   {"name": "Aczet", "note": "Indian, economy price; fine for routine weighing, not for strict audits."},
+   {"name": "Eppendorf / Thermo Fisher", "note": "Competitors for pipettes and bioprocess."}
+  ]
+ },
+ {
+  "name": "Ika",
+  "origin": "Germany · IKA-Werke (Staufen), since 1910",
+  "channel": "Bishop",
+  "about": "German specialist in mixing, stirring, dispersing, evaporating and heating for the lab. In our guide it is the premium choice for most stirrers, shakers, homogenizers, rotary evaporators and the bomb calorimeter.",
+  "known_for": ["Magnetic and overhead stirrers that run for years", "ULTRA-TURRAX dispersers / homogenizers", "Rotary evaporators", "Calorimeters for coal, fuel and food energy"],
+  "known_lines": ["RCT / C-MAG magnetic hotplate stirrers", "EUROSTAR overhead stirrers", "ULTRA-TURRAX T 18 / T 25 dispersers", "RV 10 / RV 8 rotary evaporators", "KS / HS shakers and Vortex Genius / MS 3", "C 6000 / C 200 calorimeters"],
+  "best_for": ["Chemistry and pharma R&D labs", "Universities and research institutes", "Coal, cement and power plants (calorimeters)", "Food and cosmetics labs (homogenizers)"],
+  "pitch": ["German build: motors and drives that last much longer than budget stirrers", "Safety circuit on hotplates (a separate cut-out stops overheating)", "Exact speed and temperature control, so results repeat", "Wide range: one brand for the whole bench (stir, mix, disperse, evaporate)"],
+  "objections": [
+   {"if": "A Chinese stirrer costs one third", "then": "Ask how long their last cheap stirrer ran. An IKA stirrer usually outlives two or three budget ones and keeps the set temperature; offer DLAB from our guide if the budget is truly small."},
+   {"if": "We need a rotary evaporator from Buchi", "then": "Buchi is excellent; IKA RV 10 gives the same core features (lift, digital control, vacuum options) and is usually priced lower."}
+  ],
+  "watch_out": ["Premium price; accessories (probes, dispersing tools) are extra", "Bought through a distributor: confirm the delivery time before promising"],
+  "competitors": [
+   {"name": "Heidolph", "note": "German, strong in rotary evaporators and stirrers; similar price."},
+   {"name": "Buchi", "note": "Swiss, the rotary evaporator leader; usually costlier."},
+   {"name": "Velp", "note": "Italian, also in our guide; a little cheaper for stirrers."},
+   {"name": "DLAB", "note": "Chinese economy option in our guide."}
+  ]
+ },
+ {
+  "name": "Retsch",
+  "origin": "Germany · Retsch GmbH, part of Verder Scientific",
+  "channel": "",
+  "about": "The world reference for sample preparation: crushing, grinding, sieving and dividing samples before analysis. In our guide it is the premium choice for every mill, crusher and sieve shaker.",
+  "known_for": ["Mills for every sample: hard, soft, fibrous, sticky, cryogenic", "Sieve shakers for particle size", "Reproducible sample prep that matches lab standards"],
+  "known_lines": ["PM 100 / PM 200 planetary ball mills", "MM 400 mixer mill and CryoMill", "ZM 200 rotor mill and SM 300 cutting mill", "BB 200 jaw crushers", "GM 200 knife mill (food)", "AS 200 sieve shakers and AS 300 air jet"],
+  "best_for": ["Cement, mining and geology labs", "Pharma and chemical R&D (fine grinding)", "Food, feed and agriculture labs", "Materials and battery research"],
+  "pitch": ["The right mill for each sample: ask about the sample and we pick the mill, no guessing", "Grinding parts in many materials, so the sample is not contaminated", "Ready methods and application support from Retsch", "Robust machines: built for daily use in industrial labs"],
+  "objections": [
+   {"if": "A local grinder does the job", "then": "A local grinder heats and contaminates the sample and gives a different particle size each time; the analysis after it is then wrong. Retsch gives the same result every run."},
+   {"if": "Too costly for our lab", "then": "Pick the smallest mill that fits the sample (for example a mortar grinder or MM 400) instead of a big machine."}
+  ],
+  "watch_out": ["Grinding jars and balls are consumables and cost extra", "The wrong mill for a sample gives bad results: always ask the sample type, quantity and final size"],
+  "competitors": [
+   {"name": "Fritsch", "note": "German, the main rival in mills and sieve shakers."},
+   {"name": "Local Indian grinders", "note": "Cheap but no repeatability or contamination control."}
+  ]
+ },
+ {
+  "name": "Carbolite Gero",
+  "origin": "UK / Germany · Carbolite Gero, part of Verder Scientific",
+  "channel": "",
+  "about": "Maker of laboratory and industrial furnaces and ovens from 30 °C up to 3000 °C. In our guide it is the premium choice for every furnace and most ovens.",
+  "known_for": ["Chamber, tube and vacuum furnaces", "Ashing furnaces with fume handling", "Very even temperature inside the chamber", "Custom builds for special processes"],
+  "known_lines": ["CWF / ELF chamber furnaces", "AAF ashing furnaces", "TF / CTF tube furnaces (split, rotary, gradient)", "PF / LHT ovens", "Vacuum and high-temperature furnaces (Gero line)"],
+  "best_for": ["Cement, ceramics, glass and metallurgy", "Pharma and food (ash content)", "Materials and battery research", "Universities and research institutes"],
+  "pitch": ["Even heat across the chamber, so every sample sees the same temperature", "Long-life heating elements and insulation", "Programmable controllers with ramps and dwell steps", "Range up to very high temperatures and vacuum / gas atmospheres"],
+  "objections": [
+   {"if": "A local muffle furnace is much cheaper", "then": "Local furnaces drift and their elements fail early; the ash or test result then changes. Carbolite keeps temperature uniform and lasts much longer. For a small budget, check the lite brand of the guide."},
+   {"if": "Delivery takes too long", "then": "Standard models come faster; custom furnaces take time. Confirm the model and ask for the delivery date before promising."}
+  ],
+  "watch_out": ["Imported: delivery and spares take time", "High-temperature models need proper power supply and space"],
+  "competitors": [
+   {"name": "Nabertherm", "note": "German, the main rival in furnaces."},
+   {"name": "Thermo Fisher (Thermolyne)", "note": "US brand of muffle furnaces."},
+   {"name": "Local Indian furnaces", "note": "Cheaper, but lower uniformity and life."}
+  ]
+ },
+ {
+  "name": "Anton Paar",
+  "origin": "Austria · Anton Paar GmbH (Graz)",
+  "channel": "Bishop",
+  "about": "Austrian maker of high-precision measuring instruments: density, viscosity, rheology, refractive index and optical rotation. In our guide it is the premium choice for density meters, refractometers, polarimeters and viscometers.",
+  "known_for": ["Digital density meters (oscillating U-tube)", "Rheometers and viscometers", "Refractometers and polarimeters with pharma compliance", "Very high accuracy with automatic temperature control"],
+  "known_lines": ["DMA 4500 M / DMA 1001 density meters and DMA 35 portable", "Abbemat refractometers", "MCP polarimeters", "ViscoQC viscometers and Lovis microviscometer", "MCR rheometers"],
+  "best_for": ["Pharma QC (USP / EP methods)", "Beverages, sugar and distilleries", "Oil, lubricants and petroleum", "Paints, coatings and cosmetics (rheology)"],
+  "pitch": ["Lab-grade accuracy with built-in temperature control (no water bath needed)", "Several instruments link into one measurement (density + refractive index + more)", "Pharma software features for audits", "Known worldwide as a reference instrument"],
+  "objections": [
+   {"if": "We use a manual hydrometer / Abbe refractometer", "then": "Manual readings depend on the person and the room temperature. Anton Paar gives a digital, recorded result in seconds that stands in an audit."},
+   {"if": "It is very expensive", "then": "Offer the right class: DMA 35 portable or the economy brand of the guide for routine checks; keep the top models for labs that need the accuracy."}
+  ],
+  "watch_out": ["Premium price and costly service visits", "Bought through a distributor"],
+  "competitors": [
+   {"name": "Mettler Toledo", "note": "Density and refractometer range, similar tier."},
+   {"name": "Rudolph Research", "note": "US, polarimeters and refractometers."},
+   {"name": "Atago", "note": "Japanese, in our guide; cheaper refractometers and polarimeters."},
+   {"name": "Brookfield (AMETEK)", "note": "The best-known viscometer rival."}
+  ]
+ },
+ {
+  "name": "Horiba",
+  "origin": "Japan · HORIBA Ltd (Kyoto)",
+  "channel": "Essar Lab",
+  "about": "Japanese maker of measuring instruments for water quality, environment, particles, spectroscopy and more. In our guide it is the premium choice for pH, ion, conductivity, DO and multi-parameter meters, and also appears in XRF, ICP, fluorescence and elemental analysis.",
+  "known_for": ["LAQUA water quality meters (pH, ion, conductivity, DO)", "LAQUAtwin pocket meters that need only a drop of sample", "Field water quality probes", "Spectroscopy and elemental analysis"],
+  "known_lines": ["LAQUA benchtop and handheld meters", "LAQUAtwin pocket meters", "U-50 multi-parameter water checker", "Fluorolog / Duetta fluorescence", "XRF and ICP-OES instruments", "EMIA carbon / sulfur analyzers"],
+  "best_for": ["Water treatment, ETP / STP and pollution control labs", "Pharma and chemical QC", "Universities and research", "Food and agriculture (LAQUAtwin)"],
+  "pitch": ["Japanese sensor quality: stable readings and long electrode life", "LAQUAtwin: calibrate and test with a single drop, in the field", "Data logging and PC link on the benchtop models", "Broad range: one brand from a pocket meter to research instruments"],
+  "objections": [
+   {"if": "Hanna or Eutech is cheaper", "then": "They are good economy options (also in our guide). Horiba is for labs that want the most stable reading and longer electrode life; offer both and let the client choose."},
+   {"if": "Electrodes are costly", "then": "With proper storage a Horiba electrode lasts longer; teach the client to keep it wet in storage solution."}
+  ],
+  "watch_out": ["Electrodes are consumables: tell the client the replacement cost up front", "Bought through a distributor (Essar Lab)"],
+  "competitors": [
+   {"name": "Mettler Toledo", "note": "Premium pH and conductivity meters."},
+   {"name": "Thermo Fisher Orion", "note": "Premium ion and pH meters."},
+   {"name": "Hanna / Eutech", "note": "Economy options in our guide."}
+  ]
+ },
+ {
+  "name": "Esco Lifesciences",
+  "origin": "Singapore · Esco Lifesciences Group",
+  "channel": "Direct",
+  "about": "Singapore-based maker of lab containment and cold storage: biosafety cabinets, laminar flow, fume hoods, CO2 incubators, ultra-low freezers, pass boxes and isolators. In our guide it is premium for cold storage and CO2 incubators, and economy for cabinets and hoods.",
+  "known_for": ["Biosafety cabinets and laminar flow cabinets", "CO2 incubators for cell culture", "Ultra-low (-86 °C) freezers", "Fume hoods, pass boxes and pharma isolators"],
+  "known_lines": ["Labculture biosafety cabinets", "Airstream laminar flow cabinets", "CelCulture CO2 incubators", "Lexicon ULT freezers", "Frontier fume hoods", "Isoclean / Streamline isolators"],
+  "best_for": ["Microbiology, molecular and diagnostic labs", "Biotech, vaccines and pharma QC", "IVF and cell culture labs", "Hospitals and medical colleges"],
+  "pitch": ["International certifications (EN / NSF) for cabinets: safe for the user and the sample", "One brand for the whole clean area: cabinet, incubator, freezer, pass box", "Good value against US / European brands", "Wide range of sizes"],
+  "objections": [
+   {"if": "Thermo Fisher is the bigger name", "then": "Thermo is premium; Esco gives the same certifications and features at a lower price, and is in many Indian labs."},
+   {"if": "A local laminar flow is cheaper", "then": "A local cabinet often has no certified HEPA test or airflow alarm; it may not pass an audit or protect the operator. Esco is certified."}
+  ],
+  "watch_out": ["Filters (HEPA) need periodic testing and replacement", "Large units need site checks (door width, power)"],
+  "competitors": [
+   {"name": "Thermo Fisher", "note": "Premium for incubators and ULT freezers."},
+   {"name": "Kewaunee", "note": "In our guide, premium for hoods and cabinets."},
+   {"name": "Tempo / local makers", "note": "Lite options in our guide for cabinets and hoods."},
+   {"name": "Haier Biomedical / PHC (Panasonic)", "note": "Strong in freezers."}
+  ]
+ },
+ {
+  "name": "Labindia",
+  "origin": "India · Labindia Analytical Instruments (Thane)",
+  "channel": "Direct",
+  "about": "One of the largest Indian makers and distributors of analytical instruments. In our guide it is the economy choice for titrators, refractometers, polarimeters, spectroscopy (UV-Vis, FTIR, AAS, ICP, XRF), bomb calorimeter and the pharma testers.",
+  "known_for": ["Pharma testing: dissolution, disintegration, hardness, friability, tap density", "Titrators (potentiometric and Karl Fischer)", "UV-Vis and atomic absorption spectroscopy", "Service network across India"],
+  "known_lines": ["DS 8000 / DS 14000 dissolution testers", "DT 1000 disintegration and TH 1050 hardness testers", "FT 1020 friability and TD 1025 tap density", "UV-VIS 2000 / 2002 spectrophotometers", "AA 8000 atomic absorption", "Labindia titrators"],
+  "best_for": ["Pharma QC (tablets and API)", "Chemical and industrial QC labs", "Universities and pharmacy colleges", "Labs that want local service"],
+  "pitch": ["Indian make with service engineers across India: quick visits, local spares", "Pharma testers made to USP / IP methods with qualification documents", "Much lower price than imported brands", "One supplier for many lab instruments"],
+  "objections": [
+   {"if": "We want an imported brand", "then": "For audits what matters is method compliance and documents (IQ / OQ / PQ); Labindia gives both, with faster service. Offer the premium brand of the guide side by side."},
+   {"if": "Indian brands break down", "then": "Labindia has a long installed base in Indian pharma; and the service is local, so downtime is short."}
+  ],
+  "watch_out": ["For research-grade spectroscopy, a premium brand may be expected", "Confirm which models are made by Labindia and which they distribute"],
+  "competitors": [
+   {"name": "Electrolab", "note": "Indian, strong in pharma testers (dissolution)."},
+   {"name": "Mettler Toledo / Metrohm", "note": "Premium titrators."},
+   {"name": "Shimadzu", "note": "Japanese, UV-Vis and AAS."},
+   {"name": "Labtronics", "note": "Lite option in our guide."}
+  ]
+ },
+ {
+  "name": "Labtronics",
+  "origin": "India · Labtronics (Panchkula, Haryana)",
+  "channel": "Direct",
+  "about": "Indian maker of budget analytical and lab instruments. In our guide it is the lite (small budget) choice for titrators, refractometers, polarimeters, flame photometers, spectrophotometers, colorimeters, ELISA readers and more.",
+  "known_for": ["Low-cost spectrophotometers and colorimeters", "Flame photometers and turbidity meters", "Polarimeters, refractometers and melting point apparatus", "Many instruments at an entry price"],
+  "known_lines": ["UV-Vis and visible spectrophotometers", "Flame photometers", "Digital polarimeters and refractometers", "Nephelo-turbidity meters", "Melting point apparatus", "Karl Fischer and potentiometric titrators"],
+  "best_for": ["Schools, colleges and university teaching labs", "Small QC labs with a tight budget", "Labs that need a basic instrument quickly"],
+  "pitch": ["The lowest price for a working instrument", "Made in India: spares and repair are easy", "Good for teaching and routine checks"],
+  "objections": [
+   {"if": "Will it pass an audit?", "then": "For strict pharma audits offer the economy or premium brand of the guide. Labtronics fits teaching, routine and non-regulated work."}
+  ],
+  "watch_out": ["Not for strict pharma audits or research-grade accuracy", "Check that the model has the features the client asked for (software, printer, GLP)"],
+  "competitors": [
+   {"name": "Systronics / Elico", "note": "Other Indian budget instrument makers."},
+   {"name": "Labindia", "note": "Economy option in our guide, one step up."}
+  ]
+ },
+ {
+  "name": "DLAB",
+  "origin": "China · DLAB Scientific (Beijing), since 2002, with an India office",
+  "channel": "Direct",
+  "about": "Chinese maker of general lab equipment with good quality for the price. In our guide it is the economy choice for pipettes, stirrers, shakers, homogenizers, centrifuges, PCR, electrophoresis and more.",
+  "known_for": ["Pipettes and liquid handling at a low price", "Hotplate stirrers, vortex mixers and shakers", "Micro and mini centrifuges", "Rotary evaporators and dry baths"],
+  "known_lines": ["dPette / MicroPette pipettes and bottle-top dispensers", "MS-H-Pro hotplate stirrers", "MX-S vortex mixers", "D3024 / DM series centrifuges", "SK orbital shakers", "RE100-Pro rotary evaporator"],
+  "best_for": ["Molecular biology and microbiology labs", "Universities and research institutes", "Diagnostic labs", "Labs that need many units on a budget"],
+  "pitch": ["CE certified, with ISO 9001 / 13485 manufacturing", "Modern design and digital displays at an economy price", "Wide range: equip a whole bench from one brand", "India office for support"],
+  "objections": [
+   {"if": "Chinese products do not last", "then": "DLAB is an established brand sold worldwide with CE marks and warranty; it is not a no-name import. For heavy daily use, show the premium IKA option too."}
+  ],
+  "watch_out": ["For very heavy, 24/7 use a premium brand lasts longer", "Some clients (government tenders) may restrict Chinese origin: check the tender terms"],
+  "competitors": [
+   {"name": "IKA / Velp", "note": "Premium options in our guide."},
+   {"name": "Remi / Supertek", "note": "Indian lite options in our guide."},
+   {"name": "Eppendorf", "note": "Premium for pipettes and centrifuges."}
+  ]
+ },
+ {
+  "name": "Tempo",
+  "origin": "India · Tempo Instruments Pvt Ltd (Mumbai), since 2008",
+  "channel": "Direct",
+  "about": "Indian maker of stability chambers, incubators, ovens, cold storage and clean-air equipment. In our guide it is the economy choice for most chambers, incubators and ovens, and lite for cabinets and hoods.",
+  "known_for": ["Stability and photostability chambers for pharma", "BOD and bacteriological incubators", "Lab ovens and autoclaves", "Walk-in and custom chambers"],
+  "known_lines": ["Stability chambers (ICH conditions)", "Photostability chambers", "BOD incubators", "Bacteriological incubators", "Hot air and tray drying ovens"],
+  "best_for": ["Pharma QC and stability studies", "Food and microbiology labs", "Colleges and research labs"],
+  "pitch": ["Made in India: chambers to ICH conditions at a fair price", "Local service and quick spares", "Custom sizes possible"],
+  "objections": [
+   {"if": "Imported chambers are more reliable", "then": "For stability studies what counts is uniformity, mapping and alarm records; ask for Tempo's mapping report and validation documents, and compare."}
+  ],
+  "watch_out": ["Ask for temperature / humidity mapping and validation documents for pharma", "Large chambers need site preparation"],
+  "competitors": [
+   {"name": "Thermolab / Newtronic", "note": "Indian stability chamber makers."},
+   {"name": "Binder / Memmert", "note": "German premium chambers and ovens."},
+   {"name": "Esco", "note": "In our guide for cabinets and incubators."}
+  ]
+ },
+ {
+  "name": "Supertek",
+  "origin": "India · Shiv Dial Sud & Sons (Ambala), since 1943",
+  "channel": "Direct",
+  "about": "Indian maker of lab glassware, plasticware, general lab equipment and teaching aids. In our guide it is the lite choice for incubators, autoclaves, water baths, heating mantles, stirrers and small centrifuges.",
+  "known_for": ["General lab equipment at a low price", "Lab glassware and plasticware", "Teaching lab equipment for schools and colleges"],
+  "known_lines": ["Water baths and heating mantles", "Bacteriological and BOD incubators", "Autoclaves and hot air ovens", "Hotplate stirrers and vortex mixers", "Small centrifuges"],
+  "best_for": ["Schools, colleges and teaching labs", "Small labs with a tight budget"],
+  "pitch": ["Very old Indian name (since 1943)", "Low price and quick supply", "Fine for basic, routine use"],
+  "objections": [
+   {"if": "Is it good enough?", "then": "For teaching and basic use, yes. For research or audited labs offer the economy or premium brand of the guide."}
+  ],
+  "watch_out": ["Not for precise or audited work", "Check warranty terms before promising"],
+  "competitors": [
+   {"name": "Remi", "note": "Indian lite option in our guide."},
+   {"name": "Tempo / DLAB", "note": "Economy options in our guide."}
+  ]
+ },
+ {
+  "name": "Hanna",
+  "origin": "USA / Italy · Hanna Instruments (founded in Italy, 1978)",
+  "channel": "Direct",
+  "about": "Global maker of electrochemistry and water analysis instruments. In our guide it is the economy choice for pH, ion, conductivity, DO and multi-parameter meters, titrators and visible spectrophotometers.",
+  "known_for": ["pH meters from pocket testers to benchtop", "Photometers and test kits for water", "Compact titrators (Karl Fischer and potentiometric)"],
+  "known_lines": ["edge pH / EC / DO meters", "HI98 pocket testers (pHep, DiST)", "Checker colorimeters", "HI83399 multi-parameter photometer", "HI900 series titrators"],
+  "best_for": ["Water and wastewater labs", "Food, dairy and agriculture", "Pharma and chemical QC on a budget", "Colleges and field testing"],
+  "pitch": ["Good accuracy at a fair price", "Huge range of electrodes and reagents, easy to buy again", "Smart electrodes and data logging on many models"],
+  "objections": [
+   {"if": "Horiba / Mettler are better", "then": "For the most demanding labs, yes, and we offer them too. For routine QC Hanna gives the needed accuracy at a much lower cost."}
+  ],
+  "watch_out": ["Electrodes and reagents are recurring costs", "Pocket testers are for checks, not for audited results"],
+  "competitors": [
+   {"name": "Eutech (Thermo Fisher)", "note": "Economy rival in our guide."},
+   {"name": "Horiba", "note": "Premium option in our guide."},
+   {"name": "Rakiro", "note": "Lite option in our guide."}
+  ]
+ },
+ {
+  "name": "Eutech",
+  "origin": "Singapore · Eutech Instruments, part of Thermo Fisher Scientific",
+  "channel": "ITL",
+  "about": "Electrochemistry brand of Thermo Fisher: pH, conductivity, ion and DO meters for labs and the field. In our guide it is the economy choice for all water and chemistry meters.",
+  "known_for": ["Reliable pH and conductivity meters at a mid price", "Waterproof handheld meters", "Pocket testers"],
+  "known_lines": ["pH 700 / PC 700 benchtop meters", "CyberScan series", "pH 450 / CON 450 handheld meters", "Testr pocket testers", "Online controllers"],
+  "best_for": ["Water treatment and pollution labs", "Pharma and food QC", "Colleges and research"],
+  "pitch": ["Backed by Thermo Fisher", "Sturdy, waterproof handheld meters for the field", "Good value for routine lab work"],
+  "objections": [
+   {"if": "Why not Thermo Orion directly?", "then": "Orion is the premium line; Eutech is Thermo's value line with the same reliability for routine work, at a lower price."}
+  ],
+  "watch_out": ["Bought through a distributor (ITL)", "Electrodes are consumables"],
+  "competitors": [
+   {"name": "Hanna", "note": "Economy rival in our guide."},
+   {"name": "Horiba", "note": "Premium option in our guide."},
+   {"name": "Rakiro", "note": "Lite option in our guide."}
+  ]
+ },
+ {
+  "name": "Velp",
+  "origin": "Italy · VELP Scientifica (Usmate)",
+  "channel": "3P Instruments",
+  "about": "Italian maker of food and feed analysis systems (Kjeldahl, Soxhlet, fibre, Dumas) and general lab equipment (stirrers, vortex, homogenizers). In our guide it is premium for nutrient analysis and many stirrers and mixers.",
+  "known_for": ["Kjeldahl nitrogen / protein systems", "Solvent extraction (fat) and fibre analysis", "Dumas nitrogen analyzer", "Magnetic stirrers and vortex mixers"],
+  "known_lines": ["UDK distillation units and DKL digestors", "SER 158 solvent extractor", "FIWE fibre analyzers", "NDA 702 Dumas analyzer", "AREX hotplate stirrers", "ZX vortex mixers"],
+  "best_for": ["Food, feed and dairy labs", "Agriculture universities and ICAR / KVK labs", "Food safety testing labs", "Chemistry labs (stirrers)"],
+  "pitch": ["Automation saves technician time and chemicals", "Official methods (AOAC / ISO) with application support", "Lower reagent use: greener and cheaper to run"],
+  "objections": [
+   {"if": "Pelican is cheaper", "then": "Pelican is a good Indian option (also in our guide). Velp gives more automation, lower reagent use and international method support; compare running cost, not only the price."}
+  ],
+  "watch_out": ["Bought through a distributor (3P Instruments)", "Imported spares take time"],
+  "competitors": [
+   {"name": "Gerhardt / Buchi / Foss", "note": "Premium rivals in nutrient analysis."},
+   {"name": "Pelican / Tulin", "note": "Indian options in our guide."},
+   {"name": "IKA", "note": "Rival for stirrers and mixers."}
+  ]
+ },
+ {
+  "name": "Cole Parmer",
+  "origin": "USA · Cole-Parmer (Vernon Hills, Illinois)",
+  "channel": "Direct",
+  "about": "US supplier and maker of lab and process equipment, known for Masterflex pumps and brands such as Stuart and Jenway. In our guide it is premium for cold storage, incubators, sonicators, homogenizers, baths and ovens.",
+  "known_for": ["Masterflex peristaltic pumps", "Cold storage and incubators", "General lab equipment under one name"],
+  "known_lines": ["Masterflex peristaltic pumps", "Stuart stirrers, hotplates and blocks", "Jenway spectrophotometers and meters", "Ultrasonic processors and homogenizers"],
+  "best_for": ["Pharma and biotech labs", "Research institutes", "Process and pilot plants (pumps)"],
+  "pitch": ["International brand with a wide catalogue", "Masterflex is a reference for peristaltic pumping", "Quality and documentation for regulated labs"],
+  "objections": [
+   {"if": "It costs more than local brands", "then": "Show the life and accuracy difference; offer the economy brand of the guide when the use is light."}
+  ],
+  "watch_out": ["Imported items: confirm stock and delivery", "Check which sub-brand makes the exact product"],
+  "competitors": [
+   {"name": "Thermo Fisher", "note": "Premium rival across the range."},
+   {"name": "Esco", "note": "Rival for cold storage and incubators."},
+   {"name": "Watson-Marlow", "note": "Main rival for peristaltic pumps."}
+  ]
+ },
+ {
+  "name": "Remi",
+  "origin": "India · Remi (Mumbai)",
+  "channel": "Direct",
+  "about": "One of the oldest Indian makers of lab centrifuges, stirrers, shakers and cold equipment. In our guide it is lite for many mixers, freezers and ovens, and economy for CO2 and cooling incubators.",
+  "known_for": ["Lab centrifuges found in almost every Indian lab", "Magnetic stirrers and shakers", "Lab refrigerators and incubators"],
+  "known_lines": ["R-8C / R-4C centrifuges", "C-24 refrigerated centrifuges", "2MLH magnetic stirrers", "RS-12 rotary shaker", "CM-101 cyclomixer"],
+  "best_for": ["Hospitals, pathology and blood banks", "Colleges and teaching labs", "Small QC labs"],
+  "pitch": ["Trusted Indian name, spares available everywhere", "Low price and simple to use", "Fast local service"],
+  "objections": [
+   {"if": "Is it modern enough?", "then": "For routine work Remi is proven; for research features (programs, low noise, rotors) offer DLAB or the premium brand of the guide."}
+  ],
+  "watch_out": ["Fewer advanced features than imported brands"],
+  "competitors": [
+   {"name": "Eppendorf / Thermo Fisher", "note": "Premium centrifuges."},
+   {"name": "DLAB", "note": "Economy option in our guide."},
+   {"name": "Supertek", "note": "Lite option in our guide."}
+  ]
+ },
+ {
+  "name": "Rakiro",
+  "origin": "India · Rakiro Biotech Systems (Navi Mumbai)",
+  "channel": "Direct",
+  "about": "Indian maker of pH, conductivity, TDS, DO and multi-parameter meters, including panel / online meters. In our guide it is the lite choice for every water and chemistry meter.",
+  "known_for": ["Budget pH and multi-parameter meters", "Online / panel-mount meters for plants", "Pocket pH / TDS testers"],
+  "known_lines": ["ABT / ABM benchtop pH meters", "AMPAL handheld pH / TDS", "AOPH online pH meters", "ABDO pH and DO meter"],
+  "best_for": ["Small labs and colleges", "RO and water plants (online meters)", "Field checks on a budget"],
+  "pitch": ["Lowest price for a working meter", "Made in India, easy service", "Online meters for continuous plant monitoring"],
+  "objections": [
+   {"if": "Will readings be accurate?", "then": "Yes for routine checks when calibrated with fresh buffers. For audited lab results offer Hanna / Eutech or Horiba from the guide."}
+  ],
+  "watch_out": ["Not for strict audits", "Some models need a separate electrode (for example ORP)"],
+  "competitors": [
+   {"name": "Hanna / Eutech", "note": "Economy options in our guide."},
+   {"name": "Systronics / Elico", "note": "Other Indian budget meters."}
+  ]
+ },
+ {
+  "name": "Brand GmbH",
+  "origin": "Germany · BRAND GMBH + CO KG (Wertheim)",
+  "channel": "Direct",
+  "about": "German specialist in liquid handling and volumetric glass. In our guide it is premium for pipettes, bottle-top dispensers, burettes, pipette controllers, aspiration and liquid handling workstations.",
+  "known_for": ["Bottle-top dispensers", "Pipettes and pipette controllers", "Digital burettes", "Volumetric glassware (BLAUBRAND)"],
+  "known_lines": ["Dispensette bottle-top dispensers", "Transferpette pipettes", "accu-jet pro pipette controller", "Titrette digital burette", "HandyStep repeating pipettes", "BLAUBRAND volumetric glass"],
+  "best_for": ["Pharma and chemical QC", "Research and university labs", "Food and water labs"],
+  "pitch": ["German accuracy with a calibration certificate", "Dispensette handles strong acids and solvents safely", "Long life and easy recalibration"],
+  "objections": [
+   {"if": "Microlit / DLAB dispensers are cheaper", "then": "They are fine options in our guide. Brand is the reference for accuracy and chemical resistance; for daily dispensing of aggressive chemicals it pays back."}
+  ],
+  "watch_out": ["Premium price"],
+  "competitors": [
+   {"name": "Eppendorf / Gilson", "note": "Premium pipette rivals."},
+   {"name": "Microlit", "note": "Indian dispensers and pipettes."},
+   {"name": "DLAB / Glassco", "note": "Economy and lite options in our guide."}
+  ]
+ },
+ {
+  "name": "Waters",
+  "origin": "USA · Waters Corporation (Milford, Massachusetts); TA Instruments is its thermal-analysis division",
+  "channel": "Macflow",
+  "about": "World leader in liquid chromatography and mass spectrometry; through TA Instruments also in thermal analysis and rheology. In our guide it is premium for HPLC, UPLC, LC-MS, high-resolution MS and rheometers.",
+  "known_for": ["HPLC and UPLC systems", "LC-MS and high-resolution mass spec", "Empower chromatography software", "Thermal analysis and rheology (TA Instruments)"],
+  "known_lines": ["Alliance HPLC", "ACQUITY UPLC", "Xevo mass spectrometers", "Empower software", "TA Instruments DSC / TGA / rheometers"],
+  "best_for": ["Pharma QC and R&D", "CROs / CMOs", "Food safety and residue testing", "Research institutes"],
+  "pitch": ["Empower is the most used chromatography software in pharma: easy audits", "UPLC: faster runs, less solvent", "Strong application and validation support"],
+  "objections": [
+   {"if": "Shimadzu / Agilent are cheaper", "then": "Compare the whole cost: software, validation and service. Many pharma labs standardise on Empower, so methods transfer easily."}
+  ],
+  "watch_out": ["High price and annual service contracts", "Bought through a distributor"],
+  "competitors": [
+   {"name": "Agilent", "note": "Main rival in HPLC and LC-MS."},
+   {"name": "Shimadzu", "note": "Japanese, often priced lower."},
+   {"name": "Thermo Fisher", "note": "Rival in mass spec."}
+  ]
+ },
+ {
+  "name": "Rockwell",
+  "origin": "India · Rockwell Industries (Hyderabad)",
+  "channel": "Direct",
+  "about": "Indian maker of commercial and medical cold-chain equipment: deep freezers, ice-lined refrigerators and vaccine freezers. In our guide it is the economy choice for freezers and lab refrigerators.",
+  "known_for": ["Deep freezers and lab refrigerators", "WHO PQS vaccine freezers and ice-lined refrigerators", "Cold chain for hospitals and health programmes"],
+  "known_lines": ["Deep freezers (-20 / -40 °C)", "Ice-lined refrigerators", "Vaccine freezers"],
+  "best_for": ["Hospitals, blood banks and vaccine stores", "Pharma and food storage", "Colleges"],
+  "pitch": ["Indian make with wide service reach", "WHO PQS models for vaccine storage", "Good price for reliable cold storage"],
+  "objections": [
+   {"if": "We want a lab-grade imported freezer", "then": "For -86 °C research storage offer the premium brand of the guide; for -20 / -40 °C and vaccines Rockwell is a proven, lower-cost choice."}
+  ],
+  "watch_out": ["Check the exact temperature and the alarm / data-logging needs before quoting"],
+  "competitors": [
+   {"name": "Haier Biomedical / Vestfrost", "note": "Medical cold chain rivals."},
+   {"name": "Esco / Thermo Fisher", "note": "Premium options in our guide."}
+  ]
+ },
+ {
+  "name": "KEM",
+  "origin": "Japan · Kyoto Electronics Manufacturing (KEM)",
+  "channel": "Labcon",
+  "about": "Japanese maker of titrators, Karl Fischer moisture meters, density meters and refractometers. In our guide it is the premium choice for Karl Fischer and potentiometric titrators and density meters.",
+  "known_for": ["Automatic potentiometric titrators", "Karl Fischer coulometric and volumetric moisture titrators", "Density meters"],
+  "known_lines": ["AT-710 automatic titrator", "MKC-710 coulometric KF", "MKV-710 volumetric KF", "DA density meters"],
+  "best_for": ["Pharma QC", "Chemicals, petrochemicals and lubricants", "Food and edible oil labs"],
+  "pitch": ["Japanese precision with long-life burettes", "Methods to pharmacopeia and ASTM standards", "Premium quality usually priced below Metrohm / Mettler"],
+  "objections": [
+   {"if": "Metrohm is the standard", "then": "KEM gives comparable accuracy and pharma features, usually at a lower price. Offer a demo with the client's own sample."}
+  ],
+  "watch_out": ["Bought through a distributor (Labcon)", "KF reagents and electrodes are running costs"],
+  "competitors": [
+   {"name": "Metrohm", "note": "The titration market leader."},
+   {"name": "Mettler Toledo", "note": "Premium titrators."},
+   {"name": "Labindia / Hanna", "note": "Economy options in our guide."}
+  ]
+ },
+ {
+  "name": "Xylem",
+  "origin": "USA · Xylem Analytics (brands WTW, YSI, Bellingham + Stanley, SI Analytics)",
+  "channel": "WTW",
+  "about": "Water technology group whose analytics brands make meters, photometers, BOD systems, refractometers and polarimeters. In our guide it is premium for colorimeters, refractometers, polarimeters and the cooking oil tester.",
+  "known_for": ["WTW water analysis meters and photometers", "BOD measurement", "Refractometers and polarimeters (Bellingham + Stanley)"],
+  "known_lines": ["WTW Multi 3600 IDS meters", "WTW photoLab photometers", "OxiTop BOD system", "Bellingham + Stanley refractometers and polarimeters"],
+  "best_for": ["Water and wastewater labs", "Sugar, beverage and food labs", "Pharma QC"],
+  "pitch": ["German water-analysis quality (WTW)", "Digital sensors that store their own calibration", "Strong in sugar / Brix and pharma optical rotation"],
+  "objections": [
+   {"if": "Hanna is cheaper", "then": "For routine checks Hanna is fine; Xylem / WTW is for labs that need certified, audit-ready water results."}
+  ],
+  "watch_out": ["Confirm which Xylem brand makes the exact product", "Imported spares"],
+  "competitors": [
+   {"name": "Hach", "note": "Main rival in water analysis."},
+   {"name": "Anton Paar / Atago", "note": "Rivals for refractometers and polarimeters."}
+  ]
+ },
+ {
+  "name": "VacuuBrand",
+  "origin": "Germany · VACUUBRAND GMBH + CO KG (Wertheim)",
+  "channel": "Macflow",
+  "about": "German specialist in lab vacuum: oil-free diaphragm pumps, rotary vane pumps, controllers and aspiration. In our guide it is premium for every vacuum pump and the fluid aspiration system.",
+  "known_for": ["Chemistry-resistant oil-free diaphragm pumps", "Vacuum controllers for evaporation", "Rotary vane pumps"],
+  "known_lines": ["MZ / ME diaphragm pumps", "PC 3001 VARIO pumping units", "CVC 3000 controller", "RZ rotary vane pumps", "BVC aspiration systems"],
+  "best_for": ["Chemistry and pharma R&D (rotary evaporators, filtration)", "Universities and research institutes", "Biology labs (aspiration)"],
+  "pitch": ["Oil-free: no oil changes, clean lab", "Resists solvent vapours", "VARIO speed control saves energy and solvent"],
+  "objections": [
+   {"if": "A local vacuum pump is cheaper", "then": "Local oil pumps need oil changes and corrode with solvents; VacuuBrand runs dry and lasts. Total cost over years is lower."}
+  ],
+  "watch_out": ["Premium price", "Bought through a distributor (Macflow)"],
+  "competitors": [
+   {"name": "KNF", "note": "German rival in diaphragm pumps."},
+   {"name": "Edwards / Leybold", "note": "Rivals in rotary vane and high vacuum."}
+  ]
+ },
+ {
+  "name": "Kewaunee",
+  "origin": "USA / India · Kewaunee Scientific (Statesville, NC) with Kewaunee Labway India (Bengaluru)",
+  "channel": "Labindia",
+  "about": "Big name in laboratory furniture and fume hoods. In our guide it is premium for biosafety cabinets, fume hoods and laminar flow cabinets.",
+  "known_for": ["Fume hoods", "Lab furniture and casework", "Turnkey lab projects"],
+  "known_lines": ["Fume hoods (bypass, VAV)", "Lab benches and casework", "Biosafety and laminar flow cabinets"],
+  "best_for": ["New labs and lab renovations", "Pharma, biotech and research institutes", "Universities"],
+  "pitch": ["Well-known name for complete lab projects", "Fume hoods tested to international standards", "Made in India by Kewaunee Labway"],
+  "objections": [
+   {"if": "A local carpenter can make benches", "then": "Lab furniture must resist chemicals and carry heavy instruments safely; Kewaunee surfaces and hoods are tested for that."}
+  ],
+  "watch_out": ["Project items: site survey, drawings and lead time", "Bought through a distributor (Labindia)"],
+  "competitors": [
+   {"name": "Waldner / Labconco", "note": "International rivals."},
+   {"name": "Esco", "note": "In our guide for cabinets and hoods."},
+   {"name": "Local lab furniture makers", "note": "Cheaper, check material and tests."}
+  ]
+ },
+ {
+  "name": "Thermofisher Scientific",
+  "origin": "USA · Thermo Fisher Scientific (Waltham, Massachusetts)",
+  "channel": "Direct",
+  "about": "The largest lab supplier in the world. In our guide it is the economy choice for pipettes, pipette controllers and the vacuum aspiration system.",
+  "known_for": ["Pipettes (Finnpipette)", "Centrifuges, incubators and freezers", "Analytical instruments and consumables"],
+  "known_lines": ["Finnpipette F1 / F2 pipettes", "S1 pipette fillers", "Sorvall / Heraeus centrifuges", "Forma / TSX freezers"],
+  "best_for": ["Molecular biology and diagnostics", "Pharma and research labs"],
+  "pitch": ["Trusted global brand", "Finnpipette: ergonomic and accurate", "Easy to buy tips and accessories"],
+  "objections": [
+   {"if": "Is Thermo not very costly?", "then": "For pipettes Thermo is priced in the economy band of our guide; you get a global brand without the premium price."}
+  ],
+  "watch_out": ["Check genuine supply and warranty registration"],
+  "competitors": [
+   {"name": "Eppendorf / Gilson", "note": "Premium pipette rivals."},
+   {"name": "DLAB", "note": "Economy rival in our guide."},
+   {"name": "Brand GmbH", "note": "Premium option in our guide."}
+  ]
+ },
+ {
+  "name": "Pelican",
+  "origin": "India · Pelican Equipments (Chennai)",
+  "channel": "Direct",
+  "about": "Indian maker of nutrient analysis systems: Kjeldahl, fat (Soxhlet) and fibre. In our guide it is the economy choice for those three analyzers.",
+  "known_for": ["Kjeldahl nitrogen / protein systems", "Fat extraction systems", "Fibre analyzers", "Large installed base in Indian agriculture labs"],
+  "known_lines": ["Kelplus Kjeldahl systems", "Socsplus fat extraction", "Fibraplus fibre analyzer"],
+  "best_for": ["ICAR, KVK and agriculture universities", "Food, feed and dairy labs", "Food testing labs"],
+  "pitch": ["Indian make, widely used in agriculture research labs", "Lower price than imported systems", "Local service and spares"],
+  "objections": [
+   {"if": "Velp / Buchi are better", "then": "Imported systems have more automation; Pelican gives the same official methods at a lower price with local service. Offer both from our guide."}
+  ],
+  "watch_out": ["Market-leader claims are the company's own: do not quote them as facts"],
+  "competitors": [
+   {"name": "Velp", "note": "Premium option in our guide."},
+   {"name": "Buchi / Gerhardt / Foss", "note": "Imported premium rivals."},
+   {"name": "Tulin", "note": "Lite option in our guide."}
+  ]
+ },
+ {
+  "name": "Aczet",
+  "origin": "India · Aczet Pvt Ltd (Mumbai)",
+  "channel": "Direct",
+  "about": "Indian maker of weighing balances and moisture analyzers. In our guide it is the economy choice for balances, moisture analyzers and the anti-vibration table.",
+  "known_for": ["Analytical and precision balances at a mid price", "Moisture analyzers", "A full range from micro to high-capacity balances"],
+  "known_lines": ["CY / CG analytical balances", "CB precision balances", "MB moisture analyzers"],
+  "best_for": ["Pharma, chemical and food QC on a budget", "Colleges and research labs", "Jewellery and industry"],
+  "pitch": ["Indian make with internal calibration on many models", "Much cheaper than imported balances", "Local service and calibration"],
+  "objections": [
+   {"if": "Sartorius is better", "then": "For strict audits and micro weighing, yes, and we sell it too. For routine weighing Aczet gives good accuracy at a lower price."}
+  ],
+  "watch_out": ["For 21 CFR Part 11 needs, confirm the model's software features"],
+  "competitors": [
+   {"name": "Sartorius / Mettler Toledo", "note": "Premium rivals."},
+   {"name": "Shimadzu / Contech", "note": "Other balance makers in India."}
+  ]
+ },
+ {
+  "name": "Atago",
+  "origin": "Japan · ATAGO Co., Ltd. (Tokyo)",
+  "channel": "",
+  "about": "Japanese refractometer specialist (Brix, salt, sugar) that also makes polarimeters. In our guide it is premium for the Abbe refractometer and economy for the polarimeter.",
+  "known_for": ["Refractometers of every kind", "Pocket Brix / salt meters", "Polarimeters"],
+  "known_lines": ["PAL pocket refractometers", "RX digital refractometers", "NAR Abbe refractometers", "AP-300 polarimeter"],
+  "best_for": ["Sugar, juice and beverage industry", "Food and dairy", "Pharma QC"],
+  "pitch": ["The refractometer specialist", "Pocket meters for the shop floor", "Good accuracy at a fair price"],
+  "objections": [
+   {"if": "Anton Paar is the best", "then": "For the highest accuracy, yes; Atago covers routine and production checks at a much lower price."}
+  ],
+  "watch_out": ["Channel not fixed yet: confirm supply before quoting"],
+  "competitors": [
+   {"name": "Anton Paar", "note": "Premium option in our guide."},
+   {"name": "Xylem (Bellingham + Stanley)", "note": "Premium rival."},
+   {"name": "Labindia / Labtronics", "note": "Economy and lite options."}
+  ]
+ },
+ {
+  "name": "LECO",
+  "origin": "USA · LECO Corporation (St. Joseph, Michigan)",
+  "channel": "",
+  "about": "US maker of elemental analyzers (carbon, sulfur, nitrogen, oxygen, hydrogen), calorimeters and metallography. In our guide it is premium for the CHNS/O analyzer and bomb calorimeter.",
+  "known_for": ["Combustion elemental analyzers", "Dumas nitrogen / protein", "Calorimeters"],
+  "known_lines": ["CS744 carbon / sulfur", "ON836 oxygen / nitrogen", "FP828 nitrogen / protein", "CHN628 / 828 series", "AC600 calorimeter"],
+  "best_for": ["Steel, metals and foundries", "Coal, cement and power plants", "Food and fertilizer labs"],
+  "pitch": ["Industrial workhorse: fast, high throughput", "A reference brand in metals labs", "Low cost per test at high volumes"],
+  "objections": [
+   {"if": "Eltra is cheaper", "then": "Eltra is a good option (also in our guide). LECO is the choice for labs with very high sample volumes and a need for the reference brand."}
+  ],
+  "watch_out": ["Channel not fixed yet: confirm supply before quoting", "Gases and consumables are running costs"],
+  "competitors": [
+   {"name": "Eltra", "note": "In our guide; strong rival."},
+   {"name": "Elementar / Thermo Fisher", "note": "Rivals in CHNS."}
+  ]
+ },
+ {
+  "name": "Eltra",
+  "origin": "Germany · ELTRA GmbH, part of Verder Scientific",
+  "channel": "",
+  "about": "German maker of elemental analyzers (C, H, N, O, S) and thermogravimetric analyzers. In our guide it is premium / economy for the elemental analyzers.",
+  "known_for": ["Carbon / sulfur analyzers", "Oxygen / nitrogen / hydrogen analyzers", "CHNS analyzers"],
+  "known_lines": ["CS-i / CS-2000 carbon-sulfur", "ELEMENTRAC series", "ONH-p analyzer", "Thermostep TGA"],
+  "best_for": ["Metals and steel", "Coal, cement and minerals", "Research labs"],
+  "pitch": ["German precision, sister company of Retsch (sample prep + analysis)", "Robust and easy to service", "Good price against LECO"],
+  "objections": [
+   {"if": "LECO is the standard", "then": "Eltra gives comparable results and is often priced lower; with Retsch it gives one family for sample prep and analysis."}
+  ],
+  "watch_out": ["Gases and crucibles are running costs"],
+  "competitors": [
+   {"name": "LECO", "note": "Main rival, in our guide."},
+   {"name": "Horiba (EMIA)", "note": "Rival in carbon / sulfur."}
+  ]
+ },
+ {
+  "name": "Interscience",
+  "origin": "France · Interscience",
+  "channel": "Labindia",
+  "about": "French maker of microbiology sample preparation and counting. In our guide it is premium for colony counters and cell counters.",
+  "known_for": ["Lab paddle blenders (BagMixer)", "Automatic colony counters (Scan)", "Spiral platers"],
+  "known_lines": ["BagMixer blenders", "Scan 300 / 4000 colony counters", "easySpiral platers", "BagPage filter bags"],
+  "best_for": ["Food and dairy microbiology", "Pharma microbiology", "Food testing labs"],
+  "pitch": ["Counts colonies in seconds, with images saved for audits", "Removes counting errors between technicians", "Complete microbiology workflow from one brand"],
+  "objections": [
+   {"if": "We count by hand", "then": "Hand counts vary between people and leave no record; Scan gives the same count every time and saves the picture."}
+  ],
+  "watch_out": ["Bought through a distributor (Labindia)"],
+  "competitors": [
+   {"name": "Synbiosis / Neutec", "note": "Colony counter rivals."},
+   {"name": "Seward (Stomacher)", "note": "Blender rival."}
+  ]
+ },
+ {
+  "name": "Magritek",
+  "origin": "New Zealand / Germany · Magritek",
+  "channel": "Labindia",
+  "about": "Maker of benchtop NMR spectrometers that need no liquid helium. In our guide it is the economy choice for benchtop NMR.",
+  "known_for": ["Benchtop NMR without cryogens", "Reaction monitoring", "Teaching NMR"],
+  "known_lines": ["Spinsolve benchtop NMR (60 / 80 / 90 MHz)"],
+  "best_for": ["Universities and pharmacy colleges (teaching)", "Chemistry R&D and process monitoring", "Pharma QC identity tests"],
+  "pitch": ["NMR on a bench: no helium, no special room", "Low running cost compared with a high-field NMR", "Easy to use for students"],
+  "objections": [
+   {"if": "Benchtop NMR is not powerful enough", "then": "It is not a replacement for a high-field research NMR; it is for routine identity, teaching and reaction monitoring at a small part of the cost."}
+  ],
+  "watch_out": ["Explain the limits of benchtop NMR honestly", "Bought through a distributor (Labindia)"],
+  "competitors": [
+   {"name": "Bruker (Fourier 80)", "note": "Benchtop and high-field NMR rival."},
+   {"name": "Nanalysis / Oxford Instruments", "note": "Other benchtop NMR makers."}
+  ]
+ },
+ {
+  "name": "Lovibond",
+  "origin": "UK / Germany · Lovibond (The Tintometer group)",
+  "channel": "",
+  "about": "Colour measurement and water testing brand. In our guide it is the economy choice for the colorimeter.",
+  "known_for": ["Colour measurement (Lovibond scale for oils)", "Water test photometers and kits"],
+  "known_lines": ["Lovibond tintometers", "MD photometers", "Comparator kits"],
+  "best_for": ["Edible oil and food labs", "Water treatment and pools"],
+  "pitch": ["The Lovibond colour scale is used in oil and food specifications", "Simple, rugged photometers"],
+  "objections": [
+   {"if": "We can check colour by eye", "then": "Eye checks differ between people; Lovibond gives a number that matches buyer and supplier specs."}
+  ],
+  "watch_out": ["Channel not fixed yet: confirm supply before quoting"],
+  "competitors": [
+   {"name": "Hach / Xylem", "note": "Water testing rivals."},
+   {"name": "Labtronics", "note": "Lite colorimeter in our guide."}
+  ]
+ },
+ {
+  "name": "Mikrouna",
+  "origin": "China · Mikrouna (Shanghai)",
+  "channel": "Biostag LLP",
+  "about": "Maker of glove boxes and inert-gas workstations. In our guide it is the premium choice for glove boxes / anaerobic chambers.",
+  "known_for": ["Inert atmosphere glove boxes (oxygen and moisture below 1 ppm)", "Gas purification systems"],
+  "known_lines": ["Universal / Super glove box workstations", "Gas purifiers"],
+  "best_for": ["Battery and energy storage research", "Materials and chemistry labs", "Universities"],
+  "pitch": ["Very low oxygen and moisture for sensitive materials", "Customisable box size and ports", "Good value against European glove boxes"],
+  "objections": [
+   {"if": "MBraun is the standard", "then": "MBraun is premium; Mikrouna reaches similar purity levels at a lower price and is widely used in battery labs."}
+  ],
+  "watch_out": ["Bought through a distributor (Biostag LLP)", "Purifier regeneration and gas are running costs"],
+  "competitors": [
+   {"name": "MBraun", "note": "German premium rival."},
+   {"name": "Vigor / Etelux", "note": "Other glove box makers."}
+  ]
+ },
+ {
+  "name": "Borosil",
+  "origin": "India · Borosil (Mumbai)",
+  "channel": "Direct",
+  "about": "The best-known Indian name in borosilicate lab glass. In our guide it is the economy choice for water stills and heating mantles.",
+  "known_for": ["Lab glassware", "Glass water stills (distillation units)", "Heating mantles"],
+  "known_lines": ["Borosil volumetric and general glassware", "Water stills", "Heating mantles"],
+  "best_for": ["Every lab that uses glassware", "Colleges and teaching labs", "Pharma and chemical QC"],
+  "pitch": ["Brand every lab knows and trusts", "Wide availability", "Fair price"],
+  "objections": [
+   {"if": "Local glass is cheaper", "then": "Borosil glass has known quality and resists heat shock; a cracked flask costs more than the saving."}
+  ],
+  "watch_out": ["Confirm the exact model for instruments (stills, mantles)"],
+  "competitors": [
+   {"name": "Glassco", "note": "Lite option in our guide."},
+   {"name": "Duran / Schott", "note": "Imported premium glass."}
+  ]
+ },
+ {
+  "name": "Glassco",
+  "origin": "India · Glassco Laboratory Equipments (Ambala Cantt)",
+  "channel": "Direct",
+  "about": "Indian maker of lab glassware and instruments, exporting widely. In our guide it is the lite choice for bottle-top dispensers, burettes and water stills.",
+  "known_for": ["Volumetric and general glassware", "Disposable glass (tubes, vials, Pasteur pipettes)", "Volumetric flasks with QR-coded certificates"],
+  "known_lines": ["Volumetric glassware", "Disposable glass", "Water stills", "Burettes and dispensers"],
+  "best_for": ["Colleges and teaching labs", "Small QC labs on a budget"],
+  "pitch": ["Low price with certificates for volumetric glass", "Indian make, quick supply"],
+  "objections": [
+   {"if": "Is it accurate?", "then": "Volumetric items come with certificates; for high-end dispensing offer Brand GmbH or DLAB from our guide."}
+  ],
+  "watch_out": ["Not for heavy-duty dispensing of aggressive chemicals"],
+  "competitors": [
+   {"name": "Borosil", "note": "Economy option in our guide."},
+   {"name": "Brand GmbH", "note": "Premium option in our guide."}
+  ]
+ },
+ {
+  "name": "Microlit",
+  "origin": "India · Microlit (Lucknow), since 1991",
+  "channel": "",
+  "about": "Indian maker of liquid handling: bottle-top dispensers, pipettes and pipette fillers, sold in many countries. In our guide it is the lite choice for peristaltic pumps.",
+  "known_for": ["Bottle-top dispensers", "Micropipettes", "Electronic pipette fillers"],
+  "known_lines": ["Beatus / Ultimus / Scitus / Lentus dispensers", "RBO pipettes", "Lilpet fixed-volume pipettes"],
+  "best_for": ["Pharma and chemical QC", "Colleges and research", "Labs that want Indian make with good quality"],
+  "pitch": ["Indian design with its own patents (for example the dual-inlet dispenser)", "Lower price than German brands", "Local service"],
+  "objections": [
+   {"if": "Brand / Eppendorf are better", "then": "They are premium; Microlit gives good accuracy and features at a lower price with Indian support."}
+  ],
+  "watch_out": ["Channel not fixed yet for pumps: confirm supply before quoting"],
+  "competitors": [
+   {"name": "Brand GmbH", "note": "Premium option in our guide."},
+   {"name": "DLAB", "note": "Economy option in our guide."}
+  ]
+ },
+ {
+  "name": "Ikon",
+  "origin": "India · Ikon Instruments (Delhi)",
+  "channel": "Exacta / SSSIW / Venture Scientific",
+  "about": "Indian supplier of budget lab equipment. In our guide it is the lite choice for deep freezers, lab refrigerators, lab and vacuum ovens and the chamber furnace.",
+  "known_for": ["Low-cost freezers, ovens and furnaces"],
+  "known_lines": ["Deep freezers", "Lab refrigerators", "Lab and vacuum ovens", "Chamber furnaces"],
+  "best_for": ["Teaching labs", "Small labs with a tight budget"],
+  "pitch": ["Lowest price for basic equipment", "Quick supply"],
+  "objections": [
+   {"if": "Will it last?", "then": "For basic, light use. For daily or critical use offer the economy or premium brand of the guide."}
+  ],
+  "watch_out": ["Bought through partners: confirm the warranty and who services it", "Details to be checked by the manager"],
+  "competitors": [
+   {"name": "Rockwell / Tempo", "note": "Economy options in our guide."},
+   {"name": "Carbolite Gero", "note": "Premium for ovens and furnaces."}
+  ]
+ },
+ {
+  "name": "Tulin",
+  "origin": "India · Tulin Equipments (Chennai)",
+  "channel": "",
+  "about": "Indian supplier of nutrient analysis equipment. In our guide it is the lite choice for Kjeldahl, fat and fibre analyzers.",
+  "known_for": ["Budget Kjeldahl, fat and fibre analyzers"],
+  "known_lines": ["Kjeldahl systems", "Soxhlet fat extraction", "Crude fibre analyzer"],
+  "best_for": ["Colleges and small food / feed labs"],
+  "pitch": ["Lowest price for nutrient analysis", "Local support in South India"],
+  "objections": [
+   {"if": "Is it automatic?", "then": "Mostly basic models; for automation offer Pelican or Velp from our guide."}
+  ],
+  "watch_out": ["Details to be checked by the manager before a big quote"],
+  "competitors": [
+   {"name": "Pelican", "note": "Economy option in our guide."},
+   {"name": "Velp", "note": "Premium option in our guide."}
+  ]
+ },
+ {
+  "name": "Athena",
+  "origin": "India · Athena Technology (Thane)",
+  "channel": "",
+  "about": "Indian maker / supplier of lab equipment such as probe sonicators, nitrogen evaporators and paddle blenders. In our guide it is the economy choice for the probe sonicator.",
+  "known_for": ["Probe sonicators", "Nitrogen evaporators", "Paddle blenders"],
+  "known_lines": ["Ultrasonic probe sonicators", "Nitrogen evaporators"],
+  "best_for": ["Pharma and research labs on a budget", "Universities"],
+  "pitch": ["Indian price for a sonicator", "Local support"],
+  "objections": [
+   {"if": "Is it as good as an imported sonicator?", "then": "For routine cell disruption and dispersion, yes; for research needing exact amplitude control offer the premium brand of the guide."}
+  ],
+  "watch_out": ["Details to be checked by the manager"],
+  "competitors": [
+   {"name": "Cole Parmer / Ika", "note": "Premium options in our guide."}
+  ]
+ },
+ {
+  "name": "Aditya Scientific",
+  "origin": "India · Aditya Scientific (Hyderabad), since 2010",
+  "channel": "",
+  "about": "Indian maker of lab equipment for chemistry and pharma: recirculating chillers, rotary evaporators, reactors and temperature controllers. In our guide it is the lite choice for recirculating chillers.",
+  "known_for": ["Recirculating chillers", "Rotary evaporators", "Lab reactors"],
+  "known_lines": ["RT series recirculating chillers", "Rotary evaporators", "Process reactors"],
+  "best_for": ["Pharma R&D and CROs (Hyderabad cluster)", "Chemistry labs"],
+  "pitch": ["Indian price for chillers", "Made for pharma R&D labs"],
+  "objections": [
+   {"if": "Will it hold the temperature?", "then": "Check the cooling capacity against the load (for example a rotary evaporator); pick a bigger chiller if in doubt."}
+  ],
+  "watch_out": ["Match cooling capacity to the load"],
+  "competitors": [
+   {"name": "Ika", "note": "Premium option in our guide."},
+   {"name": "DLAB", "note": "Economy option in our guide."}
+  ]
+ },
+ {
+  "name": "Lab Makers India",
+  "origin": "India · Lab Makers India (Vasai, Maharashtra)",
+  "channel": "",
+  "about": "Indian maker of lab furniture, storage cabinets and anti-vibration tables. In our guide it is the lite choice for lab furniture and anti-vibration tables.",
+  "known_for": ["Modular lab furniture", "Chemical storage cabinets", "Anti-vibration tables"],
+  "known_lines": ["Lab benches and workstations", "Storage cabinets", "Anti-vibration balance tables"],
+  "best_for": ["Small and mid-size labs", "Colleges"],
+  "pitch": ["Lower price for lab furniture", "Custom sizes"],
+  "objections": [
+   {"if": "Is the top chemical resistant?", "then": "Ask for the worktop material (epoxy, phenolic, granite) and choose by the chemicals used."}
+  ],
+  "watch_out": ["New company: confirm references and material specs", "Details to be checked by the manager"],
+  "competitors": [
+   {"name": "Kewaunee", "note": "Premium option in our guide."}
+  ]
+ },
+ {
+  "name": "Resolve",
+  "origin": "Sold through Cole-Parmer",
+  "channel": "Cole Parmer",
+  "about": "A peristaltic pump line we offer through Cole-Parmer; the premium choice for peristaltic pumps in our guide.",
+  "known_for": ["Peristaltic pumps"],
+  "known_lines": [],
+  "best_for": ["Pharma and biotech fluid transfer", "Process and pilot plants"],
+  "pitch": ["Premium pump through Cole-Parmer"],
+  "objections": [],
+  "watch_out": ["Details to be added by the manager"],
+  "competitors": [
+   {"name": "Watson-Marlow / Masterflex", "note": "Main peristaltic pump rivals."},
+   {"name": "Velp / Microlit", "note": "Other options in our guide."}
+  ]
+ }
+]

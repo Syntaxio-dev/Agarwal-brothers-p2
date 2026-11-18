@@ -90,8 +90,11 @@ class SalesProduct extends Model
         $rows = static::query()->where('is_active', true)->orderBy('id')->get(['id', 'updated_at'])
             ->map(fn (self $p) => $p->id . ':' . $p->updated_at?->getTimestamp())
             ->implode(',');
+        $brands = SalesBrand::query()->where('is_active', true)->orderBy('id')->get(['id', 'updated_at'])
+            ->map(fn (SalesBrand $b) => $b->id . ':' . $b->updated_at?->getTimestamp())
+            ->implode(',');
 
-        // "v2": the answer got the "before the meeting" fields, so every phone must fetch the list once more
-        return substr(sha1('v2|' . $rows), 0, 16);
+        // "v3": the answer got the brand guide, so every phone must fetch the list once more
+        return substr(sha1('v3|' . $rows . '|' . $brands), 0, 16);
     }
 }

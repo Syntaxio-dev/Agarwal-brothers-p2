@@ -3,6 +3,7 @@
 namespace App\Sales\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Sales\Models\SalesBrand;
 use App\Sales\Models\SalesProduct;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -51,6 +52,10 @@ class ProductController extends Controller
             ->values()
             ->all();
 
-        return response()->json(['version' => $version, 'unchanged' => false, 'products' => $products]);
+        // the brand guide travels with the product guide (an app older than 1.18 ignores the key)
+        $brands = SalesBrand::query()->where('is_active', true)->orderBy('sort')->orderBy('name')->get()
+            ->map(fn (SalesBrand $b) => $b->toWire())->values()->all();
+
+        return response()->json(['version' => $version, 'unchanged' => false, 'products' => $products, 'brands' => $brands]);
     }
 }
