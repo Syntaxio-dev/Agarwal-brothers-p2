@@ -22,7 +22,6 @@ use App\Models\Vertical;
 use App\Support\AutoReply;
 use App\Support\FormRules;
 use App\Support\Preview;
-use App\Support\SearchAssist;
 use App\Support\SimilarProducts;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -535,75 +534,15 @@ class PublicController extends Controller
     }
 
     /**
-     * Shared catalogue search (full results page and live suggestions).
-     *
-     * @return array{0: \Illuminate\Support\Collection, 1: \Illuminate\Support\Collection, 2: \Illuminate\Support\Collection, 3: \Illuminate\Support\Collection} products, brands, product lines, verticals
-     */
-    private function catalogueSearch(string $query, int $limitProducts, int $limitBrands, int $limitLines, int $limitVerticals): array
-    {
-        // Escape LIKE wildcards so "50%" or "a_b" are searched literally.
-        $escaped = addcslashes($query, '\\%_');
-        $contains = "%{$escaped}%";
-        $starts = "{$escaped}%";
-
-        $products = Product::where('products.is_active', true)
-            ->whereHas('category.brand', fn ($q) => $q->where('brands.is_active', true))
-            ->where(function ($q) use ($contains) {
-                $q->where('products.name', 'like', $contains)
-                    ->orWhere('products.short_description', 'like', $contains)
-                    ->orWhereHas('category', fn ($c) => $c->where('categories.name', 'like', $contains))
-                    ->orWhereHas('category.brand', fn ($b) => $b->where('brands.name', 'like', $contains));
-            })
-            ->with('category.brand')
-            ->orderByRaw('CASE WHEN products.name LIKE ? THEN 1 WHEN products.name LIKE ? THEN 2 ELSE 3 END', [$starts, $contains])
-            ->orderBy('products.name')
-            ->limit($limitProducts)
-            ->get();
-
-        $brands = Brand::where('is_active', true)
-            ->where('name', 'like', $contains)
-            ->withCount('categories')
-            ->orderBy('name')
-            ->limit($limitBrands)
-            ->get();
-
-        $lines = Category::whereHas('brand', fn ($b) => $b->where('is_active', true))
-            ->where('name', 'like', $contains)
-            ->with('brand')
-            ->orderBy('name')
-            ->limit($limitLines)
-            ->get();
-
-        $verticals = Vertical::where('is_active', true)
-            ->where('name', 'like', $contains)
-            ->orderBy('sort_order')
-            ->limit($limitVerticals)
-            ->get();
-
-        return [$products, $brands, $lines, $verticals];
-    }
-
-    /**
-     * The normal search; when it finds nothing, the same search with misspelt words fixed ("centrifuze" -> "centrifuges").
-     * The fifth item is the corrected text, or null when nothing was corrected.
+     * Shared catalogue search (results page and live suggestions): see App\Support\CatalogueSearch.
+     * Returns products, brands, product lines, verticals, the corrected text (or null), whether the products only
+     * match part of the query, and per product the specification rows that matched.
      */
     private function searchWithFallback(string $query, int $limitProducts, int $limitBrands, int $limitLines, int $limitVerticals, bool $allowFix = true): array
     {
-        [$products, $brands, $lines, $verticals] = $this->catalogueSearch($query, $limitProducts, $limitBrands, $limitLines, $limitVerticals);
+        $r = \App\Support\CatalogueSearch::run($query, $limitProducts, $limitBrands, $limitLines, $limitVerticals, $allowFix);
 
-        if ($allowFix && $products->isEmpty() && $brands->isEmpty() && $lines->isEmpty() && $verticals->isEmpty()) {
-            $fixed = SearchAssist::correct($query);
-
-            if ($fixed !== null && $fixed !== mb_strtolower($query)) {
-                $again = $this->catalogueSearch($fixed, $limitProducts, $limitBrands, $limitLines, $limitVerticals);
-
-                if (collect($again)->contains(fn ($found) => $found->isNotEmpty())) {
-                    return [...$again, $fixed];
-                }
-            }
-        }
-
-        return [$products, $brands, $lines, $verticals, null];
+        return [$r['products'], $r['brands'], $r['lines'], $r['verticals'], $r['corrected'], $r['partial'], $r['matches']];
     }
 
     /** Live search suggestions for the search boxes (JSON). */
@@ -615,10 +554,15 @@ class PublicController extends Controller
         $corrected = null;
 
         if (mb_strlen($query) >= 2) {
-            [$products, $brands, $lines, $verticals, $corrected] = $this->searchWithFallback($query, 5, 3, 3, 2);
+            [$products, $brands, $lines, $verticals, $corrected, , $matches] = $this->searchWithFallback($query, 5, 3, 3, 2);
 
             foreach ($products as $p) {
-                $rows[] = ['type' => 'Products', 'label' => $p->name, 'sub' => collect([$p->category?->brand?->name, $p->category?->name])->filter()->implode(' · '),
+                // A spec search shows the matching spec ("Readability (g): 0.001") instead of brand and line.
+                $specKey = collect($matches[$p->id] ?? [])->first(fn ($k) => is_scalar($p->specs[$k] ?? null));
+                $sub = $specKey !== null
+                    ? $specKey . ': ' . \Illuminate\Support\Str::limit((string) $p->specs[$specKey], 60)
+                    : collect([$p->category?->brand?->name, $p->category?->name])->filter()->implode(' · ');
+                $rows[] = ['type' => 'Products', 'label' => $p->name, 'sub' => $sub,
                     'url' => route('product.show', $p->slug), 'image' => $p->image ? asset('storage/' . $p->image) : null];
             }
             foreach ($brands as $b) {
@@ -635,7 +579,9 @@ class PublicController extends Controller
             }
         }
 
-        return response()->json(['q' => $query, 'corrected' => $corrected, 'rows' => $rows]);
+        // the visitor's own browser may reuse the answer for 5 minutes (typing the same text again costs nothing)
+        return response()->json(['q' => $query, 'corrected' => $corrected, 'rows' => $rows])
+            ->header('Cache-Control', 'private, max-age=300');
     }
 
     public function search(Request $request)
@@ -650,10 +596,12 @@ class PublicController extends Controller
         $verticals = collect();
 
         $corrected = null;
+        $partial = false;
+        $matches = [];
         $exact = $request->boolean('exact');
 
         if ($query !== '') {
-            [$products, $brands, $lines, $verticals, $corrected] = $this->searchWithFallback($query, 60, 8, 10, 6, ! $exact);
+            [$products, $brands, $lines, $verticals, $corrected, $partial, $matches] = $this->searchWithFallback($query, 60, 8, 10, 6, ! $exact);
         }
 
         // Shown when there is no query or nothing matched.
@@ -662,7 +610,7 @@ class PublicController extends Controller
         $popular = $products->isEmpty() ? $this->popularProducts(8) : collect();
 
         return view('public.search', compact(
-            'products', 'brands', 'lines', 'verticals', 'query', 'corrected', 'suggestVerticals', 'suggestBrands', 'popular'
+            'products', 'brands', 'lines', 'verticals', 'query', 'corrected', 'partial', 'matches', 'suggestVerticals', 'suggestBrands', 'popular'
         ));
     }
 

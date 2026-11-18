@@ -46,6 +46,12 @@ class AppServiceProvider extends ServiceProvider
             $model::deleted(function () { \Illuminate\Support\Facades\Cache::forget(\App\Http\Controllers\SeoController::cacheKey()); });
         }
 
+        // The site search keeps an index of every visible product (App\Support\CatalogueSearch); a catalogue change rebuilds it.
+        foreach ([\App\Models\Product::class, \App\Models\Brand::class, \App\Models\Category::class, \App\Models\Vertical::class] as $model) {
+            $model::saved(function () { \App\Support\CatalogueSearch::forget(); });
+            $model::deleted(function () { \App\Support\CatalogueSearch::forget(); });
+        }
+
         // Admin uploads get a random name, and on the public disk the extension comes from the file's real content
         // (a PDF renamed to .html is stored as .pdf). Private uploads (product import) keep a cleaned extension.
         \Filament\Forms\Components\FileUpload::configureUsing(fn (\Filament\Forms\Components\FileUpload $upload) => $upload->getUploadedFileNameForStorageUsing(

@@ -35,19 +35,54 @@
     $schemaImages = collect([$product->image])->merge($product->gallery ?? [])->filter()
         ->map(fn ($p) => \App\Support\Seo::storage($p))->values()->all();
 
+    // What Google reads: brand + model as the name, the model number (also written without spaces/dashes, the way
+    // people type it: "CY224C"), every specification row, and the FAQs as a FAQPage.
+    $seoHeading = $product->seoHeading();
+    $modelSpec = collect($product->specs ?? [])->first(fn ($v, $k) => preg_match('/^model$/i', trim((string) $k)) && is_scalar($v));
+    $singleModel = ! $product->specs_general && $modelSpec && ! preg_match('/[,\/;]| to /i', (string) $modelSpec) ? trim((string) $modelSpec) : null;
+    $code = $singleModel ?? $product->name;
+    $alternate = collect([$product->name, $product->heading, $singleModel, preg_replace('/[\s\-]+/', '', $code), preg_replace('/\s+/', '-', $code)])
+        ->filter()->map(fn ($n) => trim($n))->unique(fn ($n) => mb_strtolower($n))
+        ->reject(fn ($n) => mb_strtolower($n) === mb_strtolower($seoHeading))->values()->all();
+
     $productSchema = array_filter([
         '@context' => 'https://schema.org',
         '@type' => 'Product',
-        'name' => $product->name,
+        'name' => $seoHeading,
+        'alternateName' => $alternate,
         'description' => $product->seoDescription(),
         'image' => $schemaImages,
         'category' => $product->category->name,
         'brand' => ['@type' => 'Brand', 'name' => $product->category->brand->name],
+        'manufacturer' => ['@type' => 'Organization', 'name' => $product->category->brand->name],
+        'model' => $singleModel ?? ($product->model_group ?: $product->name),
+        'mpn' => $singleModel,
+        'additionalProperty' => collect($product->specs ?? [])
+            ->filter(fn ($v, $k) => is_scalar($v) && filled($v) && filled($k))
+            ->map(fn ($v, $k) => ['@type' => 'PropertyValue', 'name' => trim((string) $k), 'value' => \Illuminate\Support\Str::limit(trim((string) $v), 200)])
+            ->values()->take(40)->all(),
         'url' => \App\Support\Seo::canonical(),
     ]);
+
+    $faqItems = collect($product->faqs ?? [])->filter(fn ($f) => filled($f['question'] ?? null) && filled($f['answer'] ?? null));
+    $faqSchema = $faqItems->isEmpty() ? null : [
+        '@context' => 'https://schema.org',
+        '@type' => 'FAQPage',
+        'mainEntity' => $faqItems->map(fn ($f) => [
+            '@type' => 'Question',
+            'name' => \App\Support\Seo::plain($f['question']),
+            'acceptedAnswer' => ['@type' => 'Answer', 'text' => \App\Support\Seo::plain($f['answer'])],
+        ])->values()->all(),
+    ];
+
+    // The page heading carries the brand too ("Sartorius Cubis II Analytical Balance"); the owner's heading text is kept.
+    $h1 = $product->heading ?: $product->name;
+    if (! \Illuminate\Support\Str::contains($h1, $brand->name, true)) {
+        $h1 = $brand->name . ' ' . $h1;
+    }
 @endphp
 <x-layouts.app :title="$product->seoTitle()" :description="$product->seoDescription()" :image="$product->seoImage()"
-               og-type="product" :schema="$productSchema">
+               og-type="product" :schema="$faqSchema ? [$productSchema, $faqSchema] : $productSchema">
   <div class="relative overflow-hidden">
     <div class="pointer-events-none absolute inset-x-0 top-0 h-[460px]
                 bg-[radial-gradient(900px_380px_at_50%_-8%,rgba(0,180,216,0.14),transparent_70%),linear-gradient(to_bottom,rgba(244,249,251,1),rgba(255,255,255,0))]"></div>
@@ -96,7 +131,7 @@
                         <div class="photo-track flex h-full w-full" :style="{ transform: 'translateX(' + (-i * 100) + '%)' }">
                             @foreach ($images as $idx => $url)
                                 <div class="flex h-full w-full shrink-0 items-center justify-center p-3" @if ($idx > 0) :aria-hidden="i !== {{ $idx }}" @endif>
-                                    <img src="{{ $url }}" alt="{{ $product->name }} - photo {{ $idx + 1 }}"
+                                    <img src="{{ $url }}" alt="{{ $idx === 0 ? $seoHeading : $seoHeading . ' - photo ' . ($idx + 1) }}"
                                          @click="lightbox = true" @if ($idx > 1) loading="lazy" @endif
                                          class="img-load max-h-full max-w-full cursor-zoom-in select-none mix-blend-multiply object-contain drop-shadow-xl" decoding="async" draggable="false" onload="this.classList.add('is-loaded')">
                                 </div>
@@ -148,7 +183,7 @@
                     </a>
                 </div>
 
-                <h1 class="mt-3 text-2xl font-bold leading-tight text-navy sm:text-3xl lg:text-4xl">{{ $product->heading ?: $product->name }}</h1>
+                <h1 class="mt-3 text-2xl font-bold leading-tight text-navy sm:text-3xl lg:text-4xl">{{ $h1 }}</h1>
 
                 @if ($product->short_description)
                     <p class="mt-4 text-base leading-relaxed text-slate">{{ $product->short_description }}</p>

@@ -37,8 +37,11 @@
         {{-- Title banner: category (with its full intro, always shown) on the left, brand on the right --}}
         <div data-reveal class="flex flex-col items-start justify-between gap-5 rounded-2xl border border-gray-200 bg-gradient-to-br from-white to-ice px-9 py-7 shadow-sm sm:flex-row sm:items-center max-sm:gap-3 max-sm:px-5 max-sm:py-5">
             <div class="min-w-0 max-w-3xl">
-                <p class="font-mono text-xs font-medium uppercase tracking-[0.2em] text-link">{{ $brand->name }}</p>
-                <h1 class="mt-2 text-[1.65rem] sm:text-4xl font-bold text-navy leading-tight">{{ $category->name }}</h1>
+                {{-- the brand label sits inside the H1 (same look as before), so the heading reads "Aczet Analytical Balance" for Google --}}
+                <h1 class="font-bold text-navy">
+                    <span class="block font-mono text-xs font-medium uppercase tracking-[0.2em] text-link">{{ $brand->name }}</span>
+                    <span class="mt-2 block text-[1.65rem] sm:text-4xl leading-tight">{{ $category->name }}</span>
+                </h1>
                 @if ($hasIntro)
                     @if ($category->heading)
                         <h2 class="mt-3 text-[17px] font-semibold leading-snug text-link">{{ $category->heading }}</h2>

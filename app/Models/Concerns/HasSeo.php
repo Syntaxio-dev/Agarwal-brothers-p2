@@ -23,6 +23,17 @@ trait HasSeo
         return null;
     }
 
+    /** The automatic Google title and description (what is used while the SEO boxes are empty), for the admin form. */
+    public function autoSeoTitle(): string
+    {
+        return Seo::title($this->seoName());
+    }
+
+    public function autoSeoDescription(): string
+    {
+        return Seo::description($this->seoFallbackDescription());
+    }
+
     public function seoTitle(): string
     {
         return filled($this->seo_title) ? $this->seo_title : $this->seoName();

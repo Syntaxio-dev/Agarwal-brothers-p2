@@ -21,12 +21,15 @@ class SeoSection
                 TextInput::make('seo_title')
                     ->label('SEO title')
                     ->maxLength(70)
-                    ->helperText('Shown in Google results. " | Agarwal Brothers" is added automatically.'),
+                    // the automatic title is shown greyed in the empty box, so nobody has to guess what Google gets
+                    ->placeholder(fn ($record) => $record && method_exists($record, 'autoSeoTitle') ? $record->autoSeoTitle() : null)
+                    ->helperText('Shown in Google results. Leave empty to use the automatic title shown in grey (brand + model + type). " | Agarwal Brothers" is added automatically.'),
                 Textarea::make('seo_description')
                     ->label('SEO description')
                     ->rows(2)
                     ->maxLength(160)
-                    ->helperText('Up to 160 characters.'),
+                    ->placeholder(fn ($record) => $record && method_exists($record, 'autoSeoDescription') ? $record->autoSeoDescription() : null)
+                    ->helperText('Up to 160 characters. Leave empty to use the automatic text shown in grey.'),
                 FileUpload::make('og_image')
                     ->label('Share image (Open Graph)')
                     ->helperText('Shown when the page is shared on WhatsApp, LinkedIn, etc. Best size: 1200 × 630 px (about 1.9:1, landscape). Keep the main content in the centre.')

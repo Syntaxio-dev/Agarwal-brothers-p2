@@ -47,11 +47,12 @@ class SeoController extends Controller
     {
         $urls = [];
 
-        $add = function (string $path, $lastmod = null, string $priority = '0.6') use (&$urls) {
+        $add = function (string $path, $lastmod = null, string $priority = '0.6', array $images = []) use (&$urls) {
             $urls[] = [
                 'loc' => Seo::absolute($path),
                 'lastmod' => $lastmod ? $lastmod->toAtomString() : null,
                 'priority' => $priority,
+                'images' => $images,
             ];
         };
 
@@ -79,7 +80,10 @@ class SeoController extends Controller
 
         Product::with('category.brand')->where('is_active', true)
             ->whereHas('category.brand', fn ($q) => $q->where('is_active', true))->get()
-            ->each(fn ($p) => $add(route('product.show', $p->slug, false), $p->updated_at, '0.8'));
+            // the product photos too, so a model search in Google Images also leads to the product page
+            ->each(fn ($p) => $add(route('product.show', $p->slug, false), $p->updated_at, '0.8',
+                collect([$p->image])->merge($p->gallery ?? [])->filter(fn ($i) => is_string($i) && $i !== '')->take(10)
+                    ->map(fn ($i) => Seo::storage($i))->values()->all()));
 
         Insight::where('is_active', true)->get()
             ->each(fn ($i) => $add(route('insights.show', $i->slug, false), $i->updated_at, '0.5'));
@@ -88,14 +92,18 @@ class SeoController extends Controller
             ->each(fn ($j) => $add(route('careers.show', $j->slug, false), $j->updated_at, '0.4'));
 
         $xml = '<?xml version="1.0" encoding="UTF-8"?>' . "\n"
-            . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">' . "\n";
+            . '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">' . "\n";
 
         foreach ($urls as $u) {
             $xml .= "  <url>\n    <loc>" . htmlspecialchars($u['loc'], ENT_XML1) . "</loc>\n";
             if ($u['lastmod']) {
                 $xml .= '    <lastmod>' . $u['lastmod'] . "</lastmod>\n";
             }
-            $xml .= '    <priority>' . $u['priority'] . "</priority>\n  </url>\n";
+            $xml .= '    <priority>' . $u['priority'] . "</priority>\n";
+            foreach ($u['images'] as $image) {
+                $xml .= '    <image:image><image:loc>' . htmlspecialchars($image, ENT_XML1) . "</image:loc></image:image>\n";
+            }
+            $xml .= "  </url>\n";
         }
 
         return $xml . '</urlset>' . "\n";

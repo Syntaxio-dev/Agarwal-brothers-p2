@@ -75,6 +75,53 @@ class Seo
         return rtrim($cut, " ,.;:-") . '…';
     }
 
+    /** Plain text: tags and entities removed, whitespace collapsed. */
+    public static function plain(?string $text): string
+    {
+        return trim(preg_replace('/\s+/u', ' ', strip_tags(html_entity_decode((string) $text, ENT_QUOTES | ENT_HTML5, 'UTF-8'))));
+    }
+
+    /** @return string[] the sentences of a text */
+    public static function sentences(?string $text): array
+    {
+        $plain = self::plain($text);
+
+        return $plain === '' ? [] : preg_split('/(?<=[.!?])\s+(?=[A-Z0-9])/u', $plain);
+    }
+
+    /**
+     * A meta description made of whole pieces, so Google gets complete sentences, not "…".
+     * $pieces are taken in order; a piece that would push the text over $max is skipped (a later, shorter one may
+     * still fit). Then the first of $endings that still fits is added (alternatives: a long and a short call to action).
+     * When not even the first piece fits, it is cut on a word like description() does.
+     */
+    public static function compose(array $pieces, array $endings = [], int $max = 160): string
+    {
+        $clean = fn (array $list) => array_values(array_filter(array_map(fn ($p) => self::plain($p), $list), fn ($p) => $p !== ''));
+        $pieces = $clean($pieces);
+        $text = '';
+
+        foreach ($pieces as $piece) {
+            $next = $text === '' ? $piece : $text . ' ' . $piece;
+            if (mb_strlen($next) <= $max) {
+                $text = $next;
+            }
+        }
+
+        if ($text === '' && $pieces) {
+            return self::description($pieces[0]);
+        }
+
+        foreach ($clean($endings) as $ending) {
+            $next = $text === '' ? $ending : $text . ' ' . $ending;
+            if (mb_strlen($next) <= $max) {
+                return $next;
+            }
+        }
+
+        return $text;
+    }
+
     /** Absolute URL based on APP_URL (never hardcoded). */
     public static function absolute(?string $pathOrUrl): string
     {

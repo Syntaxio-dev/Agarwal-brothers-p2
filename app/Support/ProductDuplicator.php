@@ -25,7 +25,7 @@ class ProductDuplicator
             'short_description' => $source->short_description,
             'overview' => $source->overview,
             'specs' => $source->specs,
-            'specs_general' => $source->specs_general,
+            'specs_general' => (bool) $source->specs_general,   // never null (the column is NOT NULL)
             'features' => $source->features,
             'advantages' => $source->advantages,
             'faqs' => $source->faqs,

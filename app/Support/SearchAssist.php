@@ -19,7 +19,7 @@ class SearchAssist
     {
         return Cache::remember('search_vocabulary', 600, function () {
             $names = collect()
-                ->merge(Product::where('is_active', true)->pluck('name'))
+                ->merge(Product::where('is_active', true)->get(['name', 'heading', 'model_group'])->flatMap(fn ($p) => [$p->name, $p->heading, $p->model_group]))
                 ->merge(Brand::where('is_active', true)->pluck('name'))
                 ->merge(Category::pluck('name'))
                 ->merge(Vertical::where('is_active', true)->pluck('name'));

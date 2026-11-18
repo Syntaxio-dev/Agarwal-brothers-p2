@@ -25,10 +25,89 @@ class SeoTitlesTest extends TestCase
             'heading' => 'BSA224S Standard Balance',
         ]);
 
-        $this->assertStringContainsString('<title>Sartorius Supplier in Jaipur, India | Agarwal Brothers</title>', $this->get('/brands/sartorius')->getContent());
+        // brand + what it makes (from its product lines) + where
+        $this->assertStringContainsString('<title>Sartorius Balances Supplier, Jaipur | Agarwal Brothers</title>', $this->get('/brands/sartorius')->getContent());
         $this->assertStringContainsString('<title>Lab Weighing Solutions Supplier, Jaipur | Agarwal Brothers</title>', $this->get('/verticals/lab-weighing')->getContent());
-        $this->assertStringContainsString('<title>Analytical Balances by Sartorius | Agarwal Brothers</title>', $this->get('/brands/sartorius/analytical')->getContent());
-        $this->assertStringContainsString('<title>BSA224S Standard Balance by Sartorius | Agarwal Brothers</title>', $this->get('/products/' . $product->slug)->getContent());
+        // brand first, the way people search a range ("sartorius analytical balances")
+        $this->assertStringContainsString('<title>Sartorius Analytical Balances | Agarwal Brothers</title>', $this->get('/brands/sartorius/analytical')->getContent());
+        // the heading lacks the exact model (-CW), so the title is brand + model + product type
+        $this->assertStringContainsString('<title>Sartorius BSA224S-CW Analytical Balance | Agarwal Brothers</title>', $this->get('/products/' . $product->slug)->getContent());
+    }
+
+    public function test_product_title_is_brand_model_type_and_short_ranges_get_a_suffix(): void
+    {
+        $brand = Brand::create(['name' => 'Aczet', 'slug' => 'aczet', 'is_active' => true]);
+        $cat = Category::create(['brand_id' => $brand->id, 'name' => 'Analytical Balance', 'slug' => 'analytical-balance']);
+        $withHeading = Product::create(['category_id' => $cat->id, 'name' => 'CY 224C', 'slug' => 'cy-224c', 'is_active' => true,
+            'heading' => 'Aczet CY 224C Analytical Balance 220 g × 0.1 mg']);
+        $series = Product::create(['category_id' => $cat->id, 'name' => 'CY 224FC', 'slug' => 'cy-224fc', 'is_active' => true,
+            'heading' => 'CY-FC Series Flameproof Balance (Internal Calibration)']);
+
+        // the owner's heading already has brand and model: used as it is
+        $this->assertSame('Aczet CY 224C Analytical Balance 220 g × 0.1 mg', $withHeading->seoHeading());
+        // the heading does not name the model: brand + model + product type
+        $this->assertSame('Aczet CY 224FC Analytical Balance', $series->seoHeading());
+        $this->assertStringContainsString('<title>Aczet Analytical Balance: Models &amp; Specs | Agarwal Brothers</title>', $this->get('/brands/aczet/analytical-balance')->getContent());
+
+        // the range description names its models
+        $html = $this->get('/brands/aczet/analytical-balance')->getContent();
+        preg_match('/<meta name="description" content="([^"]*)"/', $html, $m);
+        $this->assertStringContainsString('Aczet Analytical Balance: 2 models, CY 224C and CY 224FC.', html_entity_decode($m[1]));
+    }
+
+    public function test_product_description_is_whole_sentences_with_brand_and_model(): void
+    {
+        $brand = Brand::create(['name' => 'Sartorius', 'slug' => 'sartorius', 'is_active' => true]);
+        $cat = Category::create(['brand_id' => $brand->id, 'name' => 'Analytical Lab Balances', 'slug' => 'analytical']);
+        $product = Product::create(['category_id' => $cat->id, 'name' => 'Cubis II Analytical', 'slug' => 'cubis-ii-analytical',
+            'heading' => 'Cubis II Analytical Balance', 'is_active' => true,
+            'short_description' => 'One modular premium platform for demanding weighing. It reads to 0.1 mg.']);
+
+        $d = $product->seoDescription();
+        $this->assertStringStartsWith('Sartorius Cubis II Analytical Balance. One modular premium platform', $d);
+        $this->assertLessThanOrEqual(160, mb_strlen($d));
+        $this->assertStringEndsWith('.', $d);
+        $this->assertSame(1, substr_count($d, 'Agarwal Brothers'), 'one call to action, not two');
+    }
+
+    public function test_product_page_tells_google_the_model_specs_and_faqs(): void
+    {
+        $brand = Brand::create(['name' => 'Aczet', 'slug' => 'aczet', 'is_active' => true]);
+        $cat = Category::create(['brand_id' => $brand->id, 'name' => 'Analytical Balance', 'slug' => 'analytical-balance']);
+        $product = Product::create(['category_id' => $cat->id, 'name' => 'CY 224C', 'slug' => 'cy-224c', 'is_active' => true,
+            'heading' => 'CY 224C Analytical Balance', 'image' => 'products/a.webp',
+            'specs' => ['Model' => 'CY 224C', 'Readability (mg)' => '0.1'],
+            'faqs' => [['question' => 'Is it calibrated?', 'answer' => '<p>Yes, internally.</p>']]]);
+
+        $html = $this->get('/products/' . $product->slug)->assertOk()->getContent();
+
+        $this->assertStringContainsString('>Aczet CY 224C Analytical Balance</h1>', $html, 'the H1 carries the brand');
+        $this->assertStringContainsString('alt="Aczet CY 224C Analytical Balance"', $html, 'the main photo says brand + model + type');
+
+        preg_match_all('#<script type="application/ld\+json">(.*?)</script>#s', $html, $m);
+        $nodes = collect($m[1])->map(fn ($j) => json_decode($j, true))->flatMap(fn ($n) => isset($n['@type']) ? [$n] : $n);
+        $productNode = $nodes->firstWhere('@type', 'Product');
+        $this->assertSame('Aczet CY 224C Analytical Balance', $productNode['name']);
+        $this->assertSame('CY 224C', $productNode['mpn']);
+        $this->assertContains('CY224C', $productNode['alternateName']);
+        $this->assertContains(['@type' => 'PropertyValue', 'name' => 'Readability (mg)', 'value' => '0.1'], $productNode['additionalProperty']);
+        $faq = $nodes->firstWhere('@type', 'FAQPage');
+        $this->assertSame('Yes, internally.', $faq['mainEntity'][0]['acceptedAnswer']['text']);
+    }
+
+    public function test_the_sitemap_lists_product_photos(): void
+    {
+        $brand = Brand::create(['name' => 'Aczet', 'slug' => 'aczet', 'is_active' => true]);
+        $cat = Category::create(['brand_id' => $brand->id, 'name' => 'Analytical Balance', 'slug' => 'analytical-balance']);
+        Product::create(['category_id' => $cat->id, 'name' => 'CY 224C', 'slug' => 'cy-224c', 'is_active' => true,
+            'image' => 'products/a.webp', 'gallery' => ['products/gallery/b.webp']]);
+        \Illuminate\Support\Facades\Cache::flush();
+
+        $xml = $this->get('/sitemap.xml')->assertOk()->getContent();
+        $this->assertStringContainsString('xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"', $xml);
+        $this->assertStringContainsString('<image:loc>' . \App\Support\Seo::storage('products/a.webp') . '</image:loc>', $xml);
+        $this->assertStringContainsString('<image:loc>' . \App\Support\Seo::storage('products/gallery/b.webp') . '</image:loc>', $xml);
+        $this->assertNotFalse(simplexml_load_string($xml), 'still valid XML');
     }
 
     public function test_an_admin_written_seo_title_still_wins(): void

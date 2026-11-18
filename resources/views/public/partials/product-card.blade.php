@@ -1,10 +1,13 @@
 {{-- One product card: picture (Compare in its corner), brand, name, short text, two specs, "View details" and the Add-to-list button.
      Needs $product. Optional: $reason (chip on the picture), $q (query for the product link, e.g. the vertical),
+     $matched (spec names that matched a search: shown first in the spec strip, label highlighted),
      $filterable (category page: the card takes part in the Alpine filter), $showCategory (default true).
      The WRAPPER lifts, so the buttons that sit on the card move with it. Phones: compact card (picture + name, icon buttons in the corner). --}}
 @php
-    $specs = collect($product->specs ?? [])
-        ->filter(fn ($v, $k) => filled($v) && is_scalar($v) && mb_strtolower(trim((string) $k)) !== 'model')
+    $matched = array_values(array_filter((array) ($matched ?? []), fn ($k) => is_scalar($product->specs[$k] ?? null) && filled($product->specs[$k])));
+    $specs = collect($matched)->mapWithKeys(fn ($k) => [$k => $product->specs[$k]])
+        ->union(collect($product->specs ?? [])
+            ->filter(fn ($v, $k) => filled($v) && is_scalar($v) && mb_strtolower(trim((string) $k)) !== 'model'))
         ->take(2);
 @endphp
 <div data-reveal class="group relative flex transition-all duration-300 hover:-translate-y-1"
@@ -16,7 +19,7 @@
                 <span class="absolute left-3 top-3 z-10 rounded-md border border-cyan/30 bg-white/95 px-2 py-1 font-mono text-[10px] font-medium uppercase tracking-wider text-link shadow-sm max-sm:hidden">{{ $reason }}</span>
             @endif
             @if ($product->image)
-                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ $product->name }}"
+                <img src="{{ asset('storage/' . $product->image) }}" alt="{{ trim(($product->category?->brand && ! \Illuminate\Support\Str::contains($product->name, $product->category->brand->name, true) ? $product->category->brand->name . ' ' : '') . $product->name) }}"
                      class="img-load max-h-full max-w-full mix-blend-multiply object-contain transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async" {!! \App\Support\Img::attrs($product->image) !!} onload="this.classList.add('is-loaded')">
             @else
                 <svg class="h-12 w-12 text-slate/25" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1" aria-hidden="true">
@@ -40,7 +43,7 @@
                 <div class="mt-3 grid grid-cols-2 gap-px overflow-hidden rounded-[10px] bg-navy/10 max-sm:hidden">
                     @foreach ($specs as $label => $value)
                         <div class="min-w-0 bg-ice px-2.5 py-2">
-                            <p class="truncate text-[10.5px] text-slate">{{ $label }}</p>
+                            <p class="truncate text-[10.5px] {{ in_array($label, $matched, true) ? 'font-semibold text-cyan-ink' : 'text-slate' }}">{{ $label }}</p>
                             <p class="truncate font-mono text-[12.5px] font-medium text-navy">{{ $value }}</p>
                         </div>
                     @endforeach

@@ -32,6 +32,11 @@ window.abSearches = {
     },
 };
 
+// Live-search answers already fetched on this page (typed text -> JSON), shared by every search box, so
+// backspacing or typing the same text again shows the list at once without asking the server.
+const suggestMemo = new Map();
+const SUGGEST_MEMO_MAX = 60;
+
 window.ghostSearch = function () {
     return {
         ghost: '',
@@ -79,7 +84,20 @@ window.ghostSearch = function () {
                 return;
             }
             this.showRecent = false;
+            const known = suggestMemo.get(q.toLowerCase());
+            if (known) {
+                if (this.controller) this.controller.abort();
+                this.showSuggestions(q, known);
+                return;
+            }
             this.suggestTimer = setTimeout(() => this.fetchSuggestions(q), 180);
+        },
+
+        showSuggestions(q, data) {
+            this.rows = data.rows || [];
+            this.corrected = data.corrected || null;
+            this.lastQuery = q;
+            this.open = true;
         },
 
         async fetchSuggestions(q) {
@@ -93,6 +111,8 @@ window.ghostSearch = function () {
                 });
                 if (!res.ok) throw new Error('bad response');
                 const data = await res.json();
+                if (suggestMemo.size >= SUGGEST_MEMO_MAX) suggestMemo.delete(suggestMemo.keys().next().value);
+                suggestMemo.set(q.toLowerCase(), data);
                 this.rows = data.rows || [];
                 this.corrected = data.corrected || null;
                 this.lastQuery = q;

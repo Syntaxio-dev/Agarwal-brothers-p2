@@ -34,9 +34,13 @@
                 <h1 data-reveal class="mt-4 text-3xl sm:text-4xl font-bold leading-tight text-navy">
                     Find <span class="text-cyan-ink">instruments, brands</span> and product lines
                 </h1>
-                <p data-reveal class="mt-3 text-base text-slate leading-relaxed">Search by product name, brand or category, or browse by vertical below.</p>
+                <p data-reveal class="mt-3 text-base text-slate leading-relaxed">Search by product name, model number (for example CY 224C), brand, category or a specification (for example readability 0.1 mg), or browse by vertical below.</p>
             @endif
         </div>
+
+        @if (! empty($partial))
+            <p data-reveal class="mt-4 text-sm text-slate">No product matches every word of <span class="font-semibold text-navy">&ldquo;{{ $query }}&rdquo;</span>. These products match most of it.</p>
+        @endif
 
         @if ($corrected)
             <p data-reveal class="mt-4 text-sm text-slate">
@@ -141,7 +145,7 @@
 
                     <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                         @foreach ($products as $product)
-                            @include('public.partials.product-card', ['product' => $product])
+                            @include('public.partials.product-card', ['product' => $product, 'matched' => $matches[$product->id] ?? []])
                         @endforeach
                     </div>
 
