@@ -27,6 +27,8 @@
             @if ($showMoney)<div class="sx-figure"><span class="sx-eyebrow">Spent</span><b>{{ $money($r['spend_paise']) }}</b></div>@endif
             <div class="sx-figure"><span class="sx-eyebrow">Meetings</span><b>{{ $r['meetings'] }}</b></div>
             <div class="sx-figure"><span class="sx-eyebrow">Calls</span><b>{{ $r['calls'] }}</b></div>
+            @if ($can('sales-tasks'))<div class="sx-figure"><span class="sx-eyebrow">Open tasks</span><b>{{ $r['tasks_open'] }}</b></div>@endif
+            @if ($can('sales-prospects'))<div class="sx-figure"><span class="sx-eyebrow">Prospect calls</span><b>{{ $r['prospect_calls'] }}</b></div>@endif
         </div>
 
         <div class="sx-block" style="margin-top:0">

@@ -28,6 +28,8 @@
                             <th scope="col">Calls</th>
                             <th scope="col">Open enquiries</th>
                             <th scope="col">Won</th>
+                            @if ($can('sales-tasks'))<th scope="col">Tasks</th>@endif
+                            @if ($can('sales-prospects'))<th scope="col">Prospect calls</th>@endif
                             @if ($showMoney)<th scope="col">Pending</th>@endif
                         </tr>
                     </thead>
@@ -53,6 +55,8 @@
                                 <td>{{ $rep['calls'] }}@if ($rep['talk_seconds'])<br><span class="sx-small">{{ $talk($rep['talk_seconds']) }}</span>@endif</td>
                                 <td>{{ $rep['enquiries_open'] }}@if ($rep['enquiries_late'])<br><span class="sx-small sx-late">{{ $rep['enquiries_late'] }} late</span>@endif</td>
                                 <td>{{ $rep['won'] }}</td>
+                                @if ($can('sales-tasks'))<td>{{ $rep['tasks_open'] }}@if ($rep['tasks_late'])<br><span class="sx-small sx-late">{{ $rep['tasks_late'] }} late</span>@endif</td>@endif
+                                @if ($can('sales-prospects'))<td>{{ $rep['prospect_calls'] }}</td>@endif
                                 @if ($showMoney)<td><span class="sx-chip {{ $rep['pending'] > 1 ? 'late' : '' }}">{{ $rep['pending'] }}</span></td>@endif
                             </tr>
                         @endforeach

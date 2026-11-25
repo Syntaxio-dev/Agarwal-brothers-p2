@@ -2,12 +2,14 @@
 @use('App\Sales\Filament\Resources\SalesEnquiries\SalesEnquiryResource')
 @use('App\Sales\Filament\Resources\SalesExpenses\SalesExpenseResource')
 @use('App\Sales\Filament\Resources\SalesMeetings\SalesMeetingResource')
+@use('App\Sales\Filament\Resources\SalesProspects\SalesProspectResource')
+@use('App\Sales\Filament\Resources\SalesTasks\SalesTaskResource')
 @use('Illuminate\Support\Str')
 {{-- 3. Needs your action (tabs) and Needs a word (flags) --}}
 @php
-    $tabLabels = ['approvals' => 'Approvals', 'enquiries' => 'Overdue enquiries', 'notlogged' => 'Not logged', 'followups' => 'Follow-ups', 'reach' => 'Not reached'];
-    $tabCounts = ['approvals' => (int) $s['pending_count'], 'enquiries' => $s['enquiries_overdue'], 'notlogged' => $s['meetings_not_logged'], 'followups' => $s['followups_due'], 'reach' => $neglectedTotal];
-    $lateTabs = ['approvals', 'enquiries', 'notlogged'];
+    $tabLabels = ['approvals' => 'Approvals', 'enquiries' => 'Overdue enquiries', 'notlogged' => 'Not logged', 'followups' => 'Follow-ups', 'reach' => 'Not reached', 'tasks' => 'Tasks', 'prospects' => 'Prospect calls'];
+    $tabCounts = ['approvals' => (int) $s['pending_count'], 'enquiries' => $s['enquiries_overdue'], 'notlogged' => $s['meetings_not_logged'], 'followups' => $s['followups_due'], 'reach' => $neglectedTotal, 'tasks' => $taskAttention['total'], 'prospects' => $prospectDue['total']];
+    $lateTabs = ['approvals', 'enquiries', 'notlogged', 'tasks'];
     $hoursLate = fn ($m) => \Carbon\CarbonImmutable::instance($m->plannedOrActualAt())->diffForHumans(['syntax' => \Carbon\CarbonInterface::DIFF_ABSOLUTE, 'parts' => 1]) . ' late';
 
     $rows = match ($activeTab) {
@@ -31,9 +33,22 @@
             'chip' => $c->days_since_contact === null ? 'Never reached' : $c->days_since_contact . ' days', 'late' => false, 'who' => $c->name,
             'url' => $to('sales-clients', SalesClientResource::class, ['record' => $c->getKey()], 'edit'),
         ]),
+        // the tasks that need the manager (cannot do / late / not opened) and the prospects whose "call again" day has come
+        'tasks' => $taskAttention['rows']->map(fn ($t) => [
+            'title' => $t->title,
+            'sub' => ($t->assignee?->name ?? 'A rep') . ' · ' . ($t->status === 'blocked' ? 'Cannot do: ' . Str::limit($t->rep_note ?: 'no reason written', 50) : ($t->isOverdue() ? 'Was due ' . $dayShort($t->due_at) : 'Not opened by the rep yet')),
+            'chip' => $t->status === 'blocked' ? 'Cannot do' : ($t->isOverdue() ? 'Late' : 'Not opened'), 'late' => $t->status !== 'new', 'who' => $t->assignee?->name ?? 'Rep',
+            'url' => $to('sales-tasks', SalesTaskResource::class, ['tableFilters' => ['status' => ['values' => ['new', 'in_progress', 'blocked']]]]),
+        ]),
+        'prospects' => $prospectDue['rows']->map(fn ($r) => [
+            'title' => $r['prospect']->name,
+            'sub' => collect([$r['prospect']->territory, 'last call by ' . ($r['note']->user?->name ?? 'a rep'), \App\Sales\Models\SalesProspectNote::labelOf($r['note']->outcome)])->filter()->implode(' · '),
+            'chip' => $dayShort($r['note']->next_followup_at), 'late' => true, 'who' => $r['note']->user?->name ?? $r['prospect']->name,
+            'url' => $to('sales-prospects', SalesProspectResource::class, ['tableSearch' => $r['prospect']->name]),
+        ]),
         default => collect(),
     };
-    $emptyText = ['approvals' => 'Nothing is waiting. All caught up.', 'enquiries' => 'No follow-up is overdue.', 'notlogged' => 'Every planned visit was written up.', 'followups' => 'No follow-ups due.', 'reach' => 'Every client was reached in the last 30 days.'];
+    $emptyText = ['approvals' => 'Nothing is waiting. All caught up.', 'enquiries' => 'No follow-up is overdue.', 'notlogged' => 'Every planned visit was written up.', 'followups' => 'No follow-ups due.', 'reach' => 'Every client was reached in the last 30 days.', 'tasks' => 'No task needs you: nothing is stuck or late.', 'prospects' => 'No prospect is waiting for a call back.'];
 @endphp
 
 <section class="sx-row2">

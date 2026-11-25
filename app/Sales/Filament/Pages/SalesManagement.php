@@ -44,7 +44,12 @@ class SalesManagement extends Page
         'notlogged' => 'sales-meetings',
         'followups' => 'sales-meetings',
         'reach' => 'sales-clients',
+        'tasks' => 'sales-tasks',
+        'prospects' => 'sales-prospects',
     ];
+
+    /** A flag of the "Needs a word" card that points at one area is shown only to a manager who may open it. */
+    private const FLAG_AREAS = ['task_blocked' => 'sales-tasks', 'bug_reports' => 'sales-bug-reports'];
 
     /** Days shown: 7, 30 or 90. */
     public int $range = 30;
@@ -250,7 +255,7 @@ class SalesManagement extends Page
             'series' => SalesInsights::series(14),
             'today' => $today,
             'todayByUser' => collect($today['reps'])->keyBy('user_id'),
-            'flags' => SalesInsights::flags(),
+            'flags' => array_values(array_filter(SalesInsights::flags(), fn (array $f) => ! isset(self::FLAG_AREAS[$f['key']]) || $this->allows(self::FLAG_AREAS[$f['key']]))),
             'categories' => $categories,
             'categoryTotal' => max(1, array_sum(array_column($categories, 'paise'))),
             'expenseSplit' => $showMoney ? SalesInsights::expenseSplit($days) : null,
@@ -263,6 +268,8 @@ class SalesManagement extends Page
             'visitProof' => SalesInsights::visitProof($days),
             'prospecting' => SalesInsights::prospecting($days),
             'taskFigures' => SalesInsights::tasks(),
+            'taskAttention' => $this->allows('sales-tasks') ? SalesInsights::tasksNeedingAttention(5) : ['total' => 0, 'rows' => collect()],
+            'prospectDue' => $this->allows('sales-prospects') ? SalesInsights::prospectCallsDue(5) : ['total' => 0, 'rows' => collect()],
             'topProducts' => SalesInsights::topProducts($days, 5),
             'activeTab' => $tab,
             'visibleTabs' => $tabs,

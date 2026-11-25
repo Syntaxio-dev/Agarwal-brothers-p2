@@ -286,6 +286,9 @@ class SalesInsights
         $calls = SalesCall::selectRaw('user_id, COUNT(*) as n, SUM(duration_seconds) as secs')->where('started_at', '>=', static::fromUtc($days))->groupBy('user_id')->get()->keyBy('user_id');
         $won = SalesEnquiry::selectRaw('user_id, COUNT(*) as n')->where('status', 'won')->where('closed_at', '>=', static::fromUtc($days))->groupBy('user_id')->pluck('n', 'user_id');
         $reported = SalesDailyReport::whereDate('report_date', static::today()->toDateString())->whereNotNull('submitted_at')->pluck('user_id')->flip();
+        // v1.20: the tasks the manager gave (open, and how many are late) and the calls to prospects in the window
+        $tasks = SalesTask::selectRaw('assigned_to, COUNT(*) as n, SUM(CASE WHEN due_at IS NOT NULL AND due_at < ? THEN 1 ELSE 0 END) as late', [now()])->whereIn('status', SalesTask::OPEN)->groupBy('assigned_to')->get()->keyBy('assigned_to');
+        $prospectCalls = SalesProspectNote::selectRaw('user_id, COUNT(*) as n')->where('noted_at', '>=', static::fromUtc($days))->groupBy('user_id')->pluck('n', 'user_id');
 
         return SalesProfile::active()->with('user')->get()->map(fn (SalesProfile $p) => [
             'id' => $p->id,
@@ -302,6 +305,9 @@ class SalesInsights
             'enquiries_late' => (int) ($enquiries[$p->user_id]->late ?? 0),
             'calls' => (int) ($calls[$p->user_id]->n ?? 0),
             'talk_seconds' => (int) ($calls[$p->user_id]->secs ?? 0),
+            'tasks_open' => (int) ($tasks[$p->user_id]->n ?? 0),
+            'tasks_late' => (int) ($tasks[$p->user_id]->late ?? 0),
+            'prospect_calls' => (int) ($prospectCalls[$p->user_id] ?? 0),
             'last_sync_at' => $p->last_sync_at,
             'stale' => static::isStale($p),
         ])->sortByDesc('spend_paise')->values();
@@ -608,7 +614,7 @@ class SalesInsights
         $dayOf = fn (SalesMeeting $m) => static::local($m->plannedOrActualAt());
         $today = $recent->filter(fn (SalesMeeting $m) => $dayOf($m)->gte($start));
 
-        $out = ['double' => [], 'missed' => [], 'noplan' => [], 'stale' => [], 'reports' => []];
+        $out = ['double' => [], 'missed' => [], 'blocked' => [], 'noplan' => [], 'stale' => [], 'reports' => [], 'bugs' => []];
 
         // 1. the same client booked by two different reps today (open or done; the same rep twice is not a clash)
         $booked = $today->filter(fn (SalesMeeting $m) => $m->status !== 'missed' && $m->client_uuid)->groupBy('client_uuid');
@@ -646,6 +652,15 @@ class SalesInsights
                     ];
                 }
             }
+        }
+
+        // 3b. a rep who says they cannot do a task (the manager must answer: change it, give it to somebody else, or cancel it)
+        foreach (SalesTask::with('assignee')->where('status', 'blocked')->orderByDesc('rep_updated_at')->limit(3)->get() as $task) {
+            $out['blocked'][] = [
+                'key' => 'task_blocked', 'icon' => 'heroicon-o-exclamation-triangle', 'tone' => 'alert',
+                'title' => ($task->assignee?->name ?? 'A rep') . ' cannot do "' . \Illuminate\Support\Str::limit($task->title, 40) . '"',
+                'text' => $task->rep_note ? \Illuminate\Support\Str::limit($task->rep_note, 120) : 'No reason written.',
+            ];
         }
 
         // 2. no meeting today, after 10:00 on a Monday to Saturday
@@ -689,7 +704,17 @@ class SalesInsights
             }
         }
 
-        return array_slice(array_merge($out['double'], $out['missed'], $out['noplan'], $out['stale'], $out['reports']), 0, $limit);
+        // 6. bug reports the reps sent from the app and nobody has answered
+        $bugs = (int) SalesBugReport::where('status', 'open')->count();
+        if ($bugs > 0) {
+            $out['bugs'][] = [
+                'key' => 'bug_reports', 'icon' => 'heroicon-o-bug-ant', 'tone' => 'warn',
+                'title' => $bugs . ' bug ' . ($bugs === 1 ? 'report' : 'reports') . ' waiting',
+                'text' => 'Reps wrote what went wrong in the app. Read and answer them under Sales team > Bug reports.',
+            ];
+        }
+
+        return array_slice(array_merge($out['double'], $out['missed'], $out['blocked'], $out['noplan'], $out['stale'], $out['reports'], $out['bugs']), 0, $limit);
     }
 
     /**
@@ -960,6 +985,46 @@ class SalesInsights
             'new' => (int) SalesTask::query()->where('status', 'new')->count(),
             'done_week' => (int) SalesTask::query()->where('status', 'done')->where('rep_updated_at', '>=', now()->subDays(7)->utc()->format('Y-m-d H:i:s.v'))->count(),
         ];
+    }
+
+    /**
+     * Tasks that need the manager's eye: the rep cannot do it, it is late, or the rep has not even opened it for a day. Blocked first, then the
+     * latest ones, then the ones nobody has opened.
+     *
+     * @return array{total: int, rows: Collection<int, SalesTask>}
+     */
+    public static function tasksNeedingAttention(int $limit = 5): array
+    {
+        $rank = fn (SalesTask $t) => $t->status === 'blocked' ? 0 : ($t->isOverdue() ? 1 : 2);
+
+        $tasks = SalesTask::with('assignee')->whereIn('status', SalesTask::OPEN)->get()
+            ->filter(fn (SalesTask $t) => $t->status === 'blocked' || $t->isOverdue() || ($t->status === 'new' && $t->created_at?->lt(now()->subDay())))
+            ->sortBy(fn (SalesTask $t) => [$rank($t), $t->due_at?->getTimestamp() ?? PHP_INT_MAX, $t->created_at?->getTimestamp() ?? 0])
+            ->values();
+
+        return ['total' => $tasks->count(), 'rows' => $tasks->take($limit)];
+    }
+
+    /**
+     * Prospects whose last call said "call again" and that date has come: the cold-calling list of the day, the oldest date first.
+     *
+     * @return array{total: int, rows: Collection<int, array{prospect: SalesProspect, note: SalesProspectNote}>}
+     */
+    public static function prospectCallsDue(int $limit = 5): array
+    {
+        $open = collect(SalesProspectNote::OUTCOMES)->filter(fn ($o) => $o[1])->keys()->all();
+        $prospects = SalesProspect::query()->get()->keyBy('uuid');
+
+        // the newest call of every prospect (the notes come oldest first, so the last one of each wins)
+        $latest = SalesProspectNote::with('user')->whereIn('prospect_uuid', $prospects->keys())->orderBy('noted_at')->orderBy('id')->get()->keyBy('prospect_uuid');
+
+        $due = $latest
+            ->filter(fn (SalesProspectNote $n) => in_array($n->outcome, $open, true) && $n->next_followup_at !== null && $n->next_followup_at->isPast())
+            ->sortBy(fn (SalesProspectNote $n) => $n->next_followup_at->getTimestamp())
+            ->map(fn (SalesProspectNote $n) => ['prospect' => $prospects[$n->prospect_uuid], 'note' => $n])
+            ->values();
+
+        return ['total' => $due->count(), 'rows' => $due->take($limit)];
     }
 
     /** Planned meetings whose time passed more than an hour ago and nobody wrote down what happened, the oldest first. */
