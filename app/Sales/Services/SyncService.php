@@ -3,6 +3,7 @@
 namespace App\Sales\Services;
 
 use App\Models\User;
+use App\Sales\Models\SalesBugReport;
 use App\Sales\Models\SalesCall;
 use App\Sales\Models\SalesClient;
 use App\Sales\Models\SalesContact;
@@ -12,10 +13,14 @@ use App\Sales\Models\SalesExpense;
 use App\Sales\Models\SalesMeeting;
 use App\Sales\Models\SalesPosition;
 use App\Sales\Models\SalesProductRequest;
+use App\Sales\Models\SalesProspect;
+use App\Sales\Models\SalesProspectNote;
+use App\Sales\Models\SalesProspectPerson;
 use App\Sales\Models\SalesRoute;
 use App\Sales\Models\SalesScript;
 use App\Sales\Support\PhoneNumber;
 use Carbon\CarbonImmutable;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
@@ -36,10 +41,10 @@ use Illuminate\Validation\Rule;
 class SyncService
 {
     /** Kinds that carry records, in the order they are pushed (a client before the people at it). */
-    public const KINDS = ['expenses', 'clients', 'contacts', 'meetings', 'routes', 'enquiries', 'calls', 'reports', 'product_requests', 'scripts'];
+    public const KINDS = ['expenses', 'clients', 'contacts', 'meetings', 'routes', 'enquiries', 'calls', 'reports', 'product_requests', 'scripts', 'prospects', 'prospect_notes', 'bug_reports'];
 
     /** Kinds the phone may delete (a call is a log, a report is a record: never). */
-    public const DELETABLE = ['expenses', 'clients', 'contacts', 'meetings', 'routes', 'enquiries', 'scripts'];
+    public const DELETABLE = ['expenses', 'clients', 'contacts', 'meetings', 'routes', 'enquiries', 'scripts', 'prospects'];
 
     private const MAX_POSITIONS = 300;
 
@@ -51,7 +56,7 @@ class SyncService
         $methods = [
             'expenses' => 'upsertExpense', 'clients' => 'upsertClient', 'contacts' => 'upsertContact', 'meetings' => 'upsertMeeting',
             'routes' => 'upsertRoute', 'enquiries' => 'upsertEnquiry', 'calls' => 'upsertCall', 'reports' => 'upsertReport', 'product_requests' => 'upsertProductRequest',
-            'scripts' => 'upsertScript',
+            'scripts' => 'upsertScript', 'prospects' => 'upsertProspect', 'prospect_notes' => 'upsertProspectNote', 'bug_reports' => 'upsertBugReport',
         ];
 
         foreach ($methods as $kind => $method) {
@@ -345,6 +350,7 @@ class SyncService
         $invalid = $this->check($r, [
             'uuid' => ['required', 'uuid'],
             'client_uuid' => ['nullable', 'uuid'],
+            'prospect_uuid' => ['sometimes', 'nullable', 'uuid'], // a visit planned to a prospect (app v1.19)
             'client_name' => ['required', 'string', 'min:1', 'max:150'],
             'contact_uuids' => ['nullable', 'array', 'max:20'],
             'contact_uuids.*' => ['uuid'],
@@ -389,7 +395,7 @@ class SyncService
             'outcome' => $this->text($r['outcome'] ?? null),
             'next_followup_at' => filled($r['next_followup_at'] ?? null) ? $this->time($r['next_followup_at']) : null,
             'client_updated_at' => $this->time($r['updated_at']),
-        ] + $this->planningFields($r) + $this->checkinFields($r, $model));
+        ] + (array_key_exists('prospect_uuid', $r) ? ['prospect_uuid' => $r['prospect_uuid']] : []) + $this->planningFields($r) + $this->checkinFields($r, $model));
 
         // a result belongs to a visit that was done
         if (($model->status ?? 'done') !== 'done') {
@@ -571,6 +577,182 @@ class SyncService
             'product_uuid' => $r['product_uuid'] ?? null,
             'product_name' => trim($r['product_name']),
             'body' => trim($r['body']),
+            'client_updated_at' => $this->time($r['updated_at']),
+        ]);
+
+        return ['status' => 'accepted'];
+    }
+
+    // ---- prospecting (app v1.19): companies that do not work with us yet. Shared pool: every rep reads, any rep adds, only the adder changes. ----
+
+    private const MAX_OPEN_BUG_REPORTS = 30;
+
+    private function upsertProspect(User $user, array $r): array
+    {
+        $invalid = $this->check($r, [
+            'uuid' => ['required', 'uuid'],
+            'name' => ['required', 'string', 'min:2', 'max:150'],
+            'territory' => ['required', 'string', 'min:2', 'max:100'],
+            'address' => ['nullable', 'string', 'max:200'],
+            'source' => ['sometimes', 'nullable', Rule::in(array_keys(SalesProspect::SOURCES))],
+            'notes' => ['nullable', 'string', 'max:1000'],
+            'people' => ['sometimes', 'array', 'max:10'],
+            'people.*.name' => ['required', 'string', 'min:2', 'max:150'],
+            'people.*.position' => ['nullable', 'string', 'max:100'],
+            'people.*.phone' => ['nullable', 'string', 'max:30', $this->phoneRule()],
+            'people.*.email' => ['nullable', 'string', 'max:150', 'email'],
+            'people.*.linkedin' => ['nullable', 'string', 'max:300'],
+            'updated_at' => ['required', 'date', $this->clockRule()],
+        ]);
+        if ($invalid) {
+            return $invalid;
+        }
+
+        $people = array_values(array_filter((array) ($r['people'] ?? []), 'is_array'));
+        foreach ($people as $p) {
+            if (filled($p['linkedin'] ?? null) && SalesProspectPerson::cleanLinkedin($p['linkedin']) === null) {
+                return $this->rejected('INVALID', 'The LinkedIn address is not valid.');
+            }
+        }
+
+        $model = SalesProspect::withTrashed()->where('uuid', $r['uuid'])->first();
+
+        if ($refused = $this->notYours($model, $user)) {
+            return $refused;
+        }
+        if ($early = $this->earlyAnswer($model, $user, $r['updated_at'], shared: true)) {
+            return $early;
+        }
+
+        // one company once per territory, so two reps never work the same company
+        $twin = SalesProspect::query()->where('name_key', SalesProspect::keyOf($r['name']))->where('territory_key', SalesProspect::keyOf($r['territory']))
+            ->where('uuid', '!=', $r['uuid'])->first();
+        if ($twin) {
+            return $this->rejected('INVALID', $twin->name . ' is already saved in ' . $twin->territory . '. Open it in the app and log your call there.');
+        }
+
+        // one number once in the prospect pool, and never a number that is already a client's
+        $seen = [];
+        foreach ($people as $p) {
+            $normal = filled($p['phone'] ?? null) ? PhoneNumber::normalize($p['phone']) : null;
+            if ($normal === null) {
+                continue;
+            }
+            if (isset($seen[$normal])) {
+                return $this->rejected('INVALID', 'Two people here have the same number.');
+            }
+            $seen[$normal] = true;
+
+            $held = SalesProspectPerson::query()->where('phone_normalized', $normal)
+                ->whereIn('prospect_id', SalesProspect::query()->where('uuid', '!=', $r['uuid'])->select('id'))->with('prospect')->first();
+            if ($held) {
+                return $this->rejected('INVALID', 'The number of ' . $p['name'] . ' is already saved under ' . $held->name . ' (' . $held->prospect?->name . ').');
+            }
+            if ($client = $this->numberTaken($p['phone'])) {
+                return $this->rejected('INVALID', 'The number of ' . $p['name'] . ' is already a client: ' . $client . '. Prospects are only for companies that do not work with us yet.');
+            }
+        }
+
+        DB::transaction(function () use (&$model, $user, $r, $people) {
+            $model ??= new SalesProspect(['uuid' => $r['uuid'], 'user_id' => $user->id]);
+            $model->fill([
+                'name' => trim($r['name']),
+                'territory' => trim($r['territory']),
+                'address' => $this->text($r['address'] ?? null),
+                'source' => $r['source'] ?? null,
+                'notes' => $this->text($r['notes'] ?? null),
+                'updated_by' => $user->id,
+                'client_updated_at' => $this->time($r['updated_at']),
+            ])->save();
+
+            // the people are replaced as a whole: the phone sends the whole list every time
+            $model->people()->delete();
+            foreach ($people as $p) {
+                $model->people()->create([
+                    'name' => trim($p['name']),
+                    'position' => $this->text($p['position'] ?? null),
+                    'phone' => $this->text($p['phone'] ?? null),
+                    'email' => $this->text($p['email'] ?? null),
+                    'linkedin' => SalesProspectPerson::cleanLinkedin($p['linkedin'] ?? null),
+                ]);
+            }
+        });
+
+        return ['status' => 'accepted'];
+    }
+
+    /** One call to a prospect, by any rep. A log: written once, never changed. */
+    private function upsertProspectNote(User $user, array $r): array
+    {
+        $r['created_at'] = $r['created_at'] ?? $r['updated_at'] ?? null;
+
+        $invalid = $this->check($r, [
+            'uuid' => ['required', 'uuid'],
+            'prospect_uuid' => ['required', 'uuid'],
+            'outcome' => ['required', Rule::in(array_keys(SalesProspectNote::OUTCOMES))],
+            'remark' => ['nullable', 'string', 'max:300'],
+            'next_followup_at' => ['nullable', 'date', 'before_or_equal:' . now()->addYears(2)->toIso8601String()],
+            'created_at' => ['required', 'date', $this->clockRule()],
+            'updated_at' => ['required', 'date', $this->clockRule()],
+        ]);
+        if ($invalid) {
+            return $invalid;
+        }
+
+        $model = SalesProspectNote::query()->where('uuid', $r['uuid'])->first();
+        if ($model) {
+            return (int) $model->user_id === (int) $user->id ? ['status' => 'duplicate'] : $this->rejected('UUID_TAKEN', 'This id cannot be used.');
+        }
+
+        // the prospect was deleted meanwhile: the phone is told to take the office's list again, where it is gone
+        if (! SalesProspect::query()->where('uuid', $r['prospect_uuid'])->exists()) {
+            return $this->rejected('NOT_ALLOWED', 'This prospect is not in the pool any more.');
+        }
+
+        SalesProspectNote::create([
+            'uuid' => $r['uuid'],
+            'prospect_uuid' => $r['prospect_uuid'],
+            'user_id' => $user->id,
+            'outcome' => $r['outcome'],
+            'remark' => $this->text($r['remark'] ?? null),
+            'next_followup_at' => filled($r['next_followup_at'] ?? null) ? $this->time($r['next_followup_at']) : null,
+            'noted_at' => $this->time($r['created_at']),
+            'client_updated_at' => $this->time($r['updated_at']),
+        ]);
+
+        return ['status' => 'accepted'];
+    }
+
+    // ---- bug reports (private to the rep, sent once, never changed) -------------------------------
+
+    private function upsertBugReport(User $user, array $r): array
+    {
+        $invalid = $this->check($r, [
+            'uuid' => ['required', 'uuid'],
+            'area' => ['required', Rule::in(array_keys(SalesBugReport::AREAS))],
+            'body' => ['required', 'string', 'min:10', 'max:1000'],
+            'app_version' => ['nullable', 'string', 'max:30'],
+            'updated_at' => ['required', 'date', $this->clockRule()],
+        ]);
+        if ($invalid) {
+            return $invalid;
+        }
+
+        $model = SalesBugReport::query()->where('uuid', $r['uuid'])->first();
+        if ($model) {
+            return (int) $model->user_id === (int) $user->id ? ['status' => 'duplicate'] : $this->rejected('UUID_TAKEN', 'This id cannot be used.');
+        }
+
+        if (SalesBugReport::query()->where('user_id', $user->id)->where('status', 'open')->count() >= self::MAX_OPEN_BUG_REPORTS) {
+            return $this->rejected('INVALID', 'Many of your reports are still waiting for an answer. Please wait for them first.');
+        }
+
+        SalesBugReport::create([
+            'uuid' => $r['uuid'],
+            'user_id' => $user->id,
+            'area' => $r['area'],
+            'body' => trim($r['body']),
+            'app_version' => $this->text($r['app_version'] ?? null),
             'client_updated_at' => $this->time($r['updated_at']),
         ]);
 
@@ -767,7 +949,7 @@ class SyncService
             return $this->rejected('INVALID', 'Not a valid id.');
         }
 
-        $class = ['expenses' => SalesExpense::class, 'clients' => SalesClient::class, 'contacts' => SalesContact::class, 'meetings' => SalesMeeting::class, 'routes' => SalesRoute::class, 'enquiries' => SalesEnquiry::class, 'scripts' => SalesScript::class][$kind];
+        $class = ['expenses' => SalesExpense::class, 'clients' => SalesClient::class, 'contacts' => SalesContact::class, 'meetings' => SalesMeeting::class, 'routes' => SalesRoute::class, 'enquiries' => SalesEnquiry::class, 'scripts' => SalesScript::class, 'prospects' => SalesProspect::class][$kind];
         $model = $class::withTrashed()->where('uuid', $uuid)->first();
 
         // Unknown here (never reached the server) or already deleted: the wish is already true.
@@ -777,7 +959,7 @@ class SyncService
 
         // Somebody else's private record is invisible to this rep; a shared record that somebody else added is not theirs to delete.
         if ((int) $model->user_id !== (int) $user->id) {
-            return in_array($kind, ['clients', 'contacts'], true)
+            return in_array($kind, ['clients', 'contacts', 'prospects'], true)
                 ? $this->rejected('NOT_ALLOWED', 'Only the person who added it, or a manager, can delete this.')
                 : ['status' => 'accepted'];
         }
@@ -824,6 +1006,9 @@ class SyncService
             'calls' => [SalesCall::class, fn (SalesCall $c) => $this->callPayload($c), false],
             'reports' => [SalesDailyReport::class, fn (SalesDailyReport $d) => $this->reportPayload($d), false],
             'scripts' => [SalesScript::class, fn (SalesScript $s) => $this->scriptPayload($s), false],
+            // the prospect pool is shared by the whole team (no per-rep filter); a bug report never comes back
+            'prospects' => [SalesProspect::class, fn (SalesProspect $p) => $this->prospectPayload($p), true],
+            'prospect_notes' => [SalesProspectNote::class, fn (SalesProspectNote $n) => $this->prospectNotePayload($n), true],
         ];
 
         foreach ($kinds as $kind => [$class, $shape, $shared]) {
@@ -834,6 +1019,13 @@ class SyncService
             }
             if ($kind === 'contacts') {
                 $query->with('addedBy.salesProfile');
+            }
+            if ($kind === 'prospects') {
+                $query->with(['people', 'addedBy.salesProfile']);
+            }
+            if ($kind === 'prospect_notes') {
+                // the calls to a prospect that was deleted are not sent: the phone drops them with the prospect
+                $query->with('user.salesProfile')->whereIn('prospect_uuid', SalesProspect::query()->select('uuid'));
             }
 
             $base = fn () => (clone $query)
@@ -924,6 +1116,41 @@ class SyncService
         ];
     }
 
+    private function prospectPayload(SalesProspect $p): array
+    {
+        return [
+            'uuid' => $p->uuid,
+            'name' => $p->name,
+            'territory' => $p->territory,
+            'address' => $p->address ?? '',
+            'source' => $p->source,
+            'notes' => $p->notes ?? '',
+            'people' => $p->people->map(fn (SalesProspectPerson $x) => [
+                'name' => $x->name, 'position' => $x->position ?? '', 'phone' => $x->phone ?? '', 'email' => $x->email ?? '', 'linkedin' => $x->linkedin ?? '',
+            ])->values()->all(),
+            'created_by_code' => $p->addedBy?->salesProfile?->employee_code,
+            'created_by_name' => $p->addedBy?->name,
+            'updated_at' => $this->iso($p->client_updated_at),
+            'deleted' => $p->trashed(),
+        ];
+    }
+
+    private function prospectNotePayload(SalesProspectNote $n): array
+    {
+        return [
+            'uuid' => $n->uuid,
+            'prospect_uuid' => $n->prospect_uuid,
+            'outcome' => $n->outcome,
+            'remark' => $n->remark ?? '',
+            'next_followup_at' => $n->next_followup_at ? $this->iso($n->next_followup_at) : null,
+            'created_by_code' => $n->user?->salesProfile?->employee_code,
+            'created_by_name' => $n->user?->name,
+            'created_at' => $this->iso($n->noted_at),
+            'updated_at' => $this->iso($n->client_updated_at),
+            'deleted' => false,
+        ];
+    }
+
     private function scriptPayload(SalesScript $s): array
     {
         return [
@@ -959,6 +1186,7 @@ class SyncService
         return [
             'uuid' => $m->uuid,
             'client_uuid' => $m->client_uuid,
+            'prospect_uuid' => $m->prospect_uuid,
             'client_name' => $m->client_name,
             'contact_uuids' => $m->contact_uuids ?? [],
             'meeting_at' => $this->iso($m->meeting_at),

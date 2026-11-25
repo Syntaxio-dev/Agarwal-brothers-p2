@@ -13,7 +13,9 @@ use App\Sales\Models\SalesExpense;
 use App\Sales\Models\SalesMeeting;
 use App\Sales\Models\SalesPosition;
 use App\Sales\Models\SalesProduct;
+use App\Sales\Models\SalesBugReport;
 use App\Sales\Models\SalesProductRequest;
+use App\Sales\Models\SalesProspect;
 use App\Sales\Models\SalesProfile;
 use App\Sales\Models\SalesRoute;
 use App\Sales\Models\SalesScript;
@@ -25,7 +27,9 @@ use App\Sales\Policies\ExpensePolicy;
 use App\Sales\Policies\MeetingPolicy;
 use App\Sales\Policies\PositionPolicy;
 use App\Sales\Policies\ProductPolicy;
+use App\Sales\Policies\BugReportPolicy;
 use App\Sales\Policies\ProductRequestPolicy;
+use App\Sales\Policies\ProspectPolicy;
 use App\Sales\Policies\ProfilePolicy;
 use App\Sales\Policies\ReportPolicy;
 use App\Sales\Policies\RoutePolicy;
@@ -64,6 +68,8 @@ class SalesServiceProvider extends ServiceProvider
         Gate::policy(\App\Sales\Models\SalesBrand::class, ProductPolicy::class); // the brand guide belongs to the product guide's managers
         Gate::policy(SalesProductRequest::class, ProductRequestPolicy::class);
         Gate::policy(SalesScript::class, ScriptPolicy::class);
+        Gate::policy(SalesProspect::class, ProspectPolicy::class);
+        Gate::policy(SalesBugReport::class, BugReportPolicy::class);
 
         if ($this->app->runningInConsole()) {
             $this->commands([\App\Sales\Console\ImportProducts::class, \App\Sales\Console\ImportBrands::class]);

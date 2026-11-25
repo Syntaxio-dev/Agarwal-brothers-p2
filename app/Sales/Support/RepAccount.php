@@ -98,6 +98,9 @@ class RepAccount
             'calls' => $count(\App\Sales\Models\SalesCall::class),
             'scripts' => $count(\App\Sales\Models\SalesScript::class),
             'requests' => $count(\App\Sales\Models\SalesProductRequest::class),
+            'prospects' => $count(\App\Sales\Models\SalesProspect::class),
+            'prospect_calls' => $count(\App\Sales\Models\SalesProspectNote::class),
+            'bug_reports' => $count(\App\Sales\Models\SalesBugReport::class),
         ];
     }
 
@@ -125,6 +128,11 @@ class RepAccount
             \App\Sales\Models\SalesDailyReport::where('user_id', $uid)->delete();
             \App\Sales\Models\SalesCall::where('user_id', $uid)->delete();
             \App\Sales\Models\SalesProductRequest::where('user_id', $uid)->delete();
+            \App\Sales\Models\SalesBugReport::where('user_id', $uid)->delete();
+
+            // the prospect pool is shared, like the clients: what this rep added, and the calls they made, are handed to the manager
+            \App\Sales\Models\SalesProspect::withTrashed()->where('user_id', $uid)->update(['user_id' => $by->id]);
+            \App\Sales\Models\SalesProspectNote::where('user_id', $uid)->update(['user_id' => $by->id]);
 
             // the shared pool survives: what this rep added is handed to the manager
             \App\Sales\Models\SalesClient::withTrashed()->where('user_id', $uid)->update(['user_id' => $by->id]);

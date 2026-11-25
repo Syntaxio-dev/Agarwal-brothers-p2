@@ -26,7 +26,7 @@ class SalesMeeting extends Model
     protected $table = 'sales_meetings';
 
     protected $fillable = [
-        'uuid', 'user_id', 'client_uuid', 'client_name', 'contact_uuids', 'meeting_at', 'purpose', 'discussion', 'outcome',
+        'uuid', 'user_id', 'client_uuid', 'prospect_uuid', 'client_name', 'contact_uuids', 'meeting_at', 'purpose', 'discussion', 'outcome',
         'next_followup_at', 'status', 'scheduled_at', 'ended_at', 'route_uuid', 'result', 'moved_from', 'time_manual', 'client_updated_at',
         'checkin_at', 'checkin_lat', 'checkin_lng', 'checkin_accuracy_m', 'checkin_distance_m', 'checkin_received_at', 'selfie_path', 'selfie_mime',
     ];

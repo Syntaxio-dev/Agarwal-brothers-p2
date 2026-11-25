@@ -62,6 +62,25 @@
         @endif
     </div>
 
+    <div class="sx-card">
+        <p class="sx-eyebrow" style="margin-bottom:.25rem">Prospecting</p>
+        @if ($prospecting['total'] === 0)
+            <p class="sx-empty">No prospects yet. The reps add them in the app (Clients > Prospects).</p>
+        @else
+            <div class="sx-line" style="margin-top:.75rem"><span style="font-weight:500">Prospects in the pool</span><span class="sx-mute">{{ $prospecting['total'] }}</span></div>
+            <div class="sx-line"><span style="font-weight:500">Not called yet</span><span class="sx-mute">{{ $prospecting['untouched'] }}</span></div>
+            <div class="sx-line"><span style="font-weight:500">Calls in the last {{ $days }} days</span><span class="sx-mute">{{ $prospecting['calls'] }}</span></div>
+            <div class="sx-line"><span style="font-weight:500">Interested or meeting fixed</span><span class="sx-mute">{{ $prospecting['interested'] }}</span></div>
+            <div class="sx-line"><span style="font-weight:500">Became clients</span><span class="sx-mute">{{ $prospecting['converted'] }}</span></div>
+            @foreach ($prospecting['territories'] as $t)
+                <div class="sx-line"><span class="sx-trunc">{{ $t['name'] }}</span><span class="sx-mute">{{ $t['count'] }}</span></div>
+            @endforeach
+        @endif
+        @if ($prospecting['bugs_open'] > 0)
+            <p class="sx-mute" style="margin-top:.75rem">{{ $prospecting['bugs_open'] }} bug report{{ $prospecting['bugs_open'] === 1 ? '' : 's' }} waiting in Sales team &gt; Bug reports.</p>
+        @endif
+    </div>
+
     @if ($showMoney)
         <div class="sx-card">
             <p class="sx-eyebrow" style="margin-bottom:.25rem">Spend by category</p>

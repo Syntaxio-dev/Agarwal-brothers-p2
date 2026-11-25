@@ -141,3 +141,42 @@ Push: a key that is **missing** keeps what is stored (a phone older than v1.15 n
 ```
 
 Limits: name 100, origin / channel 160, about 1000, list lines 300 (known_for, best_for, pitch max 6; known_lines max 8; watch_out max 4), objections max 6 (if 200, then 400), competitors max 8 (name 100, note 400). Empty lists are sent as `[]`, empty texts as `""`. The `version` stamp now covers products AND brands (prefix `v3`), so any brand edit makes the phones fetch again. Which products carry a brand is NOT sent: the phone works it out from the products' `premium_brands / economy_brands / lite_brands` (the brand `name` must be written the same way). Apps older than 1.18 ignore the key. Loaded from `database/data/sales-brands.json` with `php artisan sales:import-brands [--update] [--dry-run]` (never overwrites a manager's edit without `--update`).
+
+## Prospecting and bug reports (25 Nov 2026, app v1.19)
+
+Three new push collections and one new pull collection pair. All are **optional**: a phone without anything to send never sends the keys, an office that does not know them (older website) leaves them without an answer, so the phone keeps the records as "not sent" until the website is updated. **Deploy the website (migration `2026_11_25_100000`) BEFORE the reps get v1.19.**
+
+### `prospects` (shared pool, push and pull, deletable)
+
+A company that does not work with us yet, found for cold calling. Every rep reads every prospect; any rep adds one; only the rep who added it changes or deletes it (`NOT_ALLOWED` otherwise, the phone then takes the office's copy back); a manager can change or delete in the admin (Sales team > Prospects).
+
+| Field | Type | Meaning |
+|---|---|---|
+| `uuid` | uuid | made on the phone |
+| `name` | string 2-150 | the company |
+| `territory` | string 2-100 | the area it is sorted by (Bagru, Behror ...). One company once per territory (name and territory compared without case, spaces and punctuation): the second one is `INVALID`. |
+| `address` | string or null, at most 200 | |
+| `source` | `google`, `linkedin`, `indiamart`, `directory`, `visit`, `reference`, `other` or null | where the rep found it (null is sent too, it clears) |
+| `notes` | string, at most 1000 | |
+| `people` | list, at most 10 | the whole list on every save: `{ name (2-150), position (<= 100), phone, email, linkedin }`. Replaced as a whole. A phone number can be saved once in the prospect pool and never a number that is already a client's or a client person's (`INVALID`). `linkedin` is only kept as `https://<host>.linkedin.com/<path>` (no query, no port, no credentials); anything else is `INVALID`. |
+| `updated_at` | ISO time | the usual rule: the newest wins; not later than 10 minutes ahead of the office clock |
+
+Pull adds `created_by_code`, `created_by_name` (who added it) and `deleted`. Delete: `deleted.prospects: [uuid]`; a prospect that someone else added answers `NOT_ALLOWED`.
+
+### `prospect_notes` (shared, push and pull, a log: never changed, never deleted by a phone)
+
+One call to a prospect, by ANY rep. The newest note (by `created_at`) is the prospect's status.
+
+| Field | Type | Meaning |
+|---|---|---|
+| `uuid`, `prospect_uuid` | uuid | the prospect must exist: otherwise `NOT_ALLOWED` (it was deleted; the phone takes the office's list again) |
+| `outcome` | `no_answer`, `call_back`, `interested`, `meeting_fixed`, `not_interested`, `wrong_number`, `do_not_call`, `converted` | anything else is `INVALID` |
+| `remark` | string, at most 300 | |
+| `next_followup_at` | ISO time or null | not more than 2 years ahead |
+| `created_at`, `updated_at` | ISO time | when the call was made (the phone's time) |
+
+Sending a note twice is `duplicate`; another rep's uuid is `UUID_TAKEN`. Pull adds `created_by_code`, `created_by_name`. The notes of a deleted prospect are not sent.
+
+### `bug_reports` (private to the rep, push only)
+
+`{ uuid, area, body, app_version, updated_at }` with `area` one of `expenses, clients, prospects, leads, meetings, guide, calls, sync, other` and `body` 10-1000 characters. Sent once (`duplicate` when repeated), never pulled back. At most 30 open reports per rep (`INVALID` after that). A manager marks them Fixed or Declined with a short answer in Sales team > Bug reports (nothing comes back to the phone yet).

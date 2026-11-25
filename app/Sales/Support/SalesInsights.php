@@ -2,6 +2,7 @@
 
 namespace App\Sales\Support;
 
+use App\Sales\Models\SalesBugReport;
 use App\Sales\Models\SalesCall;
 use App\Sales\Models\SalesClient;
 use App\Sales\Models\SalesContact;
@@ -11,6 +12,8 @@ use App\Sales\Models\SalesExpense;
 use App\Sales\Models\SalesMeeting;
 use App\Sales\Models\SalesProduct;
 use App\Sales\Models\SalesProfile;
+use App\Sales\Models\SalesProspect;
+use App\Sales\Models\SalesProspectNote;
 use App\Sales\Models\SalesRoute;
 use App\Sales\Models\SalesScript;
 use Carbon\CarbonImmutable;
@@ -908,6 +911,35 @@ class SalesInsights
             // checked in, but the picture never arrived (offline, or it was refused)
             'no_selfie' => $count((clone $checked)->whereNull('selfie_path')),
             'away_rows' => (clone $checked)->where('checkin_distance_m', '>', $radius)->with('user')->orderByDesc('meeting_at')->limit($limit)->get(),
+        ];
+    }
+
+    /**
+     * Prospecting (app v1.19): how big the pool is, how much of it has been called, what the calls led to, and where the prospects are.
+     *
+     * @return array{total: int, untouched: int, calls: int, interested: int, converted: int, territories: list<array{name: string, count: int}>, bugs_open: int}
+     */
+    public static function prospecting(int $days, int $limit = 5): array
+    {
+        $total = (int) SalesProspect::count();
+
+        // where each prospect stands = its newest call (one pass over the calls, newest last)
+        $latest = [];
+        foreach (SalesProspectNote::query()->whereIn('prospect_uuid', SalesProspect::query()->select('uuid'))->orderBy('noted_at')->get(['prospect_uuid', 'outcome']) as $note) {
+            $latest[$note->prospect_uuid] = $note->outcome;
+        }
+
+        $territories = SalesProspect::query()->selectRaw('MIN(territory) as territory, COUNT(*) as n')->groupBy('territory_key')->orderByDesc('n')->limit($limit)->get()
+            ->map(fn ($row) => ['name' => (string) $row->territory, 'count' => (int) $row->n])->all();
+
+        return [
+            'total' => $total,
+            'untouched' => max(0, $total - count($latest)),
+            'calls' => (int) SalesProspectNote::where('noted_at', '>=', static::fromUtc($days))->count(),
+            'interested' => count(array_filter($latest, fn ($o) => in_array($o, ['interested', 'meeting_fixed'], true))),
+            'converted' => count(array_filter($latest, fn ($o) => $o === 'converted')),
+            'territories' => $territories,
+            'bugs_open' => (int) SalesBugReport::where('status', 'open')->count(),
         ];
     }
 
