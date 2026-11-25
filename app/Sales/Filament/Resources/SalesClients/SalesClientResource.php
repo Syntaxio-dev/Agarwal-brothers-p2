@@ -236,6 +236,7 @@ class SalesClientResource extends Resource
             ])
             ->headerActions([
                 self::importAction(),
+                self::templateAction(),
                 Action::make('export')
                     ->label('Export')
                     ->icon(Heroicon::OutlinedArrowDownTray)
@@ -320,20 +321,35 @@ class SalesClientResource extends Resource
             ->action(fn (array $data, $livewire) => SalesExporter::clients($query ? $query($livewire) : SalesClient::query(), $data['format']));
     }
 
-    /** One CSV with the numbers the manager already has: client, place, contact, position, phone. */
+    /** The template of the import (the import rule: every import offers one): the same columns the importer reads, in CSV and in Excel. */
+    public static function templateAction(): \Filament\Actions\ActionGroup
+    {
+        $send = function (string $format) {
+            abort_unless(auth()->user()?->canManage('sales-clients'), 403);
+
+            return \App\Support\ImportTemplate::download('clients-import-template', ClientImporter::sample(), $format, ClientImporter::guide());
+        };
+
+        return \Filament\Actions\ActionGroup::make([
+            Action::make('templateXlsx')->label('Excel template (.xlsx)')->icon(Heroicon::OutlinedTableCells)->action(fn () => $send('xlsx')),
+            Action::make('templateCsv')->label('CSV template (.csv)')->icon(Heroicon::OutlinedDocumentText)->action(fn () => $send('csv')),
+        ])->label('Download template')->icon(Heroicon::OutlinedDocumentArrowDown)->color('gray')->button();
+    }
+
+    /** One CSV or Excel file with the numbers the manager already has: client, place, contact, position, phone. */
     public static function importAction(): Action
     {
         return Action::make('import')
-            ->label('Import from CSV')
+            ->label('Import from CSV or Excel')
             ->icon(Heroicon::OutlinedArrowUpTray)
             ->color('gray')
             ->modalHeading('Import clients and numbers')
-            ->modalDescription('Save your sheet as CSV (Excel: Save As > CSV UTF-8). The first row names the columns: Client, Place, Contact, Position, Phone, Email, Notes. Only Client is needed. One row is one person; a number that is already saved is skipped.')
+            ->modalDescription('Use the template (button "Download template", Excel or CSV): it has the exact columns Client, Place, Contact, Position, Phone, Email, Notes. Only Client is needed. One row is one person; a number that is already saved is skipped. Upload the file as .xlsx or .csv.')
             ->modalSubmitActionLabel('Import')
             ->schema([
-                FileUpload::make('file')->label('CSV file')
+                FileUpload::make('file')->label('CSV or Excel file')
                     ->disk('local')->directory('sales-imports')->visibility('private')
-                    ->acceptedFileTypes(['text/csv', 'text/plain', 'application/csv', 'application/vnd.ms-excel'])
+                    ->acceptedFileTypes(['text/csv', 'text/plain', 'application/csv', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'])
                     ->maxSize(2048)->required(),
                 Select::make('rep')->label('Give all new clients to (optional)')->options(fn () => self::repOptions())->searchable()->native(false),
             ])
@@ -341,8 +357,16 @@ class SalesClientResource extends Resource
                 abort_unless(auth()->user()?->canManage('sales-clients'), 403);
 
                 $path = $data['file'];
-                $summary = ClientImporter::fromCsv(Storage::disk('local')->path($path), filled($data['rep'] ?? null) ? (int) $data['rep'] : null, auth()->user());
-                Storage::disk('local')->delete($path);
+                $stored = Storage::disk('local')->path($path);
+                $csv = \App\Support\ImportTemplate::asCsv($stored, pathinfo($path, PATHINFO_EXTENSION));   // an Excel file is read as a CSV
+                try {
+                    $summary = ClientImporter::fromCsv($csv, filled($data['rep'] ?? null) ? (int) $data['rep'] : null, auth()->user());
+                } finally {
+                    if ($csv !== $stored) {
+                        @unlink($csv);
+                    }
+                    Storage::disk('local')->delete($path);
+                }
 
                 $problems = array_merge($summary['duplicates'], $summary['skipped']);
 

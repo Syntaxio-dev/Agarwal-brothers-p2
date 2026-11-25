@@ -221,7 +221,7 @@ class ProductImportTest extends TestCase
         Livewire::test(ImportProducts::class)
             ->assertSee('Upload your file')->assertSee('CSV or Excel file')
             ->call('downloadSample')
-            ->assertFileDownloaded('products-import-sample.csv');
+            ->assertFileDownloaded('products-import-template.csv');
     }
 
     public function test_only_people_who_can_create_products_get_the_page(): void

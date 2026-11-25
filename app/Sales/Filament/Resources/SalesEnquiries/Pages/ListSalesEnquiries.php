@@ -20,7 +20,9 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Components\View;
+use Illuminate\Database\Eloquent\Builder;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Str;
 use Livewire\Attributes\On;
@@ -54,6 +56,30 @@ class ListSalesEnquiries extends ListRecords
     public function getTitle(): string
     {
         return 'Enquiries';
+    }
+
+    /** The List shows everything, newest activity first: the owner's default. */
+    public function getDefaultActiveTab(): string|int|null
+    {
+        return 'all';
+    }
+
+    /**
+     * The follow-up chips of the List (the old Leads screen lives here now): Today (what needs action now) / Last 7 days / Last month / All,
+     * the same four views a rep has, over every rep. The board does not use them.
+     */
+    public function getTabs(): array
+    {
+        $counts = SalesInsights::leadCounts();
+        $tabs = [];
+
+        foreach (SalesInsights::LEAD_RANGES as $range => $label) {
+            $tab = Tab::make($label)->badge($counts[$range] ?: null)
+                ->modifyQueryUsing(fn (Builder $query) => SalesInsights::leadRange($query, $range));
+            $tabs[$range] = $range === 'today' ? $tab->badgeColor('danger') : $tab;
+        }
+
+        return $tabs;
     }
 
     private function isBoard(): bool

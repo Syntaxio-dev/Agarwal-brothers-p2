@@ -459,6 +459,25 @@ class ProductImporter
         return array_key_first($counts) ?: ',';
     }
 
+    /** The "How to fill" sheet of the Excel template and the column table of the import page: [column, needed?, what to write, example]. @return list<array{0: string, 1: bool, 2: string, 3: string}> */
+    public static function guide(): array
+    {
+        return [
+            ['name', true, 'Product name', 'Entris II Essential'],
+            ['brand', true, 'Brand name exactly as in Catalogue, Brands', 'Sartorius'],
+            ['category', true, 'Product line (category) under that brand', 'Analytical Balances'],
+            ['model_group', false, 'Heading to group models on the category page', 'Standard Models'],
+            ['short_description', false, 'One or two lines for the product card', 'Compact precision balance'],
+            ['overview', false, 'Longer introduction', 'A reliable everyday balance...'],
+            ['specs', false, 'Name: Value pairs separated by |', 'Pan size: 90 mm | Display: LCD'],
+            ['spec: Capacity', false, 'Optional: one column per specification (the name goes after "spec:")', '220 g'],
+            ['features', false, 'Title: Description pairs separated by |', 'Fast: Stable in 2 seconds | Compact: Small footprint'],
+            ['advantages', false, 'Same as features', 'Easy to clean: Smooth housing'],
+            ['is_active', false, 'yes or no. Empty means no (draft)', 'no'],
+            ['slug', false, 'Web address part. Leave out to make it from the name', 'entris-ii-essential'],
+        ];
+    }
+
     /** Header + example rows for the downloadable template. @return list<list<string>> */
     public static function sample(): array
     {

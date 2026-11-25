@@ -27,6 +27,34 @@ class ClientImporter
         'notes' => ['notes', 'note', 'remarks'],
     ];
 
+    /** A row of the template that still says this in its Client cell is an example: it is never imported. */
+    public const EXAMPLE_MARK = '(delete this row)';
+
+    /** Header + example rows of the downloadable template (CSV and Excel). @return list<list<string>> */
+    public static function sample(): array
+    {
+        return [
+            ['Client', 'Place', 'Contact', 'Position', 'Phone', 'Email', 'Notes'],
+            ['Example Pvt Ltd ' . self::EXAMPLE_MARK, 'Jaipur', 'Rohit Sharma', 'Purchase Manager', '9876543210', 'rohit@example.com', 'Met at the trade fair'],
+            ['Example Pvt Ltd ' . self::EXAMPLE_MARK, 'Jaipur', 'Anita Verma', 'Lab Head', '9123456780', '', 'A second person at the same client: write the client again'],
+        ];
+    }
+
+    /** The "How to fill" sheet of the Excel template: [column, needed?, what to write, example]. @return list<list<string>> */
+    public static function guide(): array
+    {
+        return [
+            ['Client', 'Yes', 'The company or customer. Write the same name on every row of the same client.', 'JK Cement'],
+            ['Place', 'Advised', 'Town or city (letters only). The team filters clients by place.', 'Jaipur'],
+            ['Contact', 'No', 'The person you can call. One row is one person.', 'Rohit Sharma'],
+            ['Position', 'No', 'Job title, for example from the Positions list.', 'Purchase Manager'],
+            ['Phone', 'No', 'A mobile (10 digits) or a number with its country code. A number that is already saved is skipped.', '9876543210'],
+            ['Email', 'No', 'One e-mail address.', 'rohit@example.com'],
+            ['Notes', 'No', 'Anything the rep should know.', 'Met at the trade fair'],
+            ['', '', 'Delete the two example rows (they say "delete this row") or leave them: they are never imported. Up to ' . self::MAX_ROWS . ' rows. Save as .xlsx, or as CSV UTF-8.', ''],
+        ];
+    }
+
     /** @return array{rows: int, clients_created: int, clients_reused: int, contacts_created: int, duplicates: list<string>, skipped: list<string>} */
     public static function fromCsv(string $path, ?int $assignTo, User $by): array
     {
@@ -65,6 +93,9 @@ class ClientImporter
                     }
                     if ($row === [null] || ! array_filter($row, fn ($v) => trim((string) $v) !== '')) {
                         continue;
+                    }
+                    if (isset($map['client']) && str_contains(strtolower((string) ($row[$map['client']] ?? '')), self::EXAMPLE_MARK)) {
+                        continue;   // an example row of the template
                     }
 
                     $summary['rows']++;

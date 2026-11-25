@@ -3,8 +3,8 @@
 namespace Tests\Feature\Sales;
 
 use App\Models\User;
-use App\Sales\Filament\Resources\SalesLeads\Pages\ListSalesLeads;
-use App\Sales\Filament\Resources\SalesLeads\SalesLeadResource;
+use App\Sales\Filament\Resources\SalesEnquiries\Pages\ListSalesEnquiries;
+use App\Sales\Filament\Resources\SalesEnquiries\SalesEnquiryResource;
 use App\Sales\Models\SalesEnquiry;
 use App\Sales\Rep\Resources\MyLeads\Pages\ListMyLeads;
 use App\Sales\Support\SalesInsights;
@@ -12,7 +12,7 @@ use Filament\Facades\Filament;
 use Illuminate\Support\Str;
 use Livewire\Livewire;
 
-/** The Leads screens: the manager sees every rep's leads, a rep only his own; the four views (Today / Last 7 days / Last month / All). */
+/** The follow-up views: the manager sees every rep's leads in the List of the Enquiries screen (the old Leads screen was merged into it), a rep only his own; the four views (Today / Last 7 days / Last month / All). */
 class LeadScreensTest extends SalesTestCase
 {
     private function lead(int $userId, array $over = []): SalesEnquiry
@@ -64,7 +64,7 @@ class LeadScreensTest extends SalesTestCase
         $this->actingAs($this->manager());
         Filament::setCurrentPanel('sales');
 
-        $page = Livewire::test(ListSalesLeads::class)
+        $page = Livewire::test(ListSalesEnquiries::class)->set('viewMode', 'list')
             ->assertSuccessful()
             ->assertCanSeeTableRecords([$la, $lb])                                    // default view: All
             ->assertSee('Asha')->assertSee('Bharat')->assertSee('Phone off');
@@ -77,10 +77,10 @@ class LeadScreensTest extends SalesTestCase
     public function test_only_a_manager_with_the_right_opens_the_leads_screen(): void
     {
         $this->actingAs($this->manager());
-        $this->assertTrue(SalesLeadResource::canViewAny());
+        $this->assertTrue(SalesEnquiryResource::canViewAny());
 
         $this->actingAs(User::factory()->create(['role' => 'editor', 'is_active' => true]));
-        $this->assertFalse(SalesLeadResource::canViewAny());
+        $this->assertFalse(SalesEnquiryResource::canViewAny());
     }
 
     public function test_a_rep_sees_only_his_own_leads_and_logs_a_follow_up_from_the_list(): void

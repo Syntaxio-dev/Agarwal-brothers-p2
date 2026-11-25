@@ -1,19 +1,6 @@
 @php
-    // [column, required?, what to write, example]
-    $columns = [
-        ['name', true, 'Product name', 'Entris II Essential'],
-        ['brand', true, 'Brand name exactly as in Catalogue, Brands', 'Sartorius'],
-        ['category', true, 'Product line (category) under that brand', 'Analytical Balances'],
-        ['model_group', false, 'Heading to group models on the category page', 'Standard Models'],
-        ['short_description', false, 'One or two lines for the product card', 'Compact precision balance'],
-        ['overview', false, 'Longer introduction', 'A reliable everyday balance...'],
-        ['specs', false, 'Name: Value pairs separated by |', 'Pan size: 90 mm | Display: LCD'],
-        ['spec: Capacity', false, 'Optional: one column per specification (the name goes after "spec:")', '220 g'],
-        ['features', false, 'Title: Description pairs separated by |', 'Fast: Stable in 2 seconds | Compact: Small footprint'],
-        ['advantages', false, 'Same as features', 'Easy to clean: Smooth housing'],
-        ['is_active', false, 'yes or no. Empty means no (draft)', 'no'],
-        ['slug', false, 'Web address part. Leave out to make it from the name', 'entris-ii-essential'],
-    ];
+    // [column, required?, what to write, example]: the same list as the Excel template's "How to fill" sheet
+    $columns = \App\Support\ProductImporter::guide();
     $result = $this->result;
     $failed = $result && ($result['fatal'] || $result['errors']);
 @endphp
@@ -28,8 +15,11 @@
                 <span wire:loading.remove wire:target="check">Check file</span>
                 <span wire:loading wire:target="check">Checking...</span>
             </x-filament::button>
+            <x-filament::button type="button" color="gray" icon="heroicon-o-table-cells" wire:click="downloadSampleExcel">
+                Download template (Excel)
+            </x-filament::button>
             <x-filament::button type="button" color="gray" icon="heroicon-o-arrow-down-tray" wire:click="downloadSample">
-                Download sample file
+                Download template (CSV)
             </x-filament::button>
         </div>
     </form>

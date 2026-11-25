@@ -202,13 +202,16 @@ class ImportProducts extends Page
     {
         abort_unless(static::canAccess(), 403);
 
-        return response()->streamDownload(function () {
-            $out = fopen('php://output', 'w');
-            fwrite($out, "\xEF\xBB\xBF");   // lets Excel read the file as UTF-8
-            foreach (ProductImporter::sample() as $row) {
-                fputcsv($out, $row);
-            }
-            fclose($out);
-        }, 'products-import-sample.csv', ['Content-Type' => 'text/csv; charset=UTF-8']);
+        return \App\Support\ImportTemplate::download('products-import-template', ProductImporter::sample(), 'csv');
+    }
+
+    /** The same template as an Excel file, with a second sheet "How to fill" (the import rule: a CSV and an Excel template). */
+    public function downloadSampleExcel(): StreamedResponse
+    {
+        abort_unless(static::canAccess(), 403);
+
+        $guide = array_map(fn (array $c) => [$c[0], $c[1] ? 'Yes' : 'No', $c[2], $c[3]], ProductImporter::guide());
+
+        return \App\Support\ImportTemplate::download('products-import-template', ProductImporter::sample(), 'xlsx', $guide);
     }
 }

@@ -5,6 +5,8 @@ namespace App\Sales\Filament\Resources\SalesEnquiries;
 use App\Filament\Concerns\RestrictedByRole;
 use App\Sales\Filament\Resources\SalesEnquiries\Pages\ListSalesEnquiries;
 use App\Sales\Models\SalesEnquiry;
+use App\Sales\Support\SalesInsights;
+use App\Sales\Support\LeadColumns;
 use App\Sales\Models\SalesProfile;
 use App\Sales\Support\Money;
 use App\Sales\Support\SalesExporter;
@@ -142,19 +144,30 @@ class SalesEnquiryResource extends Resource
                 TextColumn::make('items_summary')->label('Asked for')->getStateUsing(fn (SalesEnquiry $r) => $r->itemsSummary())->wrap(),
                 TextColumn::make('budget')->label('Budget')->alignEnd()->getStateUsing(fn (SalesEnquiry $r) => $r->budgetPaise() ?: null)
                     ->formatStateUsing(fn ($state) => Money::rupees((int) $state))->placeholder('—'),
-                TextColumn::make('status')->badge()->formatStateUsing(fn (string $state) => SalesEnquiry::STATUSES[$state] ?? $state)->color(fn (string $state) => self::statusColor($state))->sortable(),
-                TextColumn::make('next_followup_at')->label('Follow-up')->dateTime('d M, h:i A', $tz)->placeholder('—')->sortable()
-                    ->color(fn (SalesEnquiry $r) => $r->isOverdue() ? 'danger' : null)
-                    ->description(fn (SalesEnquiry $r) => $r->isOverdue() ? 'Overdue' : null),
+                TextColumn::make('status')->label('Stage')->badge()->formatStateUsing(fn (string $state) => SalesEnquiry::STATUSES[$state] ?? $state)->color(fn (string $state) => self::statusColor($state))->sortable(),
+                // the follow-up layer (what used to be the separate Leads screen): where the lead stands, the next action, what the client said last, the last contact
+                TextColumn::make('lead_status')->label('Lead status')->badge()
+                    ->formatStateUsing(fn (?string $state) => SalesEnquiry::LEAD_STATUSES[$state ?? 'new'] ?? $state)
+                    ->color(fn (?string $state) => LeadColumns::statusColor($state))->sortable(),
+                TextColumn::make('next_followup_at')->label('Next action')->sortable()
+                    ->state(fn (SalesEnquiry $r) => SalesInsights::leadReminder($r)['label'])
+                    ->color(fn (SalesEnquiry $r) => match (SalesInsights::leadReminder($r)['key']) {
+                        'overdue' => 'danger', 'today', 'none' => 'warning', 'done' => 'gray', default => null,
+                    }),
+                TextColumn::make('lead_remark')->label('Last remark')->placeholder('—')->limit(70)->wrap()->tooltip(fn (SalesEnquiry $r) => $r->lead_remark),
+                TextColumn::make('last_followup_at')->label('Last contact')->since()->placeholder('Not yet')->sortable(),
                 TextColumn::make('source')->label('Came through')->badge()->color('gray')->placeholder('—')
                     ->formatStateUsing(fn (?string $state) => SalesEnquiry::SOURCES[$state] ?? $state)->toggleable(),
                 TextColumn::make('updated_at')->label('Last change')->since()->sortable()->toggleable(isToggledHiddenByDefault: true),
             ])
-            ->defaultSort('opened_at', 'desc')
+            // the newest activity first (the owner's default for the follow-up view, 5 Nov 2026)
+            ->defaultSort(fn (Builder $query) => SalesInsights::leadsByRecent($query))
             ->filters([
                 SelectFilter::make('user_id')->label('Rep')
                     ->options(fn () => SalesProfile::with('user')->get()->pluck('user.name', 'user_id')->sort()->all()),
-                SelectFilter::make('status')->options(SalesEnquiry::STATUSES)->multiple(),
+                SelectFilter::make('status')->label('Stage')->options(SalesEnquiry::STATUSES)->multiple(),
+                SelectFilter::make('lead_status')->label('Lead status')->options(SalesEnquiry::LEAD_STATUSES)->multiple(),
+                Filter::make('no_reminder')->label('No reminder set')->query(fn (Builder $q) => $q->whereIn('status', SalesEnquiry::OPEN)->whereNull('next_followup_at')),
                 SelectFilter::make('source')->label('Came through')->options(SalesEnquiry::SOURCES),
                 Filter::make('open')->label('Still open')->query(fn (Builder $q) => $q->whereIn('status', SalesEnquiry::OPEN)),
                 Filter::make('overdue')->label('Follow-up overdue')->query(fn (Builder $q) => $q->whereIn('status', SalesEnquiry::OPEN)->where('next_followup_at', '<', now())),

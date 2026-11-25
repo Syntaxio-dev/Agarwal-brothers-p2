@@ -83,6 +83,7 @@ class EditSalesClient extends EditRecord
                     Notification::make()->title($person->name . ' was added')->success()->send();
                 }),
             SalesClientResource::importAction(),
+            SalesClientResource::templateAction(),
             SalesClientResource::exportAction(),
             \Filament\Actions\Action::make('tableView')->label('Table view')->icon(\Filament\Support\Icons\Heroicon::OutlinedTableCells)->color('gray')
                 ->url(SalesClientResource::getUrl('index')),
