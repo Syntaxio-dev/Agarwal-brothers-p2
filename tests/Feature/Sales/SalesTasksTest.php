@@ -165,6 +165,12 @@ class SalesTasksTest extends SalesTestCase
         $this->push($ha, ['todos' => [$done]])->assertOk();
         $this->assertTrue(SalesTodo::first()->done);
 
+        // REGRESSION (found on the live server): a ticked to-do must come back on the pull. Its done_at was a plain string and the pull crashed
+        // for the rep, so every sync of that rep failed with "server error".
+        $back = collect($this->pull($ha)['todos'])->firstWhere('uuid', $todo['uuid']);
+        $this->assertTrue($back['done']);
+        $this->assertMatchesRegularExpression('/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/', $back['done_at']);
+
         $this->assertSame('accepted', $this->push($ha, ['deleted' => ['todos' => [$todo['uuid']], 'memos' => [$memo['uuid']]]])->assertOk()->json('results.deleted.todos.0.status'));
         $this->assertSame(0, SalesTodo::count());
         $this->assertSame(0, SalesMemo::count());

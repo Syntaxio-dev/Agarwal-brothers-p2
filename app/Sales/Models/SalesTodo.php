@@ -19,7 +19,8 @@ class SalesTodo extends Model
 
     protected function casts(): array
     {
-        return ['done' => 'boolean', 'due_date' => 'date:Y-m-d'];
+        // done_at must be a date object: the pull formats it (a plain string made EVERY sync of a rep with a ticked to-do fail, 25 Nov 2026)
+        return ['done' => 'boolean', 'done_at' => 'datetime', 'due_date' => 'date:Y-m-d'];
     }
 
     public function user(): BelongsTo
