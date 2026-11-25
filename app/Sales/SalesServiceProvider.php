@@ -100,7 +100,8 @@ class SalesServiceProvider extends ServiceProvider
 
             $this->billViewer($domain);
             // the Leads screen was merged into Enquiries (its List): an old bookmark still lands on the right place
-            $this->panelRoute($domain)->get('sales-leads', fn () => redirect(\App\Sales\Filament\Resources\SalesEnquiries\SalesEnquiryResource::getUrl('index', ['view' => 'list'])));
+            // (a plain path: this route runs outside the panel, where a panel URL helper cannot be used)
+            $this->panelRoute($domain)->get('sales-leads', fn () => redirect(($domain ? '' : '/sales') . '/sales-enquiries?view=list'));
             $this->selfieViewer($domain);
         }
     }

@@ -74,6 +74,11 @@ class LeadScreensTest extends SalesTestCase
         $page->set('activeTab', 'all')->filterTable('user_id', $b->user_id)->assertCanSeeTableRecords([$lb])->assertCanNotSeeTableRecords([$la]);
     }
 
+    public function test_the_old_leads_address_leads_to_the_enquiries_list(): void
+    {
+        $this->get('/sales/sales-leads')->assertRedirect('/sales/sales-enquiries?view=list');
+    }
+
     public function test_only_a_manager_with_the_right_opens_the_leads_screen(): void
     {
         $this->actingAs($this->manager());
