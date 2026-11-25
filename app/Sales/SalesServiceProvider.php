@@ -19,6 +19,7 @@ use App\Sales\Models\SalesProspect;
 use App\Sales\Models\SalesProfile;
 use App\Sales\Models\SalesRoute;
 use App\Sales\Models\SalesScript;
+use App\Sales\Models\SalesTask;
 use App\Sales\Policies\CallPolicy;
 use App\Sales\Policies\ClientPolicy;
 use App\Sales\Policies\ContactPolicy;
@@ -34,6 +35,7 @@ use App\Sales\Policies\ProfilePolicy;
 use App\Sales\Policies\ReportPolicy;
 use App\Sales\Policies\RoutePolicy;
 use App\Sales\Policies\ScriptPolicy;
+use App\Sales\Policies\TaskPolicy;
 use Illuminate\Auth\Middleware\Authenticate;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Http\Request;
@@ -70,6 +72,7 @@ class SalesServiceProvider extends ServiceProvider
         Gate::policy(SalesScript::class, ScriptPolicy::class);
         Gate::policy(SalesProspect::class, ProspectPolicy::class);
         Gate::policy(SalesBugReport::class, BugReportPolicy::class);
+        Gate::policy(SalesTask::class, TaskPolicy::class);
 
         if ($this->app->runningInConsole()) {
             $this->commands([\App\Sales\Console\ImportProducts::class, \App\Sales\Console\ImportBrands::class]);
@@ -99,6 +102,7 @@ class SalesServiceProvider extends ServiceProvider
             }
 
             $this->billViewer($domain);
+            $this->taskFileViewer($domain);
             // the Leads screen was merged into Enquiries (its List): an old bookmark still lands on the right place
             // (a plain path: this route runs outside the panel, where a panel URL helper cannot be used)
             $this->panelRoute($domain)->get('sales-leads', fn () => redirect(($domain ? '' : '/sales') . '/sales-enquiries?view=list'));
@@ -128,6 +132,23 @@ class SalesServiceProvider extends ServiceProvider
 
         // Bill uploads are heavier: fewer per minute.
         RateLimiter::for('sales-upload', fn (Request $request) => Limit::perMinute(40)->by('sales-upload|' . ($request->user()?->getAuthIdentifier() ?? $request->ip())));
+    }
+
+    /** A manager opens a file of a task through this address (private disk, login session, the Tasks screen's role). Always downloaded, never shown in the page. */
+    private function taskFileViewer(?string $domain): void
+    {
+        $this->panelRoute($domain)->get('task-files/{id}', function (int $id) {
+            abort_unless(auth()->user()?->canManage('sales-tasks'), 403);
+
+            $file = \App\Sales\Models\SalesTaskFile::findOrFail($id);
+            abort_unless(Storage::disk('local')->exists($file->path), 404);
+
+            return Storage::disk('local')->download($file->path, $file->name, [
+                'Content-Type' => $file->mime,
+                'X-Content-Type-Options' => 'nosniff',
+                'Cache-Control' => 'private, max-age=300',
+            ]);
+        })->whereNumber('id')->name('sales.task-file');
     }
 
     /** A manager looks at a check-in selfie through this address (private disk, login session, same role check as the Meetings screen). */

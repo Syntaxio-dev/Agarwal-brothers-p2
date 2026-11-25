@@ -63,6 +63,19 @@
     </div>
 
     <div class="sx-card">
+        <p class="sx-eyebrow" style="margin-bottom:.25rem">Tasks for the reps</p>
+        @if ($taskFigures['open'] === 0 && $taskFigures['done_week'] === 0)
+            <p class="sx-empty">No tasks yet. Give a rep some work under Sales team &gt; Tasks.</p>
+        @else
+            <div class="sx-line" style="margin-top:.75rem"><span style="font-weight:500">Open</span><span class="sx-mute">{{ $taskFigures['open'] }}</span></div>
+            <div class="sx-line"><span style="font-weight:500">Late</span><span class="sx-mute">{{ $taskFigures['overdue'] }}</span></div>
+            <div class="sx-line"><span style="font-weight:500">Rep says cannot do</span><span class="sx-mute">{{ $taskFigures['blocked'] }}</span></div>
+            <div class="sx-line"><span style="font-weight:500">Not opened by the rep yet</span><span class="sx-mute">{{ $taskFigures['new'] }}</span></div>
+            <div class="sx-line"><span style="font-weight:500">Done in the last 7 days</span><span class="sx-mute">{{ $taskFigures['done_week'] }}</span></div>
+        @endif
+    </div>
+
+    <div class="sx-card">
         <p class="sx-eyebrow" style="margin-bottom:.25rem">Prospecting</p>
         @if ($prospecting['total'] === 0)
             <p class="sx-empty">No prospects yet. The reps add them in the app (Clients > Prospects).</p>

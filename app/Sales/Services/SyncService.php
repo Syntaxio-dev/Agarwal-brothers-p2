@@ -17,7 +17,10 @@ use App\Sales\Models\SalesProspect;
 use App\Sales\Models\SalesProspectNote;
 use App\Sales\Models\SalesProspectPerson;
 use App\Sales\Models\SalesRoute;
+use App\Sales\Models\SalesMemo;
 use App\Sales\Models\SalesScript;
+use App\Sales\Models\SalesTask;
+use App\Sales\Models\SalesTodo;
 use App\Sales\Support\PhoneNumber;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\DB;
@@ -41,10 +44,10 @@ use Illuminate\Validation\Rule;
 class SyncService
 {
     /** Kinds that carry records, in the order they are pushed (a client before the people at it). */
-    public const KINDS = ['expenses', 'clients', 'contacts', 'meetings', 'routes', 'enquiries', 'calls', 'reports', 'product_requests', 'scripts', 'prospects', 'prospect_notes', 'bug_reports'];
+    public const KINDS = ['expenses', 'clients', 'contacts', 'meetings', 'routes', 'enquiries', 'calls', 'reports', 'product_requests', 'scripts', 'prospects', 'prospect_notes', 'bug_reports', 'todos', 'memos', 'tasks'];
 
     /** Kinds the phone may delete (a call is a log, a report is a record: never). */
-    public const DELETABLE = ['expenses', 'clients', 'contacts', 'meetings', 'routes', 'enquiries', 'scripts', 'prospects'];
+    public const DELETABLE = ['expenses', 'clients', 'contacts', 'meetings', 'routes', 'enquiries', 'scripts', 'prospects', 'todos', 'memos'];
 
     private const MAX_POSITIONS = 300;
 
@@ -57,6 +60,7 @@ class SyncService
             'expenses' => 'upsertExpense', 'clients' => 'upsertClient', 'contacts' => 'upsertContact', 'meetings' => 'upsertMeeting',
             'routes' => 'upsertRoute', 'enquiries' => 'upsertEnquiry', 'calls' => 'upsertCall', 'reports' => 'upsertReport', 'product_requests' => 'upsertProductRequest',
             'scripts' => 'upsertScript', 'prospects' => 'upsertProspect', 'prospect_notes' => 'upsertProspectNote', 'bug_reports' => 'upsertBugReport',
+            'todos' => 'upsertTodo', 'memos' => 'upsertMemo', 'tasks' => 'upsertTask',
         ];
 
         foreach ($methods as $kind => $method) {
@@ -583,6 +587,99 @@ class SyncService
         return ['status' => 'accepted'];
     }
 
+    // ---- the rep's own to-do list and notes (private; app v1.20) ------------------------------------------------------------------------
+
+    private function upsertTodo(User $user, array $r): array
+    {
+        $invalid = $this->check($r, [
+            'uuid' => ['required', 'uuid'],
+            'title' => ['required', 'string', 'min:2', 'max:200'],
+            'done' => ['sometimes', 'boolean'],
+            'done_at' => ['nullable', 'date'],
+            'due_date' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:2020-01-01', 'before_or_equal:' . now()->addYears(2)->toDateString()],
+            'updated_at' => ['required', 'date', $this->clockRule()],
+        ]);
+        if ($invalid) {
+            return $invalid;
+        }
+
+        $model = SalesTodo::withTrashed()->where('uuid', $r['uuid'])->first();
+        if ($early = $this->earlyAnswer($model, $user, $r['updated_at'])) {
+            return $early;
+        }
+
+        $model ??= new SalesTodo(['uuid' => $r['uuid'], 'user_id' => $user->id]);
+        $model->fill([
+            'title' => trim($r['title']),
+            'done' => (bool) ($r['done'] ?? false),
+            'done_at' => ! empty($r['done']) && filled($r['done_at'] ?? null) ? $this->time($r['done_at']) : null,
+            'due_date' => $r['due_date'] ?? null,
+            'client_updated_at' => $this->time($r['updated_at']),
+        ])->save();
+
+        return ['status' => 'accepted'];
+    }
+
+    private function upsertMemo(User $user, array $r): array
+    {
+        $invalid = $this->check($r, [
+            'uuid' => ['required', 'uuid'],
+            'title' => ['nullable', 'string', 'max:120'],
+            'body' => ['required', 'string', 'min:1', 'max:5000'],
+            'updated_at' => ['required', 'date', $this->clockRule()],
+        ]);
+        if ($invalid) {
+            return $invalid;
+        }
+
+        $model = SalesMemo::withTrashed()->where('uuid', $r['uuid'])->first();
+        if ($early = $this->earlyAnswer($model, $user, $r['updated_at'])) {
+            return $early;
+        }
+
+        $model ??= new SalesMemo(['uuid' => $r['uuid'], 'user_id' => $user->id]);
+        $model->fill(['title' => $this->text($r['title'] ?? null), 'body' => trim($r['body']), 'client_updated_at' => $this->time($r['updated_at'])])->save();
+
+        return ['status' => 'accepted'];
+    }
+
+    // ---- tasks the manager gave this rep: only the status and the note come up from the phone ---------------------------------------------
+
+    private function upsertTask(User $user, array $r): array
+    {
+        $invalid = $this->check($r, [
+            'uuid' => ['required', 'uuid'],
+            'status' => ['required', Rule::in(SalesTask::REP_STATUSES)],
+            'rep_note' => ['nullable', 'string', 'max:500'],
+            'rep_updated_at' => ['required', 'date', $this->clockRule()],
+        ]);
+        if ($invalid) {
+            return $invalid;
+        }
+        if ($r['status'] === 'blocked' && ! filled($r['rep_note'] ?? null)) {
+            return $this->rejected('INVALID', 'Tell the manager why you cannot do it.');
+        }
+
+        $task = SalesTask::withTrashed()->where('uuid', $r['uuid'])->first();
+
+        // somebody else's task (or none): the phone takes the office's list again
+        if (! $task || (int) $task->assigned_to !== (int) $user->id) {
+            return $this->rejected('NOT_ALLOWED', 'This task is not yours.');
+        }
+        if ($task->trashed() || $task->status === 'cancelled') {
+            return $this->rejected('LOCKED', 'The manager cancelled this task.');
+        }
+
+        $at = $this->time($r['rep_updated_at']);
+        if ($task->rep_updated_at && $task->rep_updated_at->gte($at)) {
+            return ['status' => 'duplicate'];
+        }
+
+        $task->fill(['status' => $r['status'], 'rep_note' => $this->text($r['rep_note'] ?? null), 'rep_updated_at' => $at])->save();
+
+        return ['status' => 'accepted'];
+    }
+
     // ---- prospecting (app v1.19): companies that do not work with us yet. Shared pool: every rep reads, any rep adds, only the adder changes. ----
 
     private const MAX_OPEN_BUG_REPORTS = 30;
@@ -949,7 +1046,7 @@ class SyncService
             return $this->rejected('INVALID', 'Not a valid id.');
         }
 
-        $class = ['expenses' => SalesExpense::class, 'clients' => SalesClient::class, 'contacts' => SalesContact::class, 'meetings' => SalesMeeting::class, 'routes' => SalesRoute::class, 'enquiries' => SalesEnquiry::class, 'scripts' => SalesScript::class, 'prospects' => SalesProspect::class][$kind];
+        $class = ['expenses' => SalesExpense::class, 'clients' => SalesClient::class, 'contacts' => SalesContact::class, 'meetings' => SalesMeeting::class, 'routes' => SalesRoute::class, 'enquiries' => SalesEnquiry::class, 'scripts' => SalesScript::class, 'prospects' => SalesProspect::class, 'todos' => SalesTodo::class, 'memos' => SalesMemo::class][$kind];
         $model = $class::withTrashed()->where('uuid', $uuid)->first();
 
         // Unknown here (never reached the server) or already deleted: the wish is already true.
@@ -1009,6 +1106,10 @@ class SyncService
             // the prospect pool is shared by the whole team (no per-rep filter); a bug report never comes back
             'prospects' => [SalesProspect::class, fn (SalesProspect $p) => $this->prospectPayload($p), true],
             'prospect_notes' => [SalesProspectNote::class, fn (SalesProspectNote $n) => $this->prospectNotePayload($n), true],
+            // the rep's own list and notes (private), and the tasks the manager gave this rep
+            'todos' => [SalesTodo::class, fn (SalesTodo $t) => $this->todoPayload($t), false],
+            'memos' => [SalesMemo::class, fn (SalesMemo $m) => $this->memoPayload($m), false],
+            'tasks' => [SalesTask::class, fn (SalesTask $t) => $this->taskPayload($t), false],
         ];
 
         foreach ($kinds as $kind => [$class, $shape, $shared]) {
@@ -1023,13 +1124,16 @@ class SyncService
             if ($kind === 'prospects') {
                 $query->with(['people', 'addedBy.salesProfile']);
             }
+            if ($kind === 'tasks') {
+                $query->with(['files', 'creator']);
+            }
             if ($kind === 'prospect_notes') {
                 // the calls to a prospect that was deleted are not sent: the phone drops them with the prospect
                 $query->with('user.salesProfile')->whereIn('prospect_uuid', SalesProspect::query()->select('uuid'));
             }
 
             $base = fn () => (clone $query)
-                ->when(! $shared, fn ($q) => $q->where('user_id', $user->id))
+                ->when(! $shared, fn ($q) => $q->where($kind === 'tasks' ? 'assigned_to' : 'user_id', $user->id))
                 ->when(in_array($kind, ['clients', 'contacts'], true), fn ($q) => $q->visibleTo($user))
                 ->orderBy('updated_at')->orderBy('id');
 
@@ -1148,6 +1252,52 @@ class SyncService
             'created_at' => $this->iso($n->noted_at),
             'updated_at' => $this->iso($n->client_updated_at),
             'deleted' => false,
+        ];
+    }
+
+    private function todoPayload(SalesTodo $t): array
+    {
+        return [
+            'uuid' => $t->uuid,
+            'title' => $t->title,
+            'done' => (bool) $t->done,
+            'done_at' => $t->done_at ? $this->iso($t->done_at) : null,
+            'due_date' => $t->due_date?->format('Y-m-d'),
+            'updated_at' => $this->iso($t->client_updated_at),
+            'deleted' => $t->trashed(),
+        ];
+    }
+
+    private function memoPayload(SalesMemo $m): array
+    {
+        return [
+            'uuid' => $m->uuid,
+            'title' => $m->title ?? '',
+            'body' => $m->body,
+            'updated_at' => $this->iso($m->client_updated_at),
+            'deleted' => $m->trashed(),
+        ];
+    }
+
+    private function taskPayload(SalesTask $t): array
+    {
+        return [
+            'uuid' => $t->uuid,
+            'title' => $t->title,
+            'description' => $t->description ?? '',
+            'send_to_email' => $t->send_to_email ?? '',
+            'due_at' => $t->due_at ? $this->iso($t->due_at) : null,
+            'priority' => $t->priority,
+            'status' => $t->status,
+            'rep_note' => $t->rep_note ?? '',
+            'rep_updated_at' => $t->rep_updated_at ? $this->iso($t->rep_updated_at) : null,
+            'assigned_by_name' => $t->creator?->name ?? '',
+            'version' => (int) $t->version,
+            // a cancelled task carries no files any more (the phone drops them)
+            'files' => $t->status === 'cancelled' ? [] : $t->files->map(fn ($f) => ['id' => (string) $f->id, 'name' => $f->name, 'mime' => $f->mime, 'size' => (int) $f->size])->values()->all(),
+            'created_at' => $this->iso($t->created_at),
+            'updated_at' => $this->iso($t->updated_at),
+            'deleted' => $t->trashed(),
         ];
     }
 

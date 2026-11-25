@@ -180,3 +180,21 @@ Sending a note twice is `duplicate`; another rep's uuid is `UUID_TAKEN`. Pull ad
 ### `bug_reports` (private to the rep, push only)
 
 `{ uuid, area, body, app_version, updated_at }` with `area` one of `expenses, clients, prospects, leads, meetings, guide, calls, sync, other` and `body` 10-1000 characters. Sent once (`duplicate` when repeated), never pulled back. At most 30 open reports per rep (`INVALID` after that). A manager marks them Fixed or Declined with a short answer in Sales team > Bug reports (nothing comes back to the phone yet).
+
+## Tasks, to-do and notes (26 Nov 2026, app v1.20)
+
+New optional collections. **Deploy the website (migration `2026_11_26_100000`) BEFORE the reps get v1.20**: an older office leaves the new keys unanswered, so to-dos and notes would stay "not sent".
+
+### `tasks` (pull; push only the rep's two fields)
+
+A task a manager gave this rep (Sales team > Tasks). Pull sends every task assigned to the rep: `{ uuid, title, description, send_to_email, due_at, priority (normal | high), status, rep_note, rep_updated_at, assigned_by_name, version, files: [{ id, name, mime, size }], created_at, updated_at, deleted }`. `status`: `new` (the office's), `in_progress`, `done`, `blocked` (the rep's) and `cancelled` (the office's; a cancelled task lists no files). `version` is a whole number the office raises on every change it makes: a phone replaces its copy only when the version is higher (no clocks are compared).
+
+Push: `tasks: [{ uuid, status, rep_note, rep_updated_at, updated_at }]`. Only these fields are read; the title, the e-mail, the due date and the files can never be changed from a phone. `status` must be `in_progress`, `done` or `blocked` (else `INVALID`), `blocked` needs a `rep_note` (at most 500). A task that is not this rep's answers `NOT_ALLOWED`; a cancelled or deleted one `LOCKED` (the phone then takes the office copy back); an update not newer than the stored `rep_updated_at` is a `duplicate`.
+
+### `GET /tasks/{uuid}/files/{id}`
+
+`{ name, mime, data_base64 }` of one file of a task, for the assigned rep only and not for a cancelled task (`NOT_FOUND` otherwise). Files are PDF, JPG / PNG / WebP, XLSX / XLS, DOCX / DOC, CSV or TXT, at most 5 MB, at most 5 per task; each is checked by its extension AND its first bytes when the manager uploads it, and stored on the private disk under a random name.
+
+### `todos` and `memos` (private to the rep, push and pull, deletable)
+
+`todos: { uuid, title (2-200), done, done_at, due_date (YYYY-MM-DD, at most 2 years ahead), updated_at }`, `memos: { uuid, title (<= 120), body (1-5000), updated_at }`. The usual rules: the newest `updated_at` wins, another rep's uuid is `UUID_TAKEN`, deletes go in `deleted.todos` / `deleted.memos`. No admin screen reads them: they are kept so a new phone gets them back.

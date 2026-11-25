@@ -6,6 +6,7 @@ use App\Sales\Http\Controllers\Api\MapLinkController;
 use App\Sales\Http\Controllers\Api\ProductController;
 use App\Sales\Http\Controllers\Api\SelfieController;
 use App\Sales\Http\Controllers\Api\SyncController;
+use App\Sales\Http\Controllers\Api\TaskFileController;
 use App\Sales\Http\Middleware\EnsureActiveRep;
 use Illuminate\Support\Facades\Route;
 
@@ -31,6 +32,8 @@ Route::middleware(['auth:sanctum', EnsureActiveRep::class, 'throttle:sales-api']
 
     Route::get('expenses/{uuid}/bill', [BillController::class, 'show'])->whereUuid('uuid');
     Route::post('uploads/bill', [BillController::class, 'store'])->middleware('throttle:sales-upload');
+
+    Route::get('tasks/{uuid}/files/{file}', [TaskFileController::class, 'show'])->whereUuid('uuid')->whereNumber('file');   // a file of a task given to this rep
 
     Route::get('meetings/{uuid}/selfie', [SelfieController::class, 'show'])->whereUuid('uuid');
     Route::post('uploads/selfie', [SelfieController::class, 'store'])->middleware('throttle:sales-upload');

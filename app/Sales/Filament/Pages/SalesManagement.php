@@ -262,6 +262,7 @@ class SalesManagement extends Page
             'meetingResults' => SalesInsights::meetingResults($days),
             'visitProof' => SalesInsights::visitProof($days),
             'prospecting' => SalesInsights::prospecting($days),
+            'taskFigures' => SalesInsights::tasks(),
             'topProducts' => SalesInsights::topProducts($days, 5),
             'activeTab' => $tab,
             'visibleTabs' => $tabs,

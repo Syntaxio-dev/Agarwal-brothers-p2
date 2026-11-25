@@ -15,6 +15,7 @@ use App\Sales\Models\SalesProfile;
 use App\Sales\Models\SalesProspect;
 use App\Sales\Models\SalesProspectNote;
 use App\Sales\Models\SalesRoute;
+use App\Sales\Models\SalesTask;
 use App\Sales\Models\SalesScript;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Collection;
@@ -940,6 +941,24 @@ class SalesInsights
             'converted' => count(array_filter($latest, fn ($o) => $o === 'converted')),
             'territories' => $territories,
             'bugs_open' => (int) SalesBugReport::where('status', 'open')->count(),
+        ];
+    }
+
+    /**
+     * The tasks the manager gave the reps (app v1.20): how many are open, late, stuck ("cannot do"), not opened yet, and done this week.
+     *
+     * @return array{open: int, overdue: int, blocked: int, new: int, done_week: int}
+     */
+    public static function tasks(): array
+    {
+        $open = SalesTask::query()->whereIn('status', SalesTask::OPEN);
+
+        return [
+            'open' => (int) (clone $open)->count(),
+            'overdue' => (int) (clone $open)->whereNotNull('due_at')->where('due_at', '<', now())->count(),
+            'blocked' => (int) SalesTask::query()->where('status', 'blocked')->count(),
+            'new' => (int) SalesTask::query()->where('status', 'new')->count(),
+            'done_week' => (int) SalesTask::query()->where('status', 'done')->where('rep_updated_at', '>=', now()->subDays(7)->utc()->format('Y-m-d H:i:s.v'))->count(),
         ];
     }
 

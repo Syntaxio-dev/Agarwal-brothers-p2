@@ -99,6 +99,9 @@ class RepAccount
             'scripts' => $count(\App\Sales\Models\SalesScript::class),
             'requests' => $count(\App\Sales\Models\SalesProductRequest::class),
             'prospects' => $count(\App\Sales\Models\SalesProspect::class),
+            'todos' => $count(\App\Sales\Models\SalesTodo::class),
+            'notes' => $count(\App\Sales\Models\SalesMemo::class),
+            'tasks' => (int) \App\Sales\Models\SalesTask::withTrashed()->where('assigned_to', $uid)->count(),
             'prospect_calls' => $count(\App\Sales\Models\SalesProspectNote::class),
             'bug_reports' => $count(\App\Sales\Models\SalesBugReport::class),
         ];
@@ -129,6 +132,14 @@ class RepAccount
             \App\Sales\Models\SalesCall::where('user_id', $uid)->delete();
             \App\Sales\Models\SalesProductRequest::where('user_id', $uid)->delete();
             \App\Sales\Models\SalesBugReport::where('user_id', $uid)->delete();
+            \App\Sales\Models\SalesTodo::withTrashed()->where('user_id', $uid)->forceDelete();
+            \App\Sales\Models\SalesMemo::withTrashed()->where('user_id', $uid)->forceDelete();
+
+            // the tasks given to this rep go with them, and their files (each file removes its own copy on the disk)
+            foreach (\App\Sales\Models\SalesTask::withTrashed()->where('assigned_to', $uid)->get() as $task) {
+                $task->files->each->delete();
+                $task->forceDelete();
+            }
 
             // the prospect pool is shared, like the clients: what this rep added, and the calls they made, are handed to the manager
             \App\Sales\Models\SalesProspect::withTrashed()->where('user_id', $uid)->update(['user_id' => $by->id]);
