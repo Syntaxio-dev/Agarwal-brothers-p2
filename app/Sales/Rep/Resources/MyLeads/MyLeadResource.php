@@ -34,6 +34,12 @@ class MyLeadResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
+    /** Only when the manager opened this part of the web desk for the rep (Reps > profile > Web desk). */
+    public static function canAccess(): bool
+    {
+        return \App\Sales\Rep\Support\RepDesk::allows(auth()->user(), 'leads');
+    }
+
     public static function getEloquentQuery(): Builder
     {
         return parent::getEloquentQuery()->where('user_id', auth()->id());

@@ -122,7 +122,8 @@ class User extends Authenticatable implements FilamentUser
         // The reps' own desk (sales sub-domain, /rep): only an active field rep whose sales profile is on. Every other panel: staff only,
         // and a field rep is not staff (his role is not in config/roles.php).
         if ($panel->getId() === 'rep') {
-            return $this->is_active && $this->role === \App\Sales\Models\SalesProfile::ROLE && (bool) $this->salesProfile?->is_active;
+            // ... and only when a manager opened at least one area of the desk for this rep (Reps > profile > Web desk)
+            return \App\Sales\Rep\Support\RepDesk::areasOf($this) !== [];
         }
 
         return $this->isStaff();

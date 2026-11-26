@@ -118,6 +118,11 @@ class ViewSalesRep extends Page
         Notification::make()->title($this->record->user->name . ' is active again')->success()->send();
     }
 
+    public function deskAccessAction(): Action
+    {
+        return SalesRepResource::deskAccessAction(fn () => $this->record);
+    }
+
     public function resetPasswordAction(): Action
     {
         return SalesRepResource::resetPasswordAction(fn () => $this->record);
@@ -201,6 +206,7 @@ class ViewSalesRep extends Page
             'editUrl' => SalesRepResource::getUrl('edit', ['record' => $this->record]),
             'talk' => fn (int $seconds) => SalesInsights::duration($seconds),
             'userId' => $uid,
+            'deskAreas' => array_map(fn (string $k) => \App\Sales\Rep\Support\RepDesk::AREAS[$k][0], \App\Sales\Rep\Support\RepDesk::clean($this->record->desk_areas)),
         ];
     }
 }

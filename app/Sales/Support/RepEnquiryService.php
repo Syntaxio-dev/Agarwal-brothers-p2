@@ -211,6 +211,7 @@ class RepEnquiryService
     private function mustBeRep(User $rep): void
     {
         abort_unless($rep->is_active && $rep->role === \App\Sales\Models\SalesProfile::ROLE, 403);
+        \App\Sales\Rep\Support\RepDesk::mustAllow($rep, 'leads');   // the manager may close Leads on the web desk at any time
     }
 
     private function mustOwn(User $rep, SalesEnquiry $enquiry): void

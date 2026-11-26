@@ -49,7 +49,8 @@ abstract class SalesTestCase extends TestCase
         $this->app['auth']->shouldUse($this->defaultGuard);   // auth:sanctum switches the default guard for the rest of the process
     }
 
-    protected function rep(string $code = 'REP001', string $phone = '9000000001', bool $active = true, string $name = ''): SalesProfile
+    /** A rep; the web desk is fully open by default here (a real new rep starts with it closed: RepWebDeskTest checks that). */
+    protected function rep(string $code = 'REP001', string $phone = '9000000001', bool $active = true, string $name = '', ?array $desk = null): SalesProfile
     {
         return RepAccount::create([
             'name' => $name ?: "Rep $code",
@@ -57,6 +58,7 @@ abstract class SalesTestCase extends TestCase
             'phone' => $phone,
             'password' => self::PASSWORD,
             'is_active' => $active,
+            'desk_areas' => $desk ?? \App\Sales\Rep\Support\RepDesk::keys(),
         ]);
     }
 

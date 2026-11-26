@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class EditMyEnquiry extends EditRecord
 {
+    use \App\Sales\Rep\Concerns\ChecksDeskArea;
+
     protected static string $resource = MyEnquiryResource::class;
 
     /** Form rupees -> paise. */

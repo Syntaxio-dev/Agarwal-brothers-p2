@@ -330,6 +330,14 @@
                     <button type="button" class="sx-btn" wire:click="mountAction('resetPassword')">Reset password</button>
                 </div>
 
+                <h2 class="rp-h2">Web desk (computer)</h2>
+                @if ($deskAreas)
+                    <p class="sx-small">Open for {{ $p['name'] }}: {{ implode(', ', $deskAreas) }}. Everything else on the web desk is closed.</p>
+                @else
+                    <p class="sx-small">Closed. {{ $p['name'] }} uses only the phone app. Open the parts you want {{ $p['name'] }} to use on a computer.</p>
+                @endif
+                <button type="button" class="sx-btn" wire:click="mountAction('deskAccess')">Web desk access</button>
+
                 <h2 class="rp-h2">{{ $p['active'] ? 'Switch off' : 'Switched off' }}</h2>
                 @if ($p['active'])
                     <p class="sx-small">The phone is signed out on its next sync. Their meetings, expenses and enquiries stay.</p>

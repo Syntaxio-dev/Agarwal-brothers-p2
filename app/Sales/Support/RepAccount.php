@@ -35,6 +35,8 @@ class RepAccount
                 'employee_code' => $code,
                 'phone' => PhoneNumber::normalize($data['phone'] ?? null),
                 'is_active' => $data['is_active'] ?? true,
+                // the web desk is closed until a manager opens parts of it for this rep
+                'desk_areas' => \App\Sales\Rep\Support\RepDesk::clean($data['desk_areas'] ?? []) ?: null,
             ]);
         });
     }

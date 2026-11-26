@@ -10,6 +10,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ListMyLeads extends ListRecords
 {
+    use \App\Sales\Rep\Concerns\ChecksDeskArea;
+
     protected static string $resource = MyLeadResource::class;
 
     /** Everything, the newest activity first (the owner's default). */

@@ -68,7 +68,12 @@ class RepPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
+            ])
+            // a file of a task given to the signed-in rep (checks inside: Tasks open, his task, not cancelled)
+            ->authenticatedRoutes(function () {
+                \Illuminate\Support\Facades\Route::get('task-files/{id}', \App\Sales\Rep\Http\TaskFileDownload::class)
+                    ->whereNumber('id')->middleware('throttle:60,1')->name('task-file');
+            });
 
         return $domain ? $panel->domain($domain)->path('rep') : $panel->path('rep');
     }

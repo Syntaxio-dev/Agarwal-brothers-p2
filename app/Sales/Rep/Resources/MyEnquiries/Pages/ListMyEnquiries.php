@@ -13,6 +13,8 @@ use Illuminate\Database\Eloquent\Builder;
 
 class ListMyEnquiries extends ListRecords
 {
+    use \App\Sales\Rep\Concerns\ChecksDeskArea;
+
     protected static string $resource = MyEnquiryResource::class;
 
     protected function getHeaderActions(): array

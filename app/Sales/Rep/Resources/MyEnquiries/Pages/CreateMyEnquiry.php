@@ -9,6 +9,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class CreateMyEnquiry extends CreateRecord
 {
+    use \App\Sales\Rep\Concerns\ChecksDeskArea;
+
     protected static string $resource = MyEnquiryResource::class;
 
     protected static bool $canCreateAnother = false;

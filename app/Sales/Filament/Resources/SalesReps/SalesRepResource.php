@@ -65,6 +65,41 @@ class SalesRepResource extends Resource
         return parent::getEloquentQuery()->with('user');
     }
 
+    /**
+     * "Web desk": which parts of the rep's desk on the computer (sales sub-domain, /rep) this rep may use. Nothing ticked = no web desk
+     * at all (the rep cannot sign in there; the phone app is not touched). Takes effect at once, also on a page the rep has open.
+     * The change is written to the activity log (SalesProfile logs its changes).
+     */
+    public static function deskAccessAction(Closure $record): Action
+    {
+        return Action::make('deskAccess')
+            ->label('Web desk access')
+            ->icon(Heroicon::OutlinedComputerDesktop)
+            ->color('gray')
+            ->modalHeading(fn () => 'Web desk for ' . $record()->user->name)
+            ->modalDescription('What this rep may do on a computer (the web desk, /rep on the Sales site, same employee code and password as the app). Tick nothing to keep the web desk closed. The phone app is not affected. Phone calls are never on the web desk.')
+            ->modalSubmitActionLabel('Save access')
+            ->fillForm(fn () => ['desk_areas' => \App\Sales\Rep\Support\RepDesk::clean($record()->desk_areas)])
+            ->schema([
+                \Filament\Forms\Components\CheckboxList::make('desk_areas')->label('Open for this rep')
+                    ->options(\App\Sales\Rep\Support\RepDesk::options())
+                    ->descriptions(\App\Sales\Rep\Support\RepDesk::descriptions())
+                    ->bulkToggleable(),
+            ])
+            ->action(function (array $data) use ($record) {
+                abort_unless(static::canViewAny(), 403);
+
+                /** @var SalesProfile $profile */
+                $profile = $record();
+                $areas = \App\Sales\Rep\Support\RepDesk::clean($data['desk_areas'] ?? []);
+                $profile->update(['desk_areas' => $areas ?: null]);
+
+                Notification::make()
+                    ->title($areas ? 'Web desk updated for ' . $profile->user->name : 'Web desk closed for ' . $profile->user->name)
+                    ->success()->send();
+            });
+    }
+
     /** "Reset password": a new password is made and shown once in a notification (it is not stored anywhere readable). Used by the profile and the edit page. */
     public static function resetPasswordAction(Closure $record): Action
     {
