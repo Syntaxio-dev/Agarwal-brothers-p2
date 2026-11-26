@@ -94,6 +94,47 @@ class RepWebDeskTest extends SalesTestCase
         $this->assertNull($profile->refresh()->desk_areas);
     }
 
+    public function test_the_rep_access_page_switches_parts_for_one_rep_or_for_everybody(): void
+    {
+        $one = RepAccount::create(['name' => 'Rep One', 'employee_code' => 'AB-0201', 'phone' => '9000000201', 'password' => self::PASSWORD]);
+        $two = RepAccount::create(['name' => 'Rep Two', 'employee_code' => 'AB-0202', 'phone' => '9000000202', 'password' => self::PASSWORD]);
+        $off = RepAccount::create(['name' => 'Rep Off', 'employee_code' => 'AB-0203', 'phone' => '9000000203', 'password' => self::PASSWORD, 'is_active' => false]);
+
+        Filament::setCurrentPanel('sales');
+        $this->actingAs($this->manager());
+        $this->get('/sales/rep-access')->assertOk()->assertSee('Rep One')->assertSee('Prospects');
+
+        $page = Livewire::test(\App\Sales\Filament\Pages\RepAccess::class);
+        $page->call('toggle', $one->id, 'prospects');
+        $this->assertSame(['prospects'], $one->refresh()->desk_areas);
+        $page->call('toggle', $one->id, 'prospects');
+        $this->assertNull($one->refresh()->desk_areas);
+
+        $page->call('setAllFor', $two->id, true);
+        $this->assertSame(\App\Sales\Rep\Support\RepDesk::keys(), $two->refresh()->desk_areas);
+
+        $page->call('setAreaForAll', 'tasks', true);
+        $this->assertSame(['tasks'], $one->refresh()->desk_areas);
+        $this->assertNull($off->refresh()->desk_areas, 'a switched-off rep is left alone');
+
+        $page->call('setAllFor', $two->id, false);
+        $this->assertNull($two->refresh()->desk_areas);
+
+        $page->call('toggle', $one->id, 'calls')->assertStatus(422);
+    }
+
+    public function test_only_a_manager_of_the_reps_opens_the_rep_access_page(): void
+    {
+        $rep = $this->rep();
+        Filament::setCurrentPanel('sales');
+        $this->actingAs($rep->user);
+        $this->get('/sales/rep-access')->assertForbidden();
+
+        $this->flushSession();
+        $this->actingAs(\App\Models\User::factory()->create(['role' => 'editor', 'is_active' => true]));
+        $this->get('/sales/rep-access')->assertForbidden();
+    }
+
     public function test_a_rep_cannot_change_his_own_access_or_open_the_office(): void
     {
         $rep = $this->rep(desk: ['leads']);
