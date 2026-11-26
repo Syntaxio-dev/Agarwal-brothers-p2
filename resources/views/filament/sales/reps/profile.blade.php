@@ -51,6 +51,7 @@
             </div>
             <div class="sx-actions">
                 @if ($p['phone'])<a class="sx-btn" href="tel:{{ $p['phone'] }}">Call</a>@endif
+                <button type="button" class="sx-btn" wire:click="mountAction('deskAccess')">Web desk access</button>
                 <button type="button" class="sx-btn" wire:click="mountAction('resetPassword')">Reset password</button>
                 <a class="sx-btn sx-btn-primary" href="{{ $editUrl }}">Edit details</a>
             </div>

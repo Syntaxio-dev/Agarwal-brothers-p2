@@ -135,7 +135,7 @@ class RepWebDeskTest extends SalesTestCase
         $rep = $this->rep();
         $this->actingAs($rep->user);
 
-        foreach (['/rep/home', '/rep/prospects', '/rep/prospects/create', '/rep/meetings', '/rep/tasks', '/rep/todo', '/rep/notes', '/rep/leads', '/rep/enquiries'] as $url) {
+        foreach (['/rep/home', '/rep/expenses', '/rep/prospects', '/rep/prospects/create', '/rep/meetings', '/rep/tasks', '/rep/todo', '/rep/notes', '/rep/leads', '/rep/enquiries'] as $url) {
             $this->get($url)->assertOk();
         }
     }
@@ -368,6 +368,33 @@ class RepWebDeskTest extends SalesTestCase
         $this->flushSession();
         $this->actingAs($a->user->refresh());
         $this->get('/rep/task-files/' . $file->id)->assertForbidden();
+    }
+
+    // ---- expenses (view only) ------------------------------------------------------------------------------------------------------------
+
+    public function test_a_rep_sees_only_his_own_expenses_and_bills_and_cannot_add_one(): void
+    {
+        Storage::fake('local');
+        $a = $this->rep('AB-0001', '9000000001');
+        $b = $this->rep('AB-0002', '9000000002');
+        $mine = $this->storedExpense($a, ['note' => 'Petrol to Bagru', 'bill_type' => 'with_bill']);
+        $mine->forceFill(['bill_path' => 'sales/bills/mine.jpg', 'bill_mime' => 'image/jpeg'])->save();
+        Storage::disk('local')->put('sales/bills/mine.jpg', "ÿØÿ fake jpeg");
+        $theirs = $this->storedExpense($b, ['note' => 'Lunch of B']);
+        $theirs->forceFill(['bill_path' => 'sales/bills/theirs.jpg', 'bill_mime' => 'image/jpeg'])->save();
+        Storage::disk('local')->put('sales/bills/theirs.jpg', 'x');
+
+        $this->actingAs($a->user);
+        $this->get('/rep/expenses')->assertOk()->assertSee('Petrol to Bagru')->assertDontSee('Lunch of B');
+        $this->get('/rep/expenses/create')->assertNotFound();
+        $this->get('/rep/bills/' . $mine->uuid)->assertOk()->assertHeader('Content-Type', 'image/jpeg')->assertHeader('X-Content-Type-Options', 'nosniff');
+        $this->get('/rep/bills/' . $theirs->uuid)->assertNotFound();
+
+        $a->update(['desk_areas' => ['leads']]);
+        $this->flushSession();
+        $this->actingAs($a->user->refresh());
+        $this->get('/rep/expenses')->assertForbidden();
+        $this->get('/rep/bills/' . $mine->uuid)->assertForbidden();
     }
 
     // ---- to-do and notes -------------------------------------------------------------------------------------------------------------

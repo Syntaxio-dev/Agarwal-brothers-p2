@@ -69,10 +69,13 @@ class RepPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ])
-            // a file of a task given to the signed-in rep (checks inside: Tasks open, his task, not cancelled)
+            // files the rep may fetch: a file of a task given to him (checks inside: Tasks open, his task, not cancelled)
             ->authenticatedRoutes(function () {
                 \Illuminate\Support\Facades\Route::get('task-files/{id}', \App\Sales\Rep\Http\TaskFileDownload::class)
                     ->whereNumber('id')->middleware('throttle:60,1')->name('task-file');
+                // the bill photo of one of the rep's own expenses (checks inside: Expenses open, his expense)
+                \Illuminate\Support\Facades\Route::get('bills/{uuid}', \App\Sales\Rep\Http\BillPhoto::class)
+                    ->whereUuid('uuid')->middleware('throttle:120,1')->name('bill');
             });
 
         return $domain ? $panel->domain($domain)->path('rep') : $panel->path('rep');

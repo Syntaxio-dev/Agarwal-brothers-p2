@@ -16,6 +16,7 @@ final class RepDesk
     /** key => [label, what it opens] (the keys are stored: never rename one) */
     public const AREAS = [
         'leads' => ['Leads and enquiries', 'See and update their own leads and enquiries: stage, follow-up, remarks.'],
+        'expenses' => ['Expenses (view only)', 'See their own expenses, the bill photos and what the office decided. A new expense is still added on the phone (the bill photo comes from the camera).'],
         'prospects' => ['Prospects', 'Read the team\'s prospect pool, add prospects and their contact persons, log a call. Only the rep who added a prospect changes it.'],
         'meetings' => ['Meeting plans', 'Plan meetings and routes, move a meeting or mark it missed. A visit is still logged as done only on the phone (selfie at the place).'],
         'tasks' => ['Tasks', 'See the tasks you gave them, open the files and set Started / Done / Cannot do with a note.'],
