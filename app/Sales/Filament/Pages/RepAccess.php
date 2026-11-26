@@ -36,9 +36,9 @@ class RepAccess extends Page
         return (bool) auth()->user()?->canManage('sales-reps');
     }
 
-    public function getSubheading(): ?string
+    public function getBreadcrumbs(): array
     {
-        return 'What each rep may use on the web desk (sales.agarwalbrothers.com/rep, same code and password as the app). Nothing is open for a new rep. The phone app is not affected.';
+        return [];
     }
 
     public function toggle(int $profileId, string $area): void
@@ -113,6 +113,8 @@ class RepAccess extends Page
             'areas' => RepDesk::AREAS,
             'openCount' => fn (string $area) => $reps->filter(fn ($r) => $r['active'] && in_array($area, $r['areas'], true))->count(),
             'activeCount' => $reps->where('active', true)->count(),
+            'repsUrl' => \App\Sales\Filament\Resources\SalesReps\SalesRepResource::getUrl('index'),
+            'profileUrl' => fn (int $id) => \App\Sales\Filament\Resources\SalesReps\SalesRepResource::getUrl('view', ['record' => $id]),
         ];
     }
 }
