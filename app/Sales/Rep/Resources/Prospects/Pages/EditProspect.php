@@ -16,6 +16,11 @@ class EditProspect extends EditRecord
 
     protected static string $resource = ProspectResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Edit ' . $this->record->name;
+    }
+
     protected function mutateFormDataBeforeFill(array $data): array
     {
         $data['people'] = $this->record->people()->get()
@@ -27,7 +32,15 @@ class EditProspect extends EditRecord
 
     protected function handleRecordUpdate(Model $record, array $data): Model
     {
+        $data['territory'] = ProspectResource::chosenTerritory($data);
+        unset($data['new_territory']);
+
         return DeskUi::attempt(fn () => app(DeskProspects::class)->save(auth()->user(), $record, $data));
+    }
+
+    protected function getSavedNotificationTitle(): ?string
+    {
+        return 'Prospect saved';
     }
 
     protected function getRedirectUrl(): string

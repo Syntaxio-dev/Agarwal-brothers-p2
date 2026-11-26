@@ -5,6 +5,7 @@ namespace App\Sales\Rep\Resources\Prospects;
 use App\Sales\Models\SalesPosition;
 use App\Sales\Models\SalesProspect;
 use App\Sales\Models\SalesProspectNote;
+use App\Sales\Models\SalesProspectPerson;
 use App\Sales\Rep\Resources\Prospects\Pages\CreateProspect;
 use App\Sales\Rep\Resources\Prospects\Pages\EditProspect;
 use App\Sales\Rep\Resources\Prospects\Pages\ListProspects;
@@ -13,19 +14,22 @@ use App\Sales\Rep\Support\DeskMeetings;
 use App\Sales\Rep\Support\DeskProspects;
 use App\Sales\Rep\Support\DeskUi;
 use App\Sales\Rep\Support\RepDesk;
+use App\Sales\Rep\Support\RepTerritories;
+use App\Sales\Support\PhoneNumber;
+use Carbon\CarbonImmutable;
 use Filament\Actions\Action;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\ToggleButtons;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
-use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -33,7 +37,8 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * Prospects on the web desk: the team's one pool of companies that do not work with us yet (the same records as the app's Prospects).
  * Every rep reads all of them, adds new ones with their contact persons and logs calls; only the rep who added a prospect changes or
- * deletes it. Writes go through DeskProspects (the phone's rules); nothing can be exported from here.
+ * deletes it. Territories work like in the app: the rep keeps "My territories" (capsules above the list) and picks a territory from
+ * capsules in the form (one spelling per team). Writes go through DeskProspects (the phone's rules); nothing can be exported from here.
  */
 class ProspectResource extends Resource
 {
@@ -49,11 +54,16 @@ class ProspectResource extends Resource
 
     protected static ?int $navigationSort = 4;
 
-    /** Letters of a person's name: no digits and nothing that looks like code. */
-    public const NAME_RULE = '/^[^0-9<>;{}\\\\]+$/u';
+    /** A person's name: a letter first, then letters, spaces and . ' - (the app's PERSON_NAME). */
+    public const NAME_RULE = "/^\\p{L}[\\p{L}\\p{M} .'-]*$/u";
 
-    /** A company, a place or a note: no < > ; (as in the app). */
+    /** A company, an address or a note: no < > ; { } or backslash (as in the app). */
     public const TEXT_RULE = '/^[^<>;{}\\\\]*$/u';
+
+    /** Outcomes after which the company is still worth calling (the app's "open" outcomes). */
+    public const OPEN_OUTCOMES = ['no_answer', 'call_back', 'interested', 'meeting_fixed'];
+
+    public const NEW_TERRITORY = '__new';
 
     public static function canAccess(): bool
     {
@@ -96,51 +106,135 @@ class ProspectResource extends Resource
         return false;
     }
 
-    /** The newest call of each prospect, in the same query (status, next follow-up, when). */
+    // ---- the newest call and the first person, in the same query ----------------------------------------------------------------
+
+    private static function lastCall(string $column): string
+    {
+        return "(select n.$column from sales_prospect_notes n where n.prospect_uuid = sales_prospects.uuid order by n.noted_at desc, n.id desc limit 1)";
+    }
+
+    private static function firstPerson(string $column): string
+    {
+        return "(select pp.$column from sales_prospect_people pp where pp.prospect_id = sales_prospects.id order by pp.id limit 1)";
+    }
+
     public static function getEloquentQuery(): Builder
     {
-        $last = fn (string $column) => SalesProspectNote::query()->select($column)->whereColumn('prospect_uuid', 'sales_prospects.uuid')
-            ->orderByDesc('noted_at')->orderByDesc('id')->limit(1);
+        return parent::getEloquentQuery()->with(['addedBy'])->withCount('people')
+            ->select('sales_prospects.*')
+            ->selectRaw(self::lastCall('outcome') . ' as last_outcome')
+            ->selectRaw(self::lastCall('noted_at') . ' as last_called_at')
+            ->selectRaw(self::lastCall('next_followup_at') . ' as last_followup_at')
+            ->selectRaw(self::firstPerson('name') . ' as first_person_name')
+            ->selectRaw(self::firstPerson('phone') . ' as first_person_phone');
+    }
 
-        return parent::getEloquentQuery()->with(['addedBy'])->withCount('people')->addSelect([
-            'last_outcome' => $last('outcome'),
-            'last_called_at' => $last('noted_at'),
-            'last_followup_at' => $last('next_followup_at'),
-        ]);
+    /** The app's order: follow-up due first, then not called yet, then being worked, closed ones last; A to Z inside. */
+    public static function appOrder(Builder $query): Builder
+    {
+        $open = "'" . implode("','", self::OPEN_OUTCOMES) . "'";
+        $outcome = self::lastCall('outcome');
+        $followup = self::lastCall('next_followup_at');
+
+        return $query->orderByRaw(
+            "CASE WHEN $outcome IN ($open) AND $followup IS NOT NULL AND $followup <= ? THEN 0 WHEN $outcome IS NULL THEN 1 WHEN $outcome IN ($open) THEN 2 ELSE 3 END",
+            [now()->utc()->format('Y-m-d H:i:s')],
+        )->orderBy('sales_prospects.name');
+    }
+
+    // ---- the form ---------------------------------------------------------------------------------------------------------------
+
+    /** @return array<string,string> the territory capsules; the prospect's own territory is always one of them */
+    public static function territoryOptions(?SalesProspect $record): array
+    {
+        $picks = RepTerritories::picks(auth()->user());
+        if ($record) {
+            $key = SalesProspect::keyOf($record->territory);
+            $picks = [$record->territory => $record->territory] + array_filter($picks, fn ($name) => SalesProspect::keyOf($name) !== $key);
+        }
+
+        return $picks + [self::NEW_TERRITORY => '+ New territory'];
+    }
+
+    /** The form's territory: a capsule, or the typed new one. */
+    public static function chosenTerritory(array $data): string
+    {
+        return ($data['territory'] ?? '') === self::NEW_TERRITORY ? (string) ($data['new_territory'] ?? '') : (string) ($data['territory'] ?? '');
+    }
+
+    /** @return list<\Filament\Forms\Components\Field> the boxes of one contact person (form repeater and the person pop-up) */
+    public static function personFields(): array
+    {
+        return [
+            TextInput::make('name')->label('Name')->required()->minLength(2)->maxLength(150)->regex(self::NAME_RULE)
+                ->validationMessages(['regex' => "A name uses letters, spaces and . ' - only."]),
+            TextInput::make('position')->label('Position')->maxLength(100)->regex(self::TEXT_RULE)->datalist(SalesPosition::names())
+                ->placeholder('Purchase head, Lab in-charge ...'),
+            TextInput::make('phone')->label('Phone')->tel()->maxLength(20)->regex('/^\+?[0-9 ()-]{6,20}$/')
+                ->helperText('10 digits, or with the country code.')
+                ->rule(fn () => function (string $attribute, mixed $value, \Closure $fail) {
+                    if (filled($value) && PhoneNumber::normalize((string) $value) === null) {
+                        $fail('This phone number is not valid.');
+                    }
+                }),
+            TextInput::make('email')->label('E-mail')->email()->maxLength(150),
+            TextInput::make('linkedin')->label('LinkedIn')->maxLength(300)->placeholder('https://www.linkedin.com/in/...')
+                ->rule(fn () => function (string $attribute, mixed $value, \Closure $fail) {
+                    if (filled($value) && SalesProspectPerson::cleanLinkedin((string) $value) === null) {
+                        $fail('Only a linkedin.com address.');
+                    }
+                }),
+        ];
     }
 
     public static function form(Schema $schema): Schema
     {
-        $territories = DeskProspects::territories();
-
         return $schema->components([
             Section::make('Company')->columns(2)->columnSpanFull()->schema([
-                TextInput::make('name')->label('Company name')->required()->minLength(2)->maxLength(150)->regex(self::TEXT_RULE),
-                TextInput::make('territory')->label('Territory')->required()->minLength(2)->maxLength(100)->regex(self::TEXT_RULE)
-                    ->datalist(array_values($territories))
-                    ->helperText('For example Bagru or Behror. Pick the team\'s spelling when it is offered.'),
-                TextInput::make('address')->label('Address')->maxLength(200)->regex(self::TEXT_RULE),
-                Select::make('source')->label('Found through')->options(SalesProspect::SOURCES)->native(false)->placeholder('Not said'),
-                Textarea::make('notes')->label('Notes')->rows(3)->maxLength(1000)->columnSpanFull(),
+                TextInput::make('name')->label('Company name')->required()->minLength(2)->maxLength(150)->regex(self::TEXT_RULE)
+                    ->placeholder('For example Shree Dyes Pvt Ltd')->columnSpanFull(),
+                ToggleButtons::make('territory')->label('Territory')->required()->inline()->live()->columnSpanFull()
+                    ->options(fn (?SalesProspect $record) => static::territoryOptions($record))
+                    ->colors(fn (?SalesProspect $record) => array_fill_keys(array_keys(static::territoryOptions($record)), 'info'))
+                    ->default(function () {
+                        $asked = (string) request()->query('territory', '');
+
+                        return array_key_exists($asked, RepTerritories::picks(auth()->user())) ? $asked : null;
+                    })
+                    ->helperText('Pick one. Your own territories come first; the whole team uses the same spelling.'),
+                TextInput::make('new_territory')->label('New territory')->maxLength(100)->columnSpanFull()
+                    ->placeholder('For example Behror')
+                    ->visible(fn (Get $get) => $get('territory') === self::NEW_TERRITORY)
+                    ->required(fn (Get $get) => $get('territory') === self::NEW_TERRITORY)
+                    ->regex(RepTerritories::PATTERN)
+                    ->validationMessages(['regex' => "A territory uses letters, spaces and . , ' - only."]),
+                TextInput::make('address')->label('Address or landmark (optional)')->maxLength(200)->regex(self::TEXT_RULE)
+                    ->placeholder('Plot, road, industrial area')->columnSpanFull(),
+                ToggleButtons::make('source')->label('Where did you find it? (optional)')->inline()->columnSpanFull()
+                    ->options(SalesProspect::SOURCES)->colors(array_fill_keys(array_keys(SalesProspect::SOURCES), 'info')),
+                Textarea::make('notes')->label('Notes (optional)')->rows(3)->maxLength(1000)->columnSpanFull(),
             ]),
-            Repeater::make('people')->label('Contact persons')->columnSpanFull()->maxItems(DeskProspects::MAX_PEOPLE)->defaultItems(0)
-                ->addActionLabel('Add contact person')->reorderable(false)->collapsible()
-                ->itemLabel(fn (array $state) => $state['name'] ?? null)
+            Section::make('Contact persons')->columnSpanFull()
+                ->description('The people you can call there. At most ' . DeskProspects::MAX_PEOPLE . '.')
                 ->schema([
-                    TextInput::make('name')->label('Name')->required()->minLength(2)->maxLength(150)->regex(self::NAME_RULE)
-                        ->validationMessages(['regex' => 'A name has no digits or symbols like < > ;']),
-                    TextInput::make('position')->label('Position')->maxLength(100)->regex(self::TEXT_RULE)->datalist(SalesPosition::names()),
-                    TextInput::make('phone')->label('Phone')->tel()->maxLength(20)->regex('/^\+?[0-9 ()-]{6,20}$/')
-                        ->helperText('10 digits, or with the country code.'),
-                    TextInput::make('email')->label('E-mail')->email()->maxLength(150),
-                    TextInput::make('linkedin')->label('LinkedIn')->maxLength(300)->placeholder('https://www.linkedin.com/in/...')
-                        ->rule(fn () => function (string $attribute, mixed $value, \Closure $fail) {
-                            if (filled($value) && \App\Sales\Models\SalesProspectPerson::cleanLinkedin((string) $value) === null) {
-                                $fail('Only a linkedin.com address.');
-                            }
-                        }),
-                ])->columns(5),
+                    Repeater::make('people')->hiddenLabel()->maxItems(DeskProspects::MAX_PEOPLE)->defaultItems(0)
+                        ->addActionLabel('Add contact person')->reorderable(false)->collapsible()
+                        ->itemLabel(fn (array $state) => filled($state['name'] ?? null) ? $state['name'] : 'New person')
+                        ->schema(static::personFields())->columns(2),
+                ]),
         ]);
+    }
+
+    // ---- the list -----------------------------------------------------------------------------------------------------------------
+
+    public static function statusColor(?string $outcome): string
+    {
+        return match (true) {
+            $outcome === null => 'gray',
+            in_array($outcome, ['interested', 'meeting_fixed', 'converted'], true) => 'success',
+            in_array($outcome, self::OPEN_OUTCOMES, true) => 'info',
+            default => 'danger',
+        };
     }
 
     public static function table(Table $table): Table
@@ -149,52 +243,86 @@ class ProspectResource extends Resource
 
         return $table
             ->columns([
-                TextColumn::make('name')->label('Company')->searchable()->sortable()->weight('medium')->description(fn (SalesProspect $p) => $p->address),
-                TextColumn::make('territory')->label('Territory')->searchable()->sortable(),
-                TextColumn::make('people_count')->label('People')->alignEnd(),
+                TextColumn::make('name')->label('Company')->searchable()->sortable()->weight('medium')
+                    ->description(fn (SalesProspect $p) => $p->address ?: null),
+                TextColumn::make('territory')->label('Territory')->badge()->color('info')->searchable()->sortable(),
+                TextColumn::make('first_person_name')->label('Contact')->placeholder('No contact yet')
+                    ->description(fn (SalesProspect $p) => trim(PhoneNumber::display($p->first_person_phone) . ($p->people_count > 1 ? '  +' . ($p->people_count - 1) . ' more' : ''))  ?: null)
+                    ->searchable(query: fn (Builder $query, string $search) => $query->orWhereHas('people', fn (Builder $q) => $q
+                        ->where('name', 'like', '%' . addcslashes($search, '%_\\') . '%')
+                        ->orWhere('phone', 'like', '%' . addcslashes(preg_replace('/\D+/', '', $search) ?: $search, '%_\\') . '%'))),
                 TextColumn::make('last_outcome')->label('Status')->badge()
                     ->getStateUsing(fn (SalesProspect $p) => SalesProspectNote::labelOf($p->last_outcome))
-                    ->color(fn (SalesProspect $p) => match (true) {
-                        $p->last_outcome === null => 'gray',
-                        in_array($p->last_outcome, ['interested', 'meeting_fixed', 'converted'], true) => 'success',
-                        (bool) (SalesProspectNote::OUTCOMES[$p->last_outcome][1] ?? false) => 'info',
-                        default => 'danger',
-                    }),
-                TextColumn::make('last_followup_at')->label('Next follow-up')->dateTime('d M Y, h:i A', $tz)->placeholder('—')->sortable()
-                    ->color(fn (SalesProspect $p) => $p->last_followup_at && \Carbon\Carbon::parse($p->last_followup_at)->isPast() ? 'danger' : null),
+                    ->color(fn (SalesProspect $p) => static::statusColor($p->last_outcome))
+                    ->description(fn (SalesProspect $p) => $p->last_called_at ? 'Called ' . CarbonImmutable::parse($p->last_called_at, 'UTC')->timezone($tz)->format('j M') : null),
+                TextColumn::make('last_followup_at')->label('Next follow-up')->placeholder('—')
+                    ->formatStateUsing(fn ($state) => $state ? CarbonImmutable::parse($state, 'UTC')->timezone($tz)->format('D j M, h:i A') : null)
+                    ->color(fn (SalesProspect $p) => $p->last_followup_at && in_array($p->last_outcome, self::OPEN_OUTCOMES, true) && CarbonImmutable::parse($p->last_followup_at, 'UTC')->isPast() ? 'danger' : null),
                 TextColumn::make('added')->label('Added by')
                     ->getStateUsing(fn (SalesProspect $p) => static::mine($p) ? 'You' : ($p->addedBy?->name ?? 'Office')),
             ])
-            ->defaultSort('name')
+            ->defaultSort(fn (Builder $query) => static::appOrder($query))
             ->filters([
-                SelectFilter::make('territory')->label('Territory')->options(fn () => DeskProspects::territories())->multiple()->searchable(),
-                Filter::make('mine')->label('Added by me')->query(fn (Builder $query) => $query->where('user_id', auth()->id())),
-                Filter::make('due')->label('Follow-up due')->query(fn (Builder $query) => $query->whereIn('uuid', SalesProspectNote::query()
-                    ->select('prospect_uuid')->whereNotNull('next_followup_at')->where('next_followup_at', '<=', now()))),
+                Filter::make('mine')->label('Added by me')->query(fn (Builder $query) => $query->where('sales_prospects.user_id', auth()->id())),
+                Filter::make('due')->label('Follow-up due')->query(fn (Builder $query) => $query->whereRaw(
+                    self::lastCall('next_followup_at') . ' <= ? AND ' . self::lastCall('outcome') . " IN ('" . implode("','", self::OPEN_OUTCOMES) . "')",
+                    [now()->utc()->format('Y-m-d H:i:s')],
+                )),
+                Filter::make('uncalled')->label('Not called yet')->query(fn (Builder $query) => $query->whereRaw(self::lastCall('outcome') . ' IS NULL')),
             ])
+            ->searchPlaceholder('Company, person, number, territory')
             ->recordUrl(fn (SalesProspect $p) => static::getUrl('view', ['record' => $p]))
             ->recordActions([static::logCallAction()])
-            ->emptyStateHeading('No prospects here')
-            ->emptyStateDescription('Add a company that does not work with us yet. Prospects added on a phone appear here after its sync.');
+            ->emptyStateHeading(fn ($livewire) => $livewire->activeTab === 'mine' && RepTerritories::mine(auth()->user()) === [] ? 'Choose your territories' : 'No prospects here')
+            ->emptyStateDescription(fn ($livewire) => $livewire->activeTab === 'mine' && RepTerritories::mine(auth()->user()) === []
+                ? 'Pick the areas you work in, for example Bagru or Behror, with "My territories". Your list then shows the companies there.'
+                : 'Add a company that does not work with us yet, with the people you can call there. Prospects added on a phone appear here after its sync.');
     }
 
-    /** Log one call (any rep, also on somebody else's prospect). */
+    // ---- actions shared by the list and the prospect page ----------------------------------------------------------------------
+
+    /** Log one call (any rep, also on somebody else's prospect). The outcome and the next follow-up are capsules, like in the app. */
     public static function logCallAction(): Action
     {
         return Action::make('logCall')->label('Log a call')->icon(Heroicon::OutlinedPhone)->color('gray')
             ->modalHeading(fn (SalesProspect $record) => 'Call to ' . $record->name)
             ->modalSubmitActionLabel('Save the call')
             ->schema([
-                Select::make('outcome')->label('How did it go?')->required()->native(false)
-                    ->options(array_map(fn (array $o) => $o[0], array_diff_key(SalesProspectNote::OUTCOMES, ['converted' => 1]))),
-                Textarea::make('remark')->label('Remark (optional)')->rows(2)->maxLength(300),
-                DateTimePicker::make('next_followup_at')->label('Next follow-up (optional)')->seconds(false)->native(false)
-                    ->timezone(config('sales.timezone'))->minDate(now()->startOfDay())->maxDate(now()->addYears(2)),
+                ToggleButtons::make('outcome')->label('How did it go?')->required()->inline()->live()
+                    ->options(array_map(fn (array $o) => $o[0], array_diff_key(SalesProspectNote::OUTCOMES, ['converted' => 1])))
+                    ->colors(fn () => collect(SalesProspectNote::OUTCOMES)->map(fn ($o, $k) => static::statusColor($k))->all()),
+                Textarea::make('remark')->label('What did they say? (optional)')->rows(2)->maxLength(300),
+                ToggleButtons::make('when')->label('Next follow-up')->inline()->live()->default('none')
+                    ->visible(fn (Get $get) => in_array($get('outcome'), self::OPEN_OUTCOMES, true))
+                    ->options(['tomorrow' => 'Tomorrow 10 am', 'three' => 'In 3 days', 'week' => 'Next week', 'pick' => 'Pick a time', 'none' => 'No follow-up'])
+                    ->colors(['tomorrow' => 'info', 'three' => 'info', 'week' => 'info', 'pick' => 'info', 'none' => 'gray']),
+                DateTimePicker::make('next_followup_at')->label('Follow-up on')->seconds(false)->native(false)
+                    ->timezone(config('sales.timezone'))->minDate(now()->startOfDay())->maxDate(now()->addYears(2))
+                    ->visible(fn (Get $get) => in_array($get('outcome'), self::OPEN_OUTCOMES, true) && $get('when') === 'pick')
+                    ->required(fn (Get $get) => in_array($get('outcome'), self::OPEN_OUTCOMES, true) && $get('when') === 'pick'),
             ])
             ->action(fn (SalesProspect $record, array $data) => DeskUi::attempt(
-                fn () => app(DeskProspects::class)->logCall(auth()->user(), $record, $data['outcome'], $data['remark'] ?? null, $data['next_followup_at'] ?? null),
+                fn () => app(DeskProspects::class)->logCall(auth()->user(), $record, $data['outcome'], $data['remark'] ?? null, static::followupFrom($data)),
                 'Call saved',
             ));
+    }
+
+    /** The follow-up capsule as a time in the business time zone ("Tomorrow 10 am" = tomorrow at 10:00 there). */
+    public static function followupFrom(array $data): ?string
+    {
+        if (! in_array($data['outcome'] ?? null, self::OPEN_OUTCOMES, true)) {
+            return null;
+        }
+
+        $at10 = fn (int $days) => CarbonImmutable::now(config('sales.timezone'))->startOfDay()->addDays($days)->setTime(10, 0)->format('Y-m-d H:i:s');
+
+        return match ($data['when'] ?? 'none') {
+            'tomorrow' => $at10(1),
+            'three' => $at10(3),
+            'week' => $at10(7),
+            'pick' => filled($data['next_followup_at'] ?? null) ? CarbonImmutable::parse($data['next_followup_at'], config('sales.timezone'))->format('Y-m-d H:i:s') : null,
+            default => null,
+        };
     }
 
     /** Plan a visit to this prospect (only when Meeting plans is open too). */
@@ -203,10 +331,11 @@ class ProspectResource extends Resource
         return Action::make('planVisit')->label('Plan a visit')->icon(Heroicon::OutlinedCalendarDays)->color('gray')
             ->visible(fn () => RepDesk::allows(auth()->user(), DeskMeetings::AREA))
             ->modalHeading(fn (SalesProspect $record) => 'Visit ' . $record->name)
+            ->modalSubmitActionLabel('Plan it')
             ->schema([
                 DateTimePicker::make('at')->label('Day and time')->required()->seconds(false)->native(false)->timezone(config('sales.timezone'))
                     ->minDate(now()->startOfDay())->maxDate(now()->addDays(90)),
-                Select::make('purpose')->label('Purpose')->options(DeskMeetings::PURPOSES)->native(false)->placeholder('Not said'),
+                ToggleButtons::make('purpose')->label('Purpose (optional)')->inline()->options(DeskMeetings::PURPOSES)->colors(array_fill_keys(array_keys(DeskMeetings::PURPOSES), 'info')),
             ])
             ->action(fn (SalesProspect $record, array $data) => DeskUi::attempt(
                 fn () => app(DeskMeetings::class)->schedule(auth()->user(), ['party' => 'prospect:' . $record->uuid] + $data),

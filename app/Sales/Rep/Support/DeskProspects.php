@@ -36,11 +36,17 @@ final class DeskProspects
             throw ValidationException::withMessages(['desk' => 'A prospect holds at most ' . self::MAX_PEOPLE . ' people.']);
         }
 
+        // a territory is written like a place (the app's rule); one the prospect already has is never questioned again
+        $territory = self::territory(RepTerritories::clean(DeskSync::text($d['territory'] ?? '', 100)));
+        if ((! $prospect || SalesProspect::keyOf($territory) !== SalesProspect::keyOf($prospect->territory)) && ($problem = RepTerritories::problem($territory))) {
+            throw ValidationException::withMessages(['desk' => $problem]);
+        }
+
         $uuid = $prospect?->uuid ?? (string) Str::uuid();
         $this->sync->one($rep, self::AREA, 'prospects', [
             'uuid' => $uuid,
             'name' => DeskSync::text($d['name'] ?? '', 150),
-            'territory' => self::territory(DeskSync::text($d['territory'] ?? '', 100)),
+            'territory' => $territory,
             'address' => DeskSync::text($d['address'] ?? '', 200),
             'source' => filled($d['source'] ?? null) ? $d['source'] : null,
             'notes' => DeskSync::text($d['notes'] ?? '', 1000),
@@ -55,6 +61,66 @@ final class DeskProspects
         ]);
 
         return SalesProspect::where('uuid', $uuid)->with('people')->firstOrFail();
+    }
+
+    // ---- one contact person at a time (the prospect page): the whole record is sent again, like the phone does -----------------
+
+    /** @param array{name:string, position?:?string, phone?:?string, email?:?string, linkedin?:?string} $person */
+    public function addPerson(User $rep, SalesProspect $prospect, array $person): SalesProspect
+    {
+        $people = $this->peopleOf($prospect);
+        if (count($people) >= self::MAX_PEOPLE) {
+            throw ValidationException::withMessages(['desk' => 'A prospect holds at most ' . self::MAX_PEOPLE . ' people.']);
+        }
+        $people[] = $person;
+
+        return $this->save($rep, $prospect, $this->detailsOf($prospect) + ['people' => $people]);
+    }
+
+    /**
+     * $personId is the id of the row the rep saw. The people are stored again on every save (new ids), so an id that is gone means the
+     * list changed meanwhile (the phone, another tab): nothing is changed then, rather than the wrong person.
+     */
+    public function updatePerson(User $rep, SalesProspect $prospect, int $personId, array $person): SalesProspect
+    {
+        [$people, $index] = $this->find($prospect, $personId);
+        $people[$index] = $person;
+
+        return $this->save($rep, $prospect, $this->detailsOf($prospect) + ['people' => $people]);
+    }
+
+    public function removePerson(User $rep, SalesProspect $prospect, int $personId): SalesProspect
+    {
+        [$people, $index] = $this->find($prospect, $personId);
+        array_splice($people, $index, 1);
+
+        return $this->save($rep, $prospect, $this->detailsOf($prospect) + ['people' => $people]);
+    }
+
+    /** @return array{0: list<array>, 1: int} the people and the place of $personId among them */
+    private function find(SalesProspect $prospect, int $personId): array
+    {
+        $rows = $prospect->people()->get()->values();
+        $index = $rows->search(fn ($x) => (int) $x->id === $personId);
+        if ($index === false) {
+            throw ValidationException::withMessages(['desk' => 'The list of people changed meanwhile. Reload the page and try again.']);
+        }
+
+        return [$this->peopleOf($prospect), (int) $index];
+    }
+
+    /** @return array{name:string, territory:string, address:?string, source:?string, notes:?string} */
+    private function detailsOf(SalesProspect $p): array
+    {
+        return ['name' => $p->name, 'territory' => $p->territory, 'address' => $p->address, 'source' => $p->source, 'notes' => $p->notes];
+    }
+
+    /** @return list<array> the stored people, in their order */
+    private function peopleOf(SalesProspect $p): array
+    {
+        return $p->people()->get()
+            ->map(fn ($x) => ['name' => $x->name, 'position' => $x->position, 'phone' => $x->phone, 'email' => $x->email, 'linkedin' => $x->linkedin])
+            ->values()->all();
     }
 
     public function delete(User $rep, SalesProspect $prospect): void

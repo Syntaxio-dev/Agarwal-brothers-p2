@@ -21,7 +21,7 @@ class SalesProfile extends Model
 
     protected $table = 'sales_profiles';
 
-    protected $fillable = ['user_id', 'employee_code', 'phone', 'is_active', 'desk_areas', 'sort_order', 'last_sync_at', 'app_version', 'device_model'];
+    protected $fillable = ['user_id', 'employee_code', 'phone', 'is_active', 'desk_areas', 'desk_territories', 'sort_order', 'last_sync_at', 'app_version', 'device_model'];
 
     protected static function booted(): void
     {
@@ -35,6 +35,7 @@ class SalesProfile extends Model
         return [
             'is_active' => 'boolean',
             'desk_areas' => 'array',
+            'desk_territories' => 'array',
             'last_sync_at' => 'datetime',
         ];
     }

@@ -5,7 +5,8 @@
     $kb = fn (int $bytes) => $bytes >= 1048576 ? number_format($bytes / 1048576, 1) . ' MB' : max(1, (int) round($bytes / 1024)) . ' KB';
 @endphp
 
-<div class="sx-page">
+{{-- NOT the class "sx-page": the Sales theme hides the page header (title + Update button) when it finds one --}}
+<div style="display:grid;gap:1rem">
     <div class="sx-card" style="padding:1rem 1.125rem">
         <div style="display:flex;justify-content:space-between;gap:0.75rem;flex-wrap:wrap;align-items:baseline">
             <h2 class="sx-eyebrow">From {{ $t->creator?->name ?? 'the office' }}</h2>

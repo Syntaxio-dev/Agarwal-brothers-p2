@@ -156,7 +156,7 @@ class MeetingResource extends Resource
             ->schema([
                 static::partySelect()->live(),
                 static::whenPicker(),
-                Select::make('purpose')->label('Purpose')->options(DeskMeetings::PURPOSES)->native(false)->placeholder('Not said'),
+                \Filament\Forms\Components\ToggleButtons::make('purpose')->label('Purpose (optional)')->inline()->options(DeskMeetings::PURPOSES)->colors(array_fill_keys(array_keys(DeskMeetings::PURPOSES), 'info')),
                 static::peopleSelect(),
             ])
             ->action(fn (array $data) => DeskUi::attempt(fn () => app(DeskMeetings::class)->schedule(auth()->user(), $data), 'Visit planned'));

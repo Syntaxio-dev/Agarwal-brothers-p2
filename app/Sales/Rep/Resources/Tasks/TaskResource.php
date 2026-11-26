@@ -9,7 +9,6 @@ use App\Sales\Rep\Support\DeskUi;
 use App\Sales\Rep\Support\DeskWork;
 use App\Sales\Rep\Support\RepDesk;
 use Filament\Actions\Action;
-use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Textarea;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Utilities\Get;
@@ -123,7 +122,8 @@ class TaskResource extends Resource
                 'rep_note' => $record->rep_note,
             ])
             ->schema([
-                Radio::make('status')->label('Where is it?')->required()->live()->inline()
+                \Filament\Forms\Components\ToggleButtons::make('status')->label('Where is it?')->required()->live()->inline()
+                    ->colors(['in_progress' => 'warning', 'done' => 'success', 'blocked' => 'danger'])
                     ->options(array_intersect_key(SalesTask::STATUSES, array_flip(SalesTask::REP_STATUSES))),
                 Textarea::make('rep_note')->label(fn (Get $get) => $get('status') === 'blocked' ? 'Why can you not do it?' : 'Note for the manager (optional)')
                     ->rows(3)->maxLength(500)->required(fn (Get $get) => $get('status') === 'blocked'),

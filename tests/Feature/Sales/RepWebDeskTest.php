@@ -411,6 +411,146 @@ class RepWebDeskTest extends SalesTestCase
         $this->get('/rep/task-files/' . $file->id)->assertForbidden();
     }
 
+    // ---- the prospect page and the territories (UI round of 26 Nov) ----------------------------------------------------------------------
+
+    public function test_the_prospect_page_shows_the_company_name_and_its_buttons(): void
+    {
+        $a = $this->rep('AB-0001', '9000000001');
+        $b = $this->rep('AB-0002', '9000000002');
+        $p = $this->prospects()->save($a->user, null, ['name' => 'A-one Paint Chem Ltd', 'territory' => 'Bagru']);
+
+        $this->actingAs($a->user);
+        $this->get('/rep/prospects/' . $p->getKey())->assertOk()
+            ->assertDontSee('class="sx-page"', false)->assertSee('A-one Paint Chem Ltd')
+            ->assertSee('Log a call')->assertSee('Add contact person')->assertSee('Bagru · added by you');
+
+        $this->flushSession();
+        $this->actingAs($b->user);
+        $this->get('/rep/prospects/' . $p->getKey())->assertOk()
+            ->assertSee('A-one Paint Chem Ltd')->assertSee('Log a call')->assertDontSee('Add contact person');
+    }
+
+    public function test_the_adder_adds_changes_and_removes_a_contact_person_on_the_prospect_page(): void
+    {
+        $a = $this->rep('AB-0001', '9000000001');
+        $b = $this->rep('AB-0002', '9000000002');
+        $p = $this->prospects()->save($a->user, null, ['name' => 'A-one Paint Chem Ltd', 'territory' => 'Bagru']);
+
+        $this->actingAs($a->user);
+        Livewire::test(\App\Sales\Rep\Resources\Prospects\Pages\ViewProspect::class, ['record' => $p->getKey()])
+            ->callAction('addPerson', ['name' => 'Ravi Kumar', 'position' => 'Purchase head', 'phone' => '98290 55671', 'email' => '', 'linkedin' => ''])
+            ->assertHasNoActionErrors();
+        $person = $p->people()->firstOrFail();
+        $this->assertSame('+919829055671', $person->phone);
+
+        // digits in a name are refused by the form
+        Livewire::test(\App\Sales\Rep\Resources\Prospects\Pages\ViewProspect::class, ['record' => $p->getKey()])
+            ->callAction('addPerson', ['name' => 'Ravi 2', 'phone' => '9829055672'])
+            ->assertHasActionErrors(['name']);
+
+        Livewire::test(\App\Sales\Rep\Resources\Prospects\Pages\ViewProspect::class, ['record' => $p->getKey()])
+            ->callAction('editPerson', ['name' => 'Ravi Kumar Sharma', 'position' => 'Purchase head', 'phone' => '9829055671', 'email' => 'ravi@example.com', 'linkedin' => ''], ['person' => $person->id])
+            ->assertHasNoActionErrors();
+        $person = $p->people()->firstOrFail();
+        $this->assertSame('Ravi Kumar Sharma', $person->name);
+        $this->assertSame('ravi@example.com', $person->email);
+
+        // an id that is gone (the list was saved again meanwhile) changes nothing
+        try {
+            $this->prospects()->updatePerson($a->user, $p->refresh(), $person->id + 999, ['name' => 'Wrong One']);
+            $this->fail('a stale person id was accepted');
+        } catch (ValidationException) {
+        }
+        $this->assertSame('Ravi Kumar Sharma', $p->people()->firstOrFail()->name);
+
+        // another rep cannot add people to it
+        try {
+            $this->prospects()->addPerson($b->user, $p->refresh(), ['name' => 'Someone Else']);
+            $this->fail('another rep added a person');
+        } catch (ValidationException) {
+        }
+
+        Livewire::test(\App\Sales\Rep\Resources\Prospects\Pages\ViewProspect::class, ['record' => $p->getKey()])
+            ->callAction('removePerson', [], ['person' => $person->id])->assertHasNoActionErrors();
+        $this->assertSame(0, $p->people()->count());
+
+        // the phone gets the list as it is now
+        $pulled = collect($this->pull($this->headers($a))['prospects'])->firstWhere('uuid', $p->uuid);
+        $this->assertSame([], $pulled['people']);
+    }
+
+    public function test_my_territories_capsules_and_a_new_territory_from_the_form(): void
+    {
+        $rep = $this->rep();
+        $this->prospects()->save($rep->user, null, ['name' => 'One Co', 'territory' => 'Bagru']);
+        $this->prospects()->save($rep->user, null, ['name' => 'Two Co', 'territory' => 'Behror']);
+        $this->actingAs($rep->user);
+
+        // nothing chosen yet: the list opens on all territories
+        Livewire::test(\App\Sales\Rep\Resources\Prospects\Pages\ListProspects::class)
+            ->assertSet('activeTab', 'all')->assertCanSeeTableRecords(SalesProspect::all())
+            ->callAction('territories', ['mine' => ['Bagru'], 'add' => 'kukas'])
+            ->assertHasNoActionErrors()
+            ->assertSet('activeTab', 'mine');
+        $this->assertSame(['Bagru', 'kukas'], \App\Sales\Rep\Support\RepTerritories::mine($rep->user->refresh()));
+
+        Livewire::test(\App\Sales\Rep\Resources\Prospects\Pages\ListProspects::class)
+            ->assertSet('activeTab', 'mine')
+            ->assertCanSeeTableRecords(SalesProspect::where('name', 'One Co')->get())
+            ->assertCanNotSeeTableRecords(SalesProspect::where('name', 'Two Co')->get());
+
+        // a territory with digits is refused
+        try {
+            \App\Sales\Rep\Support\RepTerritories::save($rep->user, ['Bagru 2']);
+            $this->fail('a bad territory was saved');
+        } catch (ValidationException) {
+        }
+
+        // the form: a new territory, written once, joins "My territories"
+        Livewire::test(\App\Sales\Rep\Resources\Prospects\Pages\CreateProspect::class)
+            ->fillForm(['name' => 'Three Co', 'territory' => '__new', 'new_territory' => 'Chomu', 'source' => 'google'])
+            ->call('create')->assertHasNoFormErrors();
+        $three = SalesProspect::where('name', 'Three Co')->firstOrFail();
+        $this->assertSame('Chomu', $three->territory);
+        $this->assertContains('Chomu', \App\Sales\Rep\Support\RepTerritories::mine($rep->user->refresh()));
+
+        // a capsule of the team's spelling
+        Livewire::test(\App\Sales\Rep\Resources\Prospects\Pages\CreateProspect::class)
+            ->fillForm(['name' => 'Four Co', 'territory' => 'Behror'])
+            ->call('create')->assertHasNoFormErrors();
+        $this->assertSame('Behror', SalesProspect::where('name', 'Four Co')->value('territory'));
+    }
+
+    public function test_log_a_call_with_the_follow_up_capsules(): void
+    {
+        $rep = $this->rep();
+        $p = $this->prospects()->save($rep->user, null, ['name' => 'One Co', 'territory' => 'Bagru']);
+        $this->actingAs($rep->user);
+
+        Livewire::test(\App\Sales\Rep\Resources\Prospects\Pages\ViewProspect::class, ['record' => $p->getKey()])
+            ->callAction('logCall', ['outcome' => 'call_back', 'remark' => 'After Diwali', 'when' => 'tomorrow'])
+            ->assertHasNoActionErrors();
+
+        $call = SalesProspectNote::where('prospect_uuid', $p->uuid)->firstOrFail();
+        $local = $call->next_followup_at->timezone(config('sales.timezone'));
+        $this->assertSame(CarbonImmutable::now(config('sales.timezone'))->addDay()->toDateString() . ' 10:00', $local->format('Y-m-d H:i'));
+
+        // a closed outcome carries no follow-up, whatever was picked
+        Livewire::test(\App\Sales\Rep\Resources\Prospects\Pages\ViewProspect::class, ['record' => $p->getKey()])
+            ->callAction('logCall', ['outcome' => 'not_interested', 'when' => 'week'])
+            ->assertHasNoActionErrors();
+        $this->assertNull(SalesProspectNote::where('prospect_uuid', $p->uuid)->where('outcome', 'not_interested')->value('next_followup_at'));
+    }
+
+    public function test_the_task_page_shows_its_title_and_the_update_button(): void
+    {
+        $rep = $this->rep();
+        $task = $this->task($rep->user_id, ['title' => 'Quotation for JK Cement']);
+        $this->actingAs($rep->user);
+
+        $this->get('/rep/tasks/' . $task->getKey())->assertOk()->assertDontSee('class="sx-page"', false)->assertSee('Quotation for JK Cement')->assertSee('Update');
+    }
+
     // ---- expenses (view only) ------------------------------------------------------------------------------------------------------------
 
     public function test_a_rep_sees_only_his_own_expenses_and_bills_and_cannot_add_one(): void
